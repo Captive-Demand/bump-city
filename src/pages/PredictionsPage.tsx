@@ -89,12 +89,12 @@ const PredictionsPage = () => {
           <h1 className="text-2xl font-bold">Prediction Portal</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {games.length} predictions & activities ready ✨
+          {gameList.length} predictions & activities ready ✨
         </p>
       </div>
 
       <div className="px-6 space-y-3 pb-6">
-        {games.map((game) => (
+        {gameList.map((game) => (
           <Card key={game.id} className="border-none overflow-hidden">
             <CardContent className="p-0">
               <div className="p-4">
