@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 type AppMode = "choose" | "shower" | "registry";
 type UserRole = "planner" | "expectant-parent";
@@ -23,20 +25,54 @@ interface AppModeContextType {
   setMode: (mode: AppMode) => void;
   setupData: SetupData;
   updateSetupData: (data: Partial<SetupData>) => void;
+  modeLoading: boolean;
 }
 
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
 export const AppModeProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [mode, setMode] = useState<AppMode>("choose");
   const [setupData, setSetupData] = useState<SetupData>({});
+  const [modeLoading, setModeLoading] = useState(true);
+
+  useEffect(() => {
+    const loadEvent = async () => {
+      if (!user) { setModeLoading(false); return; }
+      const { data } = await supabase
+        .from("events")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setMode(data.event_type === "shower" ? "shower" : "registry");
+        setSetupData({
+          honoreeName: data.honoree_name || undefined,
+          dueDate: data.due_date ? new Date(data.due_date) : undefined,
+          eventDate: data.event_date ? new Date(data.event_date) : undefined,
+          city: data.city || undefined,
+          theme: data.theme || undefined,
+          giftPolicy: (data.gift_policy as GiftPolicy) || undefined,
+          clearWrapping: data.clear_wrapping || false,
+          giftNote: data.gift_note || undefined,
+          registryName: data.registry_name || undefined,
+          registryPrivate: data.registry_private || false,
+        });
+      }
+      setModeLoading(false);
+    };
+    loadEvent();
+  }, [user]);
 
   const updateSetupData = (data: Partial<SetupData>) => {
     setSetupData((prev) => ({ ...prev, ...data }));
   };
 
   return (
-    <AppModeContext.Provider value={{ mode, setMode, setupData, updateSetupData }}>
+    <AppModeContext.Provider value={{ mode, setMode, setupData, updateSetupData, modeLoading }}>
       {children}
     </AppModeContext.Provider>
   );
