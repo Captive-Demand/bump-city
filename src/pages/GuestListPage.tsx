@@ -23,6 +23,7 @@ interface Guest {
   plus_one: boolean;
   dietary_notes: string | null;
   email: string | null;
+  invite_sent: boolean | null;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
