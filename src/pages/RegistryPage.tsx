@@ -84,7 +84,7 @@ const RegistryPage = () => {
       </div>
 
       {/* Items */}
-      <div className="px-6 space-y-3 pb-6">
+      <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map((item) => (
           <Card key={item.id} className={`border-none ${item.claimed ? "opacity-70" : ""}`}>
             <CardContent className="p-4 flex items-center gap-3">
