@@ -59,7 +59,7 @@ const ModeChooser = () => {
       <div className="px-6 space-y-4 pb-10">
         <Card
           className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => { setMode("shower"); navigate("/"); }}
+          onClick={() => navigate("/setup/shower")}
         >
           <CardContent className="p-5 flex items-start gap-4">
             <div className="bg-lavender p-3 rounded-2xl shrink-0">
@@ -76,7 +76,7 @@ const ModeChooser = () => {
 
         <Card
           className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => { setMode("registry"); navigate("/registry"); }}
+          onClick={() => navigate("/setup/registry")}
         >
           <CardContent className="p-5 flex items-start gap-4">
             <div className="bg-peach p-3 rounded-2xl shrink-0">

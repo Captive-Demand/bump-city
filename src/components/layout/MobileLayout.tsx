@@ -13,7 +13,7 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
         <main className="flex-1 overflow-y-auto pb-20">
           {children}
         </main>
-        <BottomNav />
+        {!hideNav && <BottomNav />}
       </div>
     </div>
   );

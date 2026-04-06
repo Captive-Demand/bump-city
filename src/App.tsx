@@ -9,6 +9,8 @@ import RegistryPage from "./pages/RegistryPage";
 import GuestListPage from "./pages/GuestListPage";
 import PredictionsPage from "./pages/PredictionsPage";
 import ProfilePage from "./pages/ProfilePage";
+import ShowerSetupPage from "./pages/ShowerSetupPage";
+import RegistrySetupPage from "./pages/RegistrySetupPage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -19,6 +21,8 @@ const App = () => (
       <AppModeProvider>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/setup/shower" element={<ShowerSetupPage />} />
+          <Route path="/setup/registry" element={<RegistrySetupPage />} />
           <Route path="/registry" element={<RegistryPage />} />
           <Route path="/guests" element={<GuestListPage />} />
           <Route path="/predictions" element={<PredictionsPage />} />
