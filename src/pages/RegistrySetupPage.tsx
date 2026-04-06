@@ -67,7 +67,7 @@ const RegistrySetupPage = () => {
 
   return (
     <MobileLayout hideNav>
-      <div className="px-6 pt-10 pb-8 min-h-screen flex flex-col">
+      <div className="px-6 pt-10 pb-8 min-h-screen flex flex-col max-w-[500px] mx-auto w-full">
         <div className="flex items-center gap-2 mb-2">
           <Gift className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold text-primary">Registry Setup</span>

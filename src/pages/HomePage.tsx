@@ -169,7 +169,7 @@ const ShowerDashboard = () => {
 
         <div>
           <h2 className="text-lg font-bold mb-3">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickActions.map((action) => (
               <Card
                 key={action.label}

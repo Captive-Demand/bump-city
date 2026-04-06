@@ -106,7 +106,7 @@ const GuestListPage = () => {
       </div>
 
       {/* Guest List */}
-      <div className="px-6 space-y-2 pb-6">
+      <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-2">
         {filtered.map((guest) => (
           <Card key={guest.id} className="border-none">
             <CardContent className="p-3 flex items-center gap-3">
