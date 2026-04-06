@@ -1,39 +1,67 @@
 
 
-# Changes from Check-In Call (March 24, 2026)
+# Setup Flows for Both Paths
 
-## What Tiffany Requested
+## Problem
+Right now, clicking "I'm planning a baby shower" or "I'm building a registry" immediately drops the user into the app with no setup. There's no information collection, no personalization, and no guided onboarding.
 
-From the call transcript, Tiffany raised two key changes:
+## Solution
+Add a multi-step setup wizard for each path that collects key details before entering the main app.
 
-### 1. Registry as a Standalone Experience
-Tiffany wants the registry to be accessible independently — not locked behind the baby shower planning flow. Users who just want a registry (without planning a shower) should be able to do so. The registry should work as its own product offering alongside the full shower planning experience.
+---
 
-### 2. "Building a Registry" Option on the Homepage
-Tiffany specifically said: *"on this homepage where I say I'm planning a baby shower, maybe we just give an option to building a registry"* — a second entry point that bypasses the shower planning flow entirely.
+## Shower Setup Flow (3 steps)
+
+**Step 1 — Your Role**
+- "Are you the expectant parent or planning for someone else?"
+- Radio selection: Planner / Expectant Parent
+
+**Step 2 — Event Details**
+- Honoree name(s) (e.g. "Sarah & Mike")
+- Due date (date picker)
+- Event date (date picker, optional)
+- City/location (text input, with Nashville highlighted for local features)
+- Theme (optional text input)
+
+**Step 3 — Gifting Preferences**
+- Gift policy: "Bring a gift" / "No gifts please" / "Bring a book instead"
+- Wrapping preference toggle (clear wrapping)
+- Custom note (optional textarea)
+
+→ On complete: save to context, navigate to shower dashboard
+
+## Registry Setup Flow (2 steps)
+
+**Step 1 — About You**
+- Your name(s)
+- Due date (date picker)
+- City/location
+
+**Step 2 — Registry Preferences**
+- Registry name (auto-suggested from names)
+- Gift policy preference
+- Share link preference (public/private)
+
+→ On complete: save to context, navigate to registry page
 
 ---
 
 ## Technical Plan
 
-### Step 1: Update HomePage with dual entry paths
-Modify `src/pages/HomePage.tsx` to present two clear options at the top:
-- **"I'm planning a baby shower"** — enters the full app experience (current flow)
-- **"I'm building a registry"** — goes directly to the registry experience
+### New files
+- `src/pages/ShowerSetupPage.tsx` — 3-step wizard with progress indicator
+- `src/pages/RegistrySetupPage.tsx` — 2-step wizard with progress indicator
 
-This replaces or augments the current welcome header with a simple choice UI using two prominent cards/buttons.
+### Modified files
+- `src/contexts/AppModeContext.tsx` — expand state to store setup data (role, names, dates, city, gifting prefs, etc.)
+- `src/pages/HomePage.tsx` — change card clicks to navigate to `/setup/shower` or `/setup/registry` instead of directly entering the app
+- `src/App.tsx` — add routes for `/setup/shower` and `/setup/registry`
+- `src/pages/HomePage.tsx` (ShowerDashboard) — use stored names/dates from context instead of hardcoded "Sarah & Mike" and "August 15, 2025"
 
-### Step 2: Create a standalone Registry landing route
-Add a `/registry-standalone` or similar route in `src/App.tsx` that renders the registry page without the full shower context — no countdown, no guest list nav emphasis, just registry-focused navigation.
-
-### Step 3: Adjust BottomNav conditionally
-When a user enters via the "registry only" path, the bottom nav could simplify to show only relevant tabs (Registry, Profile) rather than the full 5-tab set. This can be managed with a simple context/state flag.
-
----
-
-## Files to Change
-- `src/pages/HomePage.tsx` — add dual-path entry UI
-- `src/App.tsx` — add registry-standalone route
-- `src/components/layout/BottomNav.tsx` — support a simplified nav mode
-- New: `src/contexts/AppModeContext.tsx` — store whether user chose "shower" or "registry only" mode
+### UI approach
+- Step indicator dots at top of each wizard
+- One step visible at a time with "Next" / "Back" buttons
+- Final step has a "Let's go!" CTA
+- All inputs use existing shadcn components (Input, DatePicker, RadioGroup, Switch, Textarea)
+- Validation: name and due date required, everything else optional
 
