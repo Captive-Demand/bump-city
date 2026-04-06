@@ -34,7 +34,7 @@ const CountdownTimer = () => {
 const quickActions = [
   { icon: Gift, label: "Registry", desc: "12 items", path: "/registry", color: "bg-peach" },
   { icon: Users, label: "Guests", desc: "24 invited", path: "/guests", color: "bg-lavender" },
-  { icon: Gamepad2, label: "Games", desc: "5 planned", path: "/games", color: "bg-mint" },
+  { icon: Gamepad2, label: "Predictions", desc: "5 active", path: "/predictions", color: "bg-mint" },
   { icon: Calendar, label: "Schedule", desc: "Aug 3", path: "/", color: "bg-warm" },
 ];
 
