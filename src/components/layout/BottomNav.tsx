@@ -1,4 +1,4 @@
-import { Home, Gift, Users, Sparkles, User } from "lucide-react";
+import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, CalendarDays, Package } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -20,9 +20,9 @@ const registryTabs = [
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { mode } = useAppMode();
+  const { mode, modeLoading } = useAppMode();
 
-  if (mode === "choose") return null;
+  if (modeLoading || mode === "choose") return null;
 
   const tabs = mode === "registry" ? registryTabs : fullTabs;
 
@@ -36,9 +36,7 @@ export const BottomNav = () => {
             onClick={() => navigate(tab.path)}
             className={cn(
               "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all",
-              isActive
-                ? "text-primary bg-primary/10"
-                : "text-muted-foreground hover:text-foreground"
+              isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <tab.icon className={cn("h-5 w-5", isActive && "fill-primary/20")} />

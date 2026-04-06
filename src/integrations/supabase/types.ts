@@ -14,7 +14,429 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          text: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          text: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          text?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_events: {
+        Row: {
+          city: string | null
+          created_at: string
+          description: string | null
+          event_date: string | null
+          id: string
+          location: string | null
+          title: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          title: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          city: string | null
+          clear_wrapping: boolean | null
+          created_at: string
+          due_date: string | null
+          event_date: string | null
+          event_type: string
+          gift_note: string | null
+          gift_policy: string | null
+          honoree_name: string | null
+          id: string
+          registry_name: string | null
+          registry_private: boolean | null
+          surprise_mode: boolean | null
+          theme: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          clear_wrapping?: boolean | null
+          created_at?: string
+          due_date?: string | null
+          event_date?: string | null
+          event_type?: string
+          gift_note?: string | null
+          gift_policy?: string | null
+          honoree_name?: string | null
+          id?: string
+          registry_name?: string | null
+          registry_private?: boolean | null
+          surprise_mode?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          clear_wrapping?: boolean | null
+          created_at?: string
+          due_date?: string | null
+          event_date?: string | null
+          event_type?: string
+          gift_note?: string | null
+          gift_policy?: string | null
+          honoree_name?: string | null
+          id?: string
+          registry_name?: string | null
+          registry_private?: boolean | null
+          surprise_mode?: boolean | null
+          theme?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gifts_received: {
+        Row: {
+          created_at: string
+          donor_name: string
+          event_id: string
+          id: string
+          item_description: string
+          thank_you_sent: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          donor_name: string
+          event_id: string
+          id?: string
+          item_description: string
+          thank_you_sent?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          donor_name?: string
+          event_id?: string
+          id?: string
+          item_description?: string
+          thank_you_sent?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gifts_received_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guests: {
+        Row: {
+          created_at: string
+          dietary_notes: string | null
+          email: string | null
+          event_id: string
+          id: string
+          invite_sent: boolean | null
+          invite_sent_at: string | null
+          name: string
+          phone: string | null
+          plus_one: boolean | null
+          sms_opt_in: boolean | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dietary_notes?: string | null
+          email?: string | null
+          event_id: string
+          id?: string
+          invite_sent?: boolean | null
+          invite_sent_at?: string | null
+          name: string
+          phone?: string | null
+          plus_one?: boolean | null
+          sms_opt_in?: boolean | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dietary_notes?: string | null
+          email?: string | null
+          event_id?: string
+          id?: string
+          invite_sent?: boolean | null
+          invite_sent_at?: string | null
+          name?: string
+          phone?: string | null
+          plus_one?: boolean | null
+          sms_opt_in?: boolean | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planning_tasks: {
+        Row: {
+          assignee: string | null
+          completed: boolean | null
+          created_at: string
+          due_date: string | null
+          event_id: string
+          id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          assignee?: string | null
+          completed?: boolean | null
+          created_at?: string
+          due_date?: string | null
+          event_id: string
+          id?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          assignee?: string | null
+          completed?: boolean | null
+          created_at?: string
+          due_date?: string | null
+          event_id?: string
+          id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planning_tasks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      predictions: {
+        Row: {
+          created_at: string
+          event_id: string
+          guest_name: string
+          id: string
+          is_winner: boolean | null
+          predicted_date: string | null
+          predicted_gender: string | null
+          predicted_name: string | null
+          predicted_weight: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          guest_name: string
+          id?: string
+          is_winner?: boolean | null
+          predicted_date?: string | null
+          predicted_gender?: string | null
+          predicted_name?: string | null
+          predicted_weight?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          guest_name?: string
+          id?: string
+          is_winner?: boolean | null
+          predicted_date?: string | null
+          predicted_gender?: string | null
+          predicted_name?: string | null
+          predicted_weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      registry_items: {
+        Row: {
+          category: string
+          claimed: boolean | null
+          claimed_by: string | null
+          created_at: string
+          emoji: string | null
+          event_id: string
+          external_url: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price: number | null
+          source: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          claimed?: boolean | null
+          claimed_by?: string | null
+          created_at?: string
+          emoji?: string | null
+          event_id: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price?: number | null
+          source?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          claimed?: boolean | null
+          claimed_by?: string | null
+          created_at?: string
+          emoji?: string | null
+          event_id?: string
+          external_url?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price?: number | null
+          source?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registry_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          category: string
+          city: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          phone: string | null
+          website: string | null
+        }
+        Insert: {
+          category: string
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          phone?: string | null
+          website?: string | null
+        }
+        Update: {
+          category?: string
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          phone?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

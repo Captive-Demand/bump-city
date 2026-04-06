@@ -35,13 +35,12 @@ const CountdownTimer = ({ dueDate, honoreeName }: { dueDate?: Date; honoreeName?
 };
 
 const quickActions = [
-  { icon: Gift, label: "Registry", desc: "12 items", path: "/registry", color: "bg-peach" },
-  { icon: Users, label: "Guests", desc: "24 invited", path: "/guests", color: "bg-lavender" },
-  { icon: Sparkles, label: "Predictions", desc: "5 active", path: "/predictions", color: "bg-mint" },
-  { icon: Calendar, label: "Schedule", desc: "Aug 3", path: "/", color: "bg-warm" },
+  { icon: Gift, label: "Registry", desc: "Gift list", path: "/registry", color: "bg-peach" },
+  { icon: Users, label: "Guests", desc: "Guest list", path: "/guests", color: "bg-lavender" },
+  { icon: Sparkles, label: "Predictions", desc: "Baby bets", path: "/predictions", color: "bg-mint" },
+  { icon: Calendar, label: "Planning", desc: "Tasks", path: "/planning", color: "bg-warm" },
 ];
 
-/* ── Choose-mode landing ── */
 const ModeChooser = () => {
   const navigate = useNavigate();
 
@@ -52,42 +51,24 @@ const ModeChooser = () => {
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome to <span className="text-primary">Bump City</span> 🎀
         </h1>
-        <p className="text-muted-foreground mt-2 text-sm max-w-xs">
-          What would you like to do today?
-        </p>
+        <p className="text-muted-foreground mt-2 text-sm max-w-xs">What would you like to do today?</p>
       </div>
-
       <div className="px-6 space-y-4 pb-10">
-        <Card
-          className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => navigate("/setup/shower")}
-        >
+        <Card className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all" onClick={() => navigate("/setup/shower")}>
           <CardContent className="p-5 flex items-start gap-4">
-            <div className="bg-lavender p-3 rounded-2xl shrink-0">
-              <PartyPopper className="h-7 w-7 text-foreground/70" />
-            </div>
+            <div className="bg-lavender p-3 rounded-2xl shrink-0"><PartyPopper className="h-7 w-7 text-foreground/70" /></div>
             <div>
               <h2 className="font-bold text-base">I'm planning a baby shower</h2>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Manage invites, registry, games, vendors & everything in one place.
-              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Manage invites, registry, games, vendors & everything in one place.</p>
             </div>
           </CardContent>
         </Card>
-
-        <Card
-          className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => navigate("/setup/registry")}
-        >
+        <Card className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all" onClick={() => navigate("/setup/registry")}>
           <CardContent className="p-5 flex items-start gap-4">
-            <div className="bg-peach p-3 rounded-2xl shrink-0">
-              <ClipboardList className="h-7 w-7 text-foreground/70" />
-            </div>
+            <div className="bg-peach p-3 rounded-2xl shrink-0"><ClipboardList className="h-7 w-7 text-foreground/70" /></div>
             <div>
               <h2 className="font-bold text-base">I'm building a registry</h2>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Create & share your gift registry — no shower planning needed.
-              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Create & share your gift registry — no shower planning needed.</p>
             </div>
           </CardContent>
         </Card>
@@ -114,17 +95,13 @@ const RecentActivitySection = () => {
       <Card className="border-none">
         <CardContent className="p-4 space-y-3">
           {recent.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-2">
-              No activity yet — start by adding items to your registry!
-            </p>
+            <p className="text-sm text-muted-foreground text-center py-2">No activity yet — start by adding items to your registry!</p>
           ) : (
             recent.map((item) => {
               const Icon = iconMap[item.type] || Heart;
               return (
                 <div key={item.id} className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-1.5 rounded-lg">
-                    <Icon className="h-3.5 w-3.5 text-primary" />
-                  </div>
+                  <div className="bg-primary/10 p-1.5 rounded-lg"><Icon className="h-3.5 w-3.5 text-primary" /></div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm truncate">{item.text}</p>
                     <p className="text-[10px] text-muted-foreground">{formatRelativeTime(item.timestamp)}</p>
@@ -139,7 +116,6 @@ const RecentActivitySection = () => {
   );
 };
 
-
 const ShowerDashboard = () => {
   const navigate = useNavigate();
   const { setupData } = useAppMode();
@@ -150,46 +126,28 @@ const ShowerDashboard = () => {
       <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-12 pb-6">
         <div className="flex items-center gap-2 mb-1">
           <Baby className="h-6 w-6 text-primary" />
-          <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">
-            Baby Shower
-          </Badge>
+          <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">Baby Shower</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to
-          <br />
-          <span className="text-primary">Bump City</span> 🎀
+          Welcome to<br /><span className="text-primary">Bump City</span> 🎀
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {displayName}'s baby shower hub
-        </p>
+        <p className="text-muted-foreground mt-1 text-sm">{displayName}'s baby shower hub</p>
       </div>
-
       <div className="px-6 space-y-6">
         <CountdownTimer dueDate={setupData.dueDate} honoreeName={setupData.honoreeName} />
-
         <div>
           <h2 className="text-lg font-bold mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickActions.map((action) => (
-              <Card
-                key={action.label}
-                className="cursor-pointer hover:shadow-md transition-all border-none"
-                onClick={() => navigate(action.path)}
-              >
+              <Card key={action.label} className="cursor-pointer hover:shadow-md transition-all border-none" onClick={() => navigate(action.path)}>
                 <CardContent className="p-4 flex items-start gap-3">
-                  <div className={`${action.color} p-2 rounded-xl`}>
-                    <action.icon className="h-5 w-5 text-foreground/70" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{action.label}</p>
-                    <p className="text-xs text-muted-foreground">{action.desc}</p>
-                  </div>
+                  <div className={`${action.color} p-2 rounded-xl`}><action.icon className="h-5 w-5 text-foreground/70" /></div>
+                  <div><p className="font-semibold text-sm">{action.label}</p><p className="text-xs text-muted-foreground">{action.desc}</p></div>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
-
         <RecentActivitySection />
       </div>
     </MobileLayout>
@@ -197,7 +155,17 @@ const ShowerDashboard = () => {
 };
 
 const HomePage = () => {
-  const { mode } = useAppMode();
+  const { mode, modeLoading } = useAppMode();
+
+  if (modeLoading) {
+    return (
+      <MobileLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </MobileLayout>
+    );
+  }
 
   if (mode === "choose") return <ModeChooser />;
   return <ShowerDashboard />;

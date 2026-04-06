@@ -1,4 +1,4 @@
-import { Home, Gift, Users, Sparkles, User } from "lucide-react";
+import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, CalendarDays, Package, Shield } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -8,21 +8,27 @@ const fullTabs = [
   { icon: Gift, label: "Registry", path: "/registry" },
   { icon: Users, label: "Guests", path: "/guests" },
   { icon: Sparkles, label: "Predictions", path: "/predictions" },
+  { icon: Mail, label: "Invites", path: "/invites" },
+  { icon: Package, label: "Gifts", path: "/gift-tracker" },
+  { icon: ClipboardList, label: "Planning", path: "/planning" },
+  { icon: MapPin, label: "Vendors", path: "/vendors" },
+  { icon: CalendarDays, label: "Community", path: "/community" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
 const registryTabs = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Gift, label: "Registry", path: "/registry" },
+  { icon: Package, label: "Gifts", path: "/gift-tracker" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
 export const DesktopSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { mode } = useAppMode();
+  const { mode, modeLoading } = useAppMode();
 
-  if (mode === "choose") return null;
+  if (modeLoading || mode === "choose") return null;
 
   const tabs = mode === "registry" ? registryTabs : fullTabs;
 
