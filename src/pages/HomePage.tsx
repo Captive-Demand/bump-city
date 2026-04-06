@@ -50,7 +50,7 @@ const ModeChooser = () => {
       <div className="px-6 pt-16 pb-6 flex flex-col items-center text-center">
         <img src={bumpCityIcon} alt="Bump City" className="h-20 w-20 rounded-2xl mb-3" />
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to <span className="text-primary">Bump City</span> 🎀
+          Welcome to <span className="text-primary">Bump City</span>
         </h1>
         <p className="text-muted-foreground mt-2 text-sm max-w-xs">What would you like to do today?</p>
       </div>
@@ -130,7 +130,7 @@ const ShowerDashboard = () => {
           <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">Baby Shower</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to<br /><span className="text-primary">Bump City</span> 🎀
+          Welcome to<br /><span className="text-primary">Bump City</span>
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">{displayName}'s baby shower hub</p>
       </div>
