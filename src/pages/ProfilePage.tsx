@@ -142,7 +142,7 @@ const ProfilePage = () => {
               )}
             </ImageUpload>
           </div>
-        )
+        )}
 
         <Card className="border-none mb-6">
           <CardContent className="p-4">
