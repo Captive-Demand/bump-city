@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 
-export type ActivityType = "gift-claimed" | "rsvp" | "prediction" | "registry-added" | "guest-invited";
+export type ActivityType = "gift-claimed" | "rsvp" | "prediction" | "registry-added" | "guest-invited" | "invite-sent";
 
 export interface Activity {
   id: string;

@@ -3,8 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search } from "lucide-react";
+import { Users, Plus, Search, Mail, Send } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
@@ -22,6 +23,7 @@ interface Guest {
   plus_one: boolean;
   dietary_notes: string | null;
   email: string | null;
+  invite_sent: boolean | null;
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -36,6 +38,7 @@ const GuestListPage = () => {
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
+  const { setupData } = useAppMode();
   const [search, setSearch] = useState("");
 
   // Add guest form
@@ -47,7 +50,7 @@ const GuestListPage = () => {
     if (!event) return;
     const { data } = await supabase
       .from("guests")
-      .select("id, name, status, plus_one, dietary_notes, email")
+      .select("id, name, status, plus_one, dietary_notes, email, invite_sent")
       .eq("event_id", event.id)
       .order("created_at", { ascending: true });
     setGuests((data as Guest[]) || []);
@@ -77,6 +80,27 @@ const GuestListPage = () => {
     if (error) { toast.error("Failed to add guest"); return; }
     addActivity("guest-invited", `Invited ${newName.trim()}`);
     setNewName(""); setNewEmail(""); setAddOpen(false);
+    fetchGuests();
+  };
+
+  const sendInvite = async (guest: Guest) => {
+    if (!guest.email) {
+      toast.error("No email address for this guest");
+      return;
+    }
+    const honoreeName = setupData.honoreeName || "the parents-to-be";
+    const eventDate = setupData.eventDate
+      ? setupData.eventDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+      : "a date to be announced";
+    const subject = encodeURIComponent(`You're Invited to ${honoreeName}'s Baby Shower! 🎉`);
+    const body = encodeURIComponent(
+      `Hi ${guest.name},\n\nYou're invited to ${honoreeName}'s baby shower on ${eventDate}!\n\nWe'd love for you to join us in celebrating this special occasion.\n\nPlease let us know if you can make it!\n\nWith love,\nThe Bump City Team`
+    );
+    window.open(`mailto:${guest.email}?subject=${subject}&body=${body}`, "_blank");
+
+    await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
+    addActivity("invite-sent", `Invite sent to ${guest.name}`);
+    toast.success(`Invite opened for ${guest.name}`);
     fetchGuests();
   };
 
@@ -162,15 +186,25 @@ const GuestListPage = () => {
                   {guest.dietary_notes && <span className="text-[10px] text-muted-foreground">🍽️ {guest.dietary_notes}</span>}
                 </div>
               </div>
-              <Badge
-                className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
-                onClick={() => {
-                  const next: RSVPStatus = guest.status === "pending" ? "attending" : guest.status === "attending" ? "declined" : "pending";
-                  toggleStatus(guest.id, next);
-                }}
-              >
-                {(statusConfig[guest.status] || statusConfig.pending).label}
-              </Badge>
+              <div className="flex items-center gap-1.5">
+                {guest.email && !guest.invite_sent && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => sendInvite(guest)} title="Send invite">
+                    <Send className="h-3.5 w-3.5 text-primary" />
+                  </Button>
+                )}
+                {guest.invite_sent && (
+                  <span title="Invite sent"><Mail className="h-3.5 w-3.5 text-muted-foreground" /></span>
+                )}
+                <Badge
+                  className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
+                  onClick={() => {
+                    const next: RSVPStatus = guest.status === "pending" ? "attending" : guest.status === "attending" ? "declined" : "pending";
+                    toggleStatus(guest.id, next);
+                  }}
+                >
+                  {(statusConfig[guest.status] || statusConfig.pending).label}
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         ))}
