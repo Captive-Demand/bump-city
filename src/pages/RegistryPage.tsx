@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const categories = ["All", "Essentials", "Nursery", "Clothing", "Toys", "Feeding"];
 
@@ -40,6 +42,12 @@ const RegistryPage = () => {
   const [newCategory, setNewCategory] = useState("Essentials");
   const [newPrice, setNewPrice] = useState("");
   const [newEmoji, setNewEmoji] = useState("🎁");
+
+  // URL import
+  const [urlOpen, setUrlOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [scraping, setScraping] = useState(false);
+  const [scrapedData, setScrapedData] = useState<{ title?: string; image?: string; price?: number } | null>(null);
 
   const fetchItems = async () => {
     if (!event) return;
@@ -87,6 +95,42 @@ const RegistryPage = () => {
     fetchItems();
   };
 
+  const handleScrape = async () => {
+    if (!importUrl.trim()) return;
+    setScraping(true);
+    setScrapedData(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-url", { body: { url: importUrl.trim() } });
+      if (error) throw error;
+      setScrapedData(data);
+      setNewName(data.title || "");
+      setNewPrice(data.price ? String(data.price) : "");
+      toast.success("Product info loaded!");
+    } catch {
+      toast.error("Could not scrape that URL. Try adding manually.");
+    }
+    setScraping(false);
+  };
+
+  const handleAddFromUrl = async () => {
+    if (!event || !user || !newName.trim()) return;
+    const { error } = await supabase.from("registry_items").insert({
+      event_id: event.id,
+      user_id: user.id,
+      name: newName.trim(),
+      category: newCategory,
+      price: parseFloat(newPrice) || 0,
+      emoji: "🔗",
+      external_url: importUrl.trim() || null,
+      image_url: scrapedData?.image || null,
+      source: "url-import",
+    });
+    if (error) { toast.error("Failed to add item"); return; }
+    addActivity("registry-added", `Added "${newName.trim()}" from URL`);
+    setNewName(""); setNewPrice(""); setImportUrl(""); setScrapedData(null); setUrlOpen(false);
+    fetchItems();
+  };
+
   if (loading) {
     return (
       <MobileLayout>
@@ -105,10 +149,51 @@ const RegistryPage = () => {
             <ShoppingBag className="h-5 w-5 text-primary" />
             <h1 className="text-2xl font-bold">Gift Registry</h1>
           </div>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Add</Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Dialog open={urlOpen} onOpenChange={setUrlOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="rounded-full h-8 gap-1"><Link className="h-3.5 w-3.5" /> URL</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>Add from URL</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label>Product URL</Label>
+                    <div className="flex gap-2">
+                      <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
+                      <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
+                    </div>
+                  </div>
+                  {scrapedData && (
+                    <>
+                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-full h-32 object-cover rounded-lg" />}
+                      <div className="space-y-1.5">
+                        <Label>Item name</Label>
+                        <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label>Price ($)</Label>
+                          <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Category</Label>
+                          <Select value={newCategory} onValueChange={setNewCategory}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <Button className="w-full" onClick={handleAddFromUrl} disabled={!newName.trim()}>Add to Registry</Button>
+                    </>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Add</Button>
+              </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Add Registry Item</DialogTitle></DialogHeader>
               <div className="space-y-4">
@@ -139,6 +224,7 @@ const RegistryPage = () => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">{claimedCount} of {items.length} items claimed</p>
         <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
