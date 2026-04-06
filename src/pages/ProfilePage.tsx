@@ -1,10 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useState } from "react";
 
 const ProfilePage = () => {
+  const [giftPref, setGiftPref] = useState("bring-gift");
+  const [clearWrap, setClearWrap] = useState(false);
+
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
@@ -39,6 +45,44 @@ const ProfilePage = () => {
                   <span className="text-sm font-medium">{item.value}</span>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Gifting & RSVP Preferences */}
+        <Card className="border-none mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Gift className="h-4 w-4 text-primary" />
+              <h2 className="font-bold text-sm">Gifting Preferences</h2>
+            </div>
+            <RadioGroup value={giftPref} onValueChange={setGiftPref} className="space-y-2.5">
+              {[
+                { value: "bring-gift", label: "Bring a gift", icon: "🎁" },
+                { value: "no-gifts", label: "No gifts please", icon: "🚫" },
+                { value: "bring-book", label: "Bring a book instead", icon: "📚" },
+              ].map((opt) => (
+                <div key={opt.value} className="flex items-center gap-3">
+                  <RadioGroupItem value={opt.value} id={opt.value} />
+                  <Label htmlFor={opt.value} className="text-sm flex items-center gap-2 cursor-pointer">
+                    <span>{opt.icon}</span>
+                    {opt.label}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+
+            <div className="mt-4 pt-3 border-t border-border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <PackageOpen className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm">Request clear wrapping</span>
+                </div>
+                <Switch checked={clearWrap} onCheckedChange={setClearWrap} />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1 ml-6">
+                So we can play the gift guessing game!
+              </p>
             </div>
           </CardContent>
         </Card>
