@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Users, Plus, Search } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 
 type RSVPStatus = "attending" | "declined" | "pending";
 
@@ -38,8 +39,18 @@ const statusConfig: Record<RSVPStatus, { label: string; className: string }> = {
 };
 
 const GuestListPage = () => {
-  const [search, setSearch] = useState("");
-  const guests = initialGuests;
+  const [guests, setGuests] = useState(initialGuests);
+  const { addActivity } = useActivityFeed();
+
+  const toggleStatus = (id: number, newStatus: RSVPStatus) => {
+    setGuests((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g))
+    );
+    const guest = guests.find((g) => g.id === id);
+    if (guest) {
+      addActivity("rsvp", `${guest.name} RSVP'd — ${newStatus}!`);
+    }
+  };
 
   const filtered = guests.filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
