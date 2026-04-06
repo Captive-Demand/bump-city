@@ -1,0 +1,120 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEvent } from "@/hooks/useEvent";
+import { supabase } from "@/integrations/supabase/client";
+import { Gift, Plus, Check, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+interface GiftReceived {
+  id: string;
+  donor_name: string;
+  item_description: string;
+  thank_you_sent: boolean;
+  created_at: string;
+}
+
+const GiftTrackerPage = () => {
+  const { user } = useAuth();
+  const { event } = useEvent();
+  const [gifts, setGifts] = useState<GiftReceived[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [newDonor, setNewDonor] = useState("");
+  const [newItem, setNewItem] = useState("");
+  const [filter, setFilter] = useState<"all" | "pending" | "sent">("all");
+
+  const fetchGifts = async () => {
+    if (!event) return;
+    const { data } = await supabase.from("gifts_received").select("*").eq("event_id", event.id).order("created_at", { ascending: false });
+    setGifts((data as GiftReceived[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { if (event) fetchGifts(); else setLoading(false); }, [event]);
+
+  const handleAdd = async () => {
+    if (!event || !user || !newDonor.trim() || !newItem.trim()) return;
+    const { error } = await supabase.from("gifts_received").insert({ event_id: event.id, user_id: user.id, donor_name: newDonor.trim(), item_description: newItem.trim() });
+    if (error) { toast.error("Failed to add gift"); return; }
+    setNewDonor(""); setNewItem(""); setAddOpen(false);
+    fetchGifts();
+  };
+
+  const toggleThankYou = async (id: string, current: boolean) => {
+    await supabase.from("gifts_received").update({ thank_you_sent: !current }).eq("id", id);
+    fetchGifts();
+  };
+
+  const filtered = gifts.filter((g) => {
+    if (filter === "pending" && g.thank_you_sent) return false;
+    if (filter === "sent" && !g.thank_you_sent) return false;
+    return g.donor_name.toLowerCase().includes(search.toLowerCase()) || g.item_description.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const pendingCount = gifts.filter((g) => !g.thank_you_sent).length;
+
+  if (loading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
+
+  return (
+    <MobileLayout>
+      <div className="px-6 pt-12 pb-4">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary" /><h1 className="text-2xl font-bold">Gift Tracker</h1></div>
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger asChild><Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Log</Button></DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Log a Gift</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-1.5"><Label>From</Label><Input placeholder="e.g. Aunt Susan" value={newDonor} onChange={(e) => setNewDonor(e.target.value)} /></div>
+                <div className="space-y-1.5"><Label>Gift</Label><Input placeholder="e.g. Baby blanket set" value={newItem} onChange={(e) => setNewItem(e.target.value)} /></div>
+                <Button className="w-full" onClick={handleAdd} disabled={!newDonor.trim() || !newItem.trim()}>Add Gift</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <p className="text-sm text-muted-foreground">{gifts.length} gifts · {pendingCount} thank-you notes pending</p>
+      </div>
+
+      <div className="px-6 flex gap-2 mb-4">
+        {(["all", "pending", "sent"] as const).map((f) => (
+          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all ${filter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{f === "all" ? "All" : f === "pending" ? "Needs Thank You" : "Sent"}</button>
+        ))}
+      </div>
+
+      <div className="px-6 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search gifts..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 rounded-full bg-muted border-none" />
+        </div>
+      </div>
+
+      <div className="px-6 pb-6 space-y-2">
+        {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No gifts logged yet</p>}
+        {filtered.map((gift) => (
+          <Card key={gift.id} className="border-none">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-peach flex items-center justify-center text-lg">🎁</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">{gift.item_description}</p>
+                <p className="text-xs text-muted-foreground">From {gift.donor_name}</p>
+              </div>
+              <Button size="sm" variant={gift.thank_you_sent ? "secondary" : "default"} className="rounded-full text-xs h-8 gap-1" onClick={() => toggleThankYou(gift.id, gift.thank_you_sent)}>
+                <Check className="h-3 w-3" /> {gift.thank_you_sent ? "Sent" : "Thank"}
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </MobileLayout>
+  );
+};
+
+export default GiftTrackerPage;
