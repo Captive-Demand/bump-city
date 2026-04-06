@@ -82,6 +82,27 @@ const GuestListPage = () => {
     fetchGuests();
   };
 
+  const sendInvite = async (guest: Guest) => {
+    if (!guest.email) {
+      toast.error("No email address for this guest");
+      return;
+    }
+    const honoreeName = setupData.honoreeName || "the parents-to-be";
+    const eventDate = setupData.eventDate
+      ? setupData.eventDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+      : "a date to be announced";
+    const subject = encodeURIComponent(`You're Invited to ${honoreeName}'s Baby Shower! 🎉`);
+    const body = encodeURIComponent(
+      `Hi ${guest.name},\n\nYou're invited to ${honoreeName}'s baby shower on ${eventDate}!\n\nWe'd love for you to join us in celebrating this special occasion.\n\nPlease let us know if you can make it!\n\nWith love,\nThe Bump City Team`
+    );
+    window.open(`mailto:${guest.email}?subject=${subject}&body=${body}`, "_blank");
+
+    await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
+    addActivity("invite-sent", `Invite sent to ${guest.name}`);
+    toast.success(`Invite opened for ${guest.name}`);
+    fetchGuests();
+  };
+
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
   const attending = guests.filter((g) => g.status === "attending").length;
   const pending = guests.filter((g) => g.status === "pending").length;
