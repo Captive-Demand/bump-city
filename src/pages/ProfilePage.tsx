@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import ShareInviteButton from "@/components/ShareInviteButton";
+import ImageUpload from "@/components/ImageUpload";
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
