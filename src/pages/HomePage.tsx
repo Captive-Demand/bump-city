@@ -28,6 +28,7 @@ const EventCard = () => {
   const honoreeName = event?.honoree_name || setupData.honoreeName;
   const eventDate = event?.event_date ? new Date(event.event_date) : setupData.eventDate;
   const city = event?.city || setupData.city;
+  const eventImageUrl = (event as any)?.event_image_url;
 
   const daysToGo = eventDate
     ? Math.max(0, Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -40,15 +41,21 @@ const EventCard = () => {
   return (
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative">
+        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative overflow-hidden">
           {daysToGo !== null && (
-            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3">
+            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3 relative z-10">
               ⏰ {daysToGo} DAYS TO GO
             </Badge>
           )}
-          <div className="flex justify-center my-2">
-            <span className="text-5xl">🎉</span>
-          </div>
+          {eventImageUrl ? (
+            <div className="flex justify-center my-2">
+              <img src={eventImageUrl} alt="Event" className="w-full h-36 object-cover rounded-xl" />
+            </div>
+          ) : (
+            <div className="flex justify-center my-2">
+              <span className="text-5xl">🎉</span>
+            </div>
+          )}
         </div>
         <div className="p-5 pt-3">
           <h2 className="text-xl font-bold">{honoreeName ? `${honoreeName}'s Baby Shower` : "Your Baby Shower"}</h2>
