@@ -52,6 +52,8 @@ const GuestListPage = () => {
     }
   };
 
+  const [search, setSearch] = useState("");
+
   const filtered = guests.filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );
