@@ -126,7 +126,7 @@ const ShowerDashboard = () => {
     <MobileLayout>
       <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-12 pb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Baby className="h-6 w-6 text-primary" />
+          <img src={bumpCityIcon} alt="Bump City" className="h-8 w-8 rounded-lg" />
           <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">Baby Shower</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
