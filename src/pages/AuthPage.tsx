@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Baby, Mail, Lock, User } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
+import bumpCityIcon from "@/assets/bump-city-icon.png";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const AuthPage = () => {
     return (
       <MobileLayout hideNav>
         <div className="px-6 pt-16 pb-8 flex flex-col items-center min-h-screen max-w-[500px] mx-auto w-full">
-          <Baby className="h-10 w-10 text-primary mb-3" />
+          <img src={bumpCityIcon} alt="Bump City" className="h-16 w-16 rounded-2xl mb-3" />
           <h1 className="text-2xl font-bold mb-1">Reset Password</h1>
           <p className="text-sm text-muted-foreground mb-8">Enter your email to receive a reset link</p>
           <Card className="w-full border-none">
@@ -98,7 +99,7 @@ const AuthPage = () => {
   return (
     <MobileLayout hideNav>
       <div className="px-6 pt-16 pb-8 flex flex-col items-center min-h-screen max-w-[500px] mx-auto w-full">
-        <Baby className="h-10 w-10 text-primary mb-3" />
+        <img src={bumpCityIcon} alt="Bump City" className="h-16 w-16 rounded-2xl mb-3" />
         <h1 className="text-2xl font-bold mb-1">
           {isSignUp ? "Create Account" : "Welcome Back"} 🎀
         </h1>

@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Baby, Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList } from "lucide-react";
+import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
+import bumpCityIcon from "@/assets/bump-city-icon.png";
 
 const CountdownTimer = ({ dueDate, honoreeName }: { dueDate?: Date; honoreeName?: string }) => {
   const target = dueDate || new Date("2025-08-15");
@@ -47,7 +48,7 @@ const ModeChooser = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-16 pb-6 flex flex-col items-center text-center">
-        <Baby className="h-10 w-10 text-primary mb-3" />
+        <img src={bumpCityIcon} alt="Bump City" className="h-20 w-20 rounded-2xl mb-3" />
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome to <span className="text-primary">Bump City</span> 🎀
         </h1>
@@ -125,7 +126,7 @@ const ShowerDashboard = () => {
     <MobileLayout>
       <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-12 pb-6">
         <div className="flex items-center gap-2 mb-1">
-          <Baby className="h-6 w-6 text-primary" />
+          <img src={bumpCityIcon} alt="Bump City" className="h-8 w-8 rounded-lg" />
           <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">Baby Shower</Badge>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">
