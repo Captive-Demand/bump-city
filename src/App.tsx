@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppModeProvider } from "@/contexts/AppModeContext";
+import { ActivityFeedProvider } from "@/contexts/ActivityFeedContext";
 import HomePage from "./pages/HomePage";
 import RegistryPage from "./pages/RegistryPage";
 import GuestListPage from "./pages/GuestListPage";
@@ -19,16 +20,18 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AppModeProvider>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/setup/shower" element={<ShowerSetupPage />} />
-          <Route path="/setup/registry" element={<RegistrySetupPage />} />
-          <Route path="/registry" element={<RegistryPage />} />
-          <Route path="/guests" element={<GuestListPage />} />
-          <Route path="/predictions" element={<PredictionsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <ActivityFeedProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/setup/shower" element={<ShowerSetupPage />} />
+            <Route path="/setup/registry" element={<RegistrySetupPage />} />
+            <Route path="/registry" element={<RegistryPage />} />
+            <Route path="/guests" element={<GuestListPage />} />
+            <Route path="/predictions" element={<PredictionsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ActivityFeedProvider>
       </AppModeProvider>
     </BrowserRouter>
   </TooltipProvider>
