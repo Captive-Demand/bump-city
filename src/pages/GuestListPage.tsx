@@ -127,8 +127,10 @@ const GuestListPage = () => {
             <Users className="h-5 w-5 text-primary" />
             <h1 className="text-2xl font-bold">Guest List</h1>
           </div>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
-            <DialogTrigger asChild>
+          <div className="flex items-center gap-2">
+            {event && user && <GuestImportDialog eventId={event.id} userId={user.id} onImported={fetchGuests} />}
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
               <Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Add</Button>
             </DialogTrigger>
             <DialogContent>
