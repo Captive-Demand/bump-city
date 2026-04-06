@@ -145,6 +145,7 @@ export type Database = {
           created_at: string
           due_date: string | null
           event_date: string | null
+          event_image_url: string | null
           event_type: string
           gift_note: string | null
           gift_policy: string | null
@@ -163,6 +164,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           event_date?: string | null
+          event_image_url?: string | null
           event_type?: string
           gift_note?: string | null
           gift_policy?: string | null
@@ -181,6 +183,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           event_date?: string | null
+          event_image_url?: string | null
           event_type?: string
           gift_note?: string | null
           gift_policy?: string | null
