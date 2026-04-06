@@ -48,6 +48,7 @@ const ShowerSetupPage = () => {
   const [theme, setTheme] = useState("");
   const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
   const [clearWrapping, setClearWrapping] = useState(false);
+  const [surpriseMode, setSurpriseMode] = useState(false);
   const [giftNote, setGiftNote] = useState("");
 
   const canNext = () => {
@@ -72,6 +73,7 @@ const ShowerSetupPage = () => {
       gift_policy: giftPolicy,
       clear_wrapping: clearWrapping,
       gift_note: giftNote.trim() || null,
+      surprise_mode: surpriseMode,
     });
 
     // Update profile role
@@ -185,6 +187,12 @@ const ShowerSetupPage = () => {
                 <Label htmlFor="note">Custom note for guests (optional)</Label>
                 <Textarea id="note" placeholder="Any special instructions for your guests..." value={giftNote} onChange={(e) => setGiftNote(e.target.value)} maxLength={500} rows={3} />
               </div>
+              {role === "planner" && (
+                <div className="flex items-center justify-between p-4 rounded-xl border border-border">
+                  <div><p className="font-semibold text-sm">🤫 Surprise Mode</p><p className="text-xs text-muted-foreground">Hide shower details from the expectant parent</p></div>
+                  <Switch checked={surpriseMode} onCheckedChange={setSurpriseMode} />
+                </div>
+              )}
             </div>
           )}
         </div>
