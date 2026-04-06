@@ -50,7 +50,7 @@ const GuestListPage = () => {
     if (!event) return;
     const { data } = await supabase
       .from("guests")
-      .select("id, name, status, plus_one, dietary_notes, email")
+      .select("id, name, status, plus_one, dietary_notes, email, invite_sent")
       .eq("event_id", event.id)
       .order("created_at", { ascending: true });
     setGuests((data as Guest[]) || []);
