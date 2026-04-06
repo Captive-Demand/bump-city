@@ -4,6 +4,7 @@ import { Baby, Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardLis
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
+import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 
 const CountdownTimer = ({ dueDate, honoreeName }: { dueDate?: Date; honoreeName?: string }) => {
   const target = dueDate || new Date("2025-08-15");
@@ -95,7 +96,50 @@ const ModeChooser = () => {
   );
 };
 
-/* ── Full shower dashboard ── */
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  "gift-claimed": Gift,
+  "registry-added": Gift,
+  rsvp: Users,
+  prediction: Sparkles,
+  "guest-invited": Users,
+};
+
+const RecentActivitySection = () => {
+  const { activities } = useActivityFeed();
+  const recent = activities.slice(0, 5);
+
+  return (
+    <div>
+      <h2 className="text-lg font-bold mb-3">Recent Activity</h2>
+      <Card className="border-none">
+        <CardContent className="p-4 space-y-3">
+          {recent.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-2">
+              No activity yet — start by adding items to your registry!
+            </p>
+          ) : (
+            recent.map((item) => {
+              const Icon = iconMap[item.type] || Heart;
+              return (
+                <div key={item.id} className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-1.5 rounded-lg">
+                    <Icon className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{item.text}</p>
+                    <p className="text-[10px] text-muted-foreground">{formatRelativeTime(item.timestamp)}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+
 const ShowerDashboard = () => {
   const navigate = useNavigate();
   const { setupData } = useAppMode();
@@ -146,28 +190,7 @@ const ShowerDashboard = () => {
           </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-bold mb-3">Recent Activity</h2>
-          <Card className="border-none">
-            <CardContent className="p-4 space-y-3">
-              {[
-                { text: "Emma claimed the stroller", time: "2h ago", icon: Heart },
-                { text: "Jake RSVP'd — attending!", time: "5h ago", icon: Users },
-                { text: "New prediction added", time: "1d ago", icon: Sparkles },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-1.5 rounded-lg">
-                    <item.icon className="h-3.5 w-3.5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm truncate">{item.text}</p>
-                    <p className="text-[10px] text-muted-foreground">{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
+        <RecentActivitySection />
       </div>
     </MobileLayout>
   );

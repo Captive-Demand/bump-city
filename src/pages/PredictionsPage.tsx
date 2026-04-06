@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Clock, Users } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 
 interface Game {
   id: number;
@@ -68,6 +70,17 @@ const statusColors = {
 };
 
 const PredictionsPage = () => {
+  const [gameList, setGameList] = useState(games);
+  const { addActivity } = useActivityFeed();
+
+  const startGame = (id: number) => {
+    setGameList((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, status: "in-progress" as const } : g))
+    );
+    const game = gameList.find((g) => g.id === id);
+    if (game) addActivity("prediction", `"${game.name}" started 🎉`);
+  };
+
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
@@ -76,13 +89,13 @@ const PredictionsPage = () => {
           <h1 className="text-2xl font-bold">Prediction Portal</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {games.length} predictions & activities ready ✨
+          {gameList.length} predictions & activities ready ✨
         </p>
       </div>
 
       <div className="px-6 space-y-3 pb-6">
-        {games.map((game) => (
-          <Card key={game.id} className="border-none overflow-hidden">
+        {gameList.map((game) => (
+          <Card key={game.id} className={`border-none overflow-hidden ${game.status === "ready" ? "cursor-pointer" : ""}`} onClick={() => game.status === "ready" && startGame(game.id)}>
             <CardContent className="p-0">
               <div className="p-4">
                 <div className="flex items-start gap-3">
