@@ -40,7 +40,7 @@ const EventCard = () => {
   return (
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-br from-primary/15 via-lavender/30 to-peach/20 p-5 pb-3 relative">
+        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative">
           {daysToGo !== null && (
             <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3">
               ⏰ {daysToGo} DAYS TO GO
