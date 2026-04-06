@@ -43,10 +43,8 @@ const RegistryPage = () => {
     const item = items.find((i) => i.id === id);
     if (item) addActivity("gift-claimed", `You claimed "${item.name}"`);
   };
-    ? registryItems
-    : registryItems.filter((item) => item.category === activeCategory);
 
-  const claimedCount = registryItems.filter((i) => i.claimed).length;
+
 
   return (
     <MobileLayout>
@@ -56,14 +54,14 @@ const RegistryPage = () => {
           <h1 className="text-2xl font-bold">Gift Registry</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {claimedCount} of {registryItems.length} items claimed
+          {claimedCount} of {items.length} items claimed
         </p>
 
         {/* Progress */}
         <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
           <div
             className="h-full bg-primary rounded-full transition-all"
-            style={{ width: `${(claimedCount / registryItems.length) * 100}%` }}
+            style={{ width: `${(claimedCount / items.length) * 100}%` }}
           />
         </div>
       </div>
@@ -110,7 +108,7 @@ const RegistryPage = () => {
                   <span className="text-[10px] font-medium">{item.claimedBy}</span>
                 </div>
               ) : (
-                <Button size="sm" className="rounded-full text-xs h-8">
+                <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>
                   Claim
                 </Button>
               )}
