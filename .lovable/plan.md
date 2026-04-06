@@ -1,41 +1,52 @@
 
 
-# Make Recent Activity Dynamic (Tied to Real App Events)
+# Make the App Responsive for Desktop
 
-## Current State
-The "Recent Activity" section on the HomePage is fully hardcoded — three static items with fake names and times. There's no database connected yet, so we can't pull from server-side event logs.
+## Problem
+The entire app is locked to a 430px-wide mobile column centered on screen. On desktop, users see a narrow strip with wasted space on both sides.
 
 ## Approach
-Since there's no backend yet, we'll create a **client-side activity feed system** using React context. Real user actions within the app (claiming a registry item, submitting an RSVP, adding a prediction) will push events into this feed, and the HomePage will render them live.
+Convert the layout to be adaptive: on small screens it fills the viewport naturally; on larger screens (768px+) it switches to a two-column or wider layout that uses the available space. The bottom nav becomes a sidebar on desktop.
 
-When Lovable Cloud / Supabase is connected later, this context can be swapped to read from an `activity_log` database table instead.
+## Changes
 
-## What Changes
+### 1. Replace `MobileLayout` with a responsive `AppLayout`
+**File: `src/components/layout/MobileLayout.tsx`**
+- Remove the fixed `max-w-[430px]` constraint
+- On mobile (<768px): full-width layout with bottom nav, same as today
+- On desktop (>=768px): sidebar nav on the left (vertical icon+label list), main content fills remaining width with a comfortable max-width (~1024px), centered
 
-### 1. New file: `src/contexts/ActivityFeedContext.tsx`
-- Context that holds an array of activity events: `{ id, type, text, icon, timestamp }`
-- `addActivity(type, text)` function exposed to any component
-- Events stored in state (and optionally `localStorage` so they persist across refreshes)
-- Types: `gift-claimed`, `rsvp`, `prediction`, `registry-added`, `guest-invited`
+### 2. Convert `BottomNav` to a responsive nav
+**File: `src/components/layout/BottomNav.tsx`**
+- On mobile: stays as a fixed bottom bar (unchanged)
+- On desktop: renders as a vertical sidebar (left side, ~80px wide) with the same icons stacked vertically
+- Use the `useIsMobile()` hook to switch between the two renderings
 
-### 2. Modify: `src/pages/HomePage.tsx`
-- Replace the hardcoded activity array with `useActivityFeed()` hook
-- Show "No activity yet" empty state when the feed is empty
-- Render relative timestamps from real `Date` objects
+### 3. Update page content to use wider layouts on desktop
+**File: `src/pages/HomePage.tsx`**
+- Quick Actions grid: 2 cols on mobile, 4 cols on desktop
+- Content sections get reasonable max-widths and padding
 
-### 3. Modify: `src/App.tsx`
-- Wrap app in `ActivityFeedProvider`
+**Other pages** (`RegistryPage`, `GuestListPage`, `PredictionsPage`, `ProfilePage`):
+- Allow content to expand beyond 430px on desktop
+- Use responsive grid columns where applicable (e.g., registry items 2-col mobile, 3-4 col desktop)
 
-### 4. Modify pages that generate events
-- `src/pages/RegistryPage.tsx` — log activity when an item is added/claimed
-- `src/pages/GuestListPage.tsx` — log activity when a guest RSVPs
-- `src/pages/PredictionsPage.tsx` — log activity when a prediction is submitted
+### 4. Setup wizard pages
+**Files: `ShowerSetupPage.tsx`, `RegistrySetupPage.tsx`**
+- Center the wizard card with a max-width (~500px) on desktop — keeps the focused feel
+- No sidebar nav shown during setup (already uses `hideNav`)
 
-### 5. Future (when backend is added)
-- Create an `activity_log` table in Supabase
-- Replace context reads with a query to the table
-- Write events server-side via insert
+## Technical Details
+- Use existing `useIsMobile()` hook from `src/hooks/use-mobile.tsx`
+- Tailwind responsive prefixes (`md:`) for all breakpoint changes
+- No new dependencies needed
 
-## Empty State
-When there are no activities yet, show a friendly message like "No activity yet — start by adding items to your registry!" instead of a blank section.
+## Files to Change
+- `src/components/layout/MobileLayout.tsx` — remove 430px cap, add responsive container
+- `src/components/layout/BottomNav.tsx` — add desktop sidebar variant
+- `src/pages/HomePage.tsx` — responsive grids
+- `src/pages/RegistryPage.tsx` — wider content layout
+- `src/pages/GuestListPage.tsx` — wider content layout
+- `src/pages/PredictionsPage.tsx` — wider content layout
+- `src/pages/ProfilePage.tsx` — wider content layout
 
