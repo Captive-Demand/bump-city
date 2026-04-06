@@ -21,6 +21,8 @@ import PlanningPage from "./pages/PlanningPage";
 import VendorDirectoryPage from "./pages/VendorDirectoryPage";
 import CommunityEventsPage from "./pages/CommunityEventsPage";
 import AdminPage from "./pages/AdminPage";
+import JoinEventPage from "./pages/JoinEventPage";
+import GuestEventPage from "./pages/GuestEventPage";
 import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +43,8 @@ const App = () => (
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
+              <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
               <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
               <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
               <Route path="/setup/registry" element={<ProtectedRoute><RegistrySetupPage /></ProtectedRoute>} />
