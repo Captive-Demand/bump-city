@@ -15,6 +15,12 @@ import ShowerSetupPage from "./pages/ShowerSetupPage";
 import RegistrySetupPage from "./pages/RegistrySetupPage";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import InviteBuilderPage from "./pages/InviteBuilderPage";
+import GiftTrackerPage from "./pages/GiftTrackerPage";
+import PlanningPage from "./pages/PlanningPage";
+import VendorDirectoryPage from "./pages/VendorDirectoryPage";
+import CommunityEventsPage from "./pages/CommunityEventsPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +47,12 @@ const App = () => (
               <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
               <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
               <Route path="/predictions" element={<ProtectedRoute><PredictionsPage /></ProtectedRoute>} />
+              <Route path="/invites" element={<ProtectedRoute><InviteBuilderPage /></ProtectedRoute>} />
+              <Route path="/gift-tracker" element={<ProtectedRoute><GiftTrackerPage /></ProtectedRoute>} />
+              <Route path="/planning" element={<ProtectedRoute><PlanningPage /></ProtectedRoute>} />
+              <Route path="/vendors" element={<ProtectedRoute><VendorDirectoryPage /></ProtectedRoute>} />
+              <Route path="/community" element={<ProtectedRoute><CommunityEventsPage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
