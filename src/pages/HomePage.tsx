@@ -1,0 +1,120 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Baby, Calendar, Gift, Users, Gamepad2, Heart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MobileLayout } from "@/components/layout/MobileLayout";
+
+const CountdownTimer = () => {
+  const dueDate = new Date("2025-08-15");
+  const now = new Date();
+  const diff = dueDate.getTime() - now.getTime();
+  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  const weeks = Math.floor(days / 7);
+  const remainingDays = days % 7;
+
+  return (
+    <div className="bg-gradient-to-br from-primary/20 via-lavender/50 to-peach/50 rounded-2xl p-6 text-center">
+      <p className="text-sm font-medium text-muted-foreground mb-1">Baby arriving in</p>
+      <div className="flex items-center justify-center gap-4">
+        <div className="text-center">
+          <p className="text-4xl font-bold text-primary">{weeks}</p>
+          <p className="text-xs text-muted-foreground font-medium">weeks</p>
+        </div>
+        <span className="text-2xl text-primary/40 font-light">&</span>
+        <div className="text-center">
+          <p className="text-4xl font-bold text-primary">{remainingDays}</p>
+          <p className="text-xs text-muted-foreground font-medium">days</p>
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground mt-3">Due: August 15, 2025</p>
+    </div>
+  );
+};
+
+const quickActions = [
+  { icon: Gift, label: "Registry", desc: "12 items", path: "/registry", color: "bg-peach" },
+  { icon: Users, label: "Guests", desc: "24 invited", path: "/guests", color: "bg-lavender" },
+  { icon: Gamepad2, label: "Games", desc: "5 planned", path: "/games", color: "bg-mint" },
+  { icon: Calendar, label: "Schedule", desc: "Aug 3", path: "/", color: "bg-warm" },
+];
+
+const HomePage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <MobileLayout>
+      {/* Header */}
+      <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-12 pb-6">
+        <div className="flex items-center gap-2 mb-1">
+          <Baby className="h-6 w-6 text-primary" />
+          <Badge variant="secondary" className="bg-lavender text-lavender-foreground text-[10px]">
+            Baby Shower
+          </Badge>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome to
+          <br />
+          <span className="text-primary">Bump City</span> 🎀
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Sarah & Mike's baby shower hub
+        </p>
+      </div>
+
+      <div className="px-6 space-y-6">
+        {/* Countdown */}
+        <CountdownTimer />
+
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-lg font-bold mb-3">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action) => (
+              <Card
+                key={action.label}
+                className="cursor-pointer hover:shadow-md transition-all border-none"
+                onClick={() => navigate(action.path)}
+              >
+                <CardContent className="p-4 flex items-start gap-3">
+                  <div className={`${action.color} p-2 rounded-xl`}>
+                    <action.icon className="h-5 w-5 text-foreground/70" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{action.label}</p>
+                    <p className="text-xs text-muted-foreground">{action.desc}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div>
+          <h2 className="text-lg font-bold mb-3">Recent Activity</h2>
+          <Card className="border-none">
+            <CardContent className="p-4 space-y-3">
+              {[
+                { text: "Emma claimed the stroller", time: "2h ago", icon: Heart },
+                { text: "Jake RSVP'd — attending!", time: "5h ago", icon: Users },
+                { text: "New game added: Name That Tune", time: "1d ago", icon: Gamepad2 },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="bg-primary/10 p-1.5 rounded-lg">
+                    <item.icon className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm truncate">{item.text}</p>
+                    <p className="text-[10px] text-muted-foreground">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </MobileLayout>
+  );
+};
+
+export default HomePage;
