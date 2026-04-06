@@ -2,6 +2,7 @@ import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, Calenda
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAppMode } from "@/contexts/AppModeContext";
+import appIcon from "@/assets/Bump-City-Icon.png";
 
 const fullTabs = [
   { icon: Home, label: "Home", path: "/" },
@@ -34,7 +35,9 @@ export const DesktopSidebar = () => {
 
   return (
     <aside className="w-20 min-h-screen bg-card border-r border-border flex flex-col items-center py-8 gap-2 shrink-0">
-      <div className="mb-6 text-primary font-bold text-lg">🎀</div>
+      <div className="mb-6">
+        <img src={appIcon} alt="Bump City" className="h-10 w-10" />
+      </div>
       {tabs.map((tab) => {
         const isActive = location.pathname === tab.path;
         return (
