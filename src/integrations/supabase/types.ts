@@ -571,6 +571,10 @@ export type Database = {
         Returns: boolean
       }
       increment_invite_use: { Args: { code_text: string }; Returns: string }
+      is_event_member: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
