@@ -1,11 +1,12 @@
 import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 
-interface MobileLayoutProps {
+export interface MobileLayoutProps {
   children: ReactNode;
+  hideNav?: boolean;
 }
 
-export const MobileLayout = ({ children }: MobileLayoutProps) => {
+export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
   return (
     <div className="flex justify-center min-h-screen bg-muted/50">
       <div className="w-full max-w-[430px] min-h-screen bg-background relative flex flex-col shadow-2xl">
