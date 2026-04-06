@@ -5,13 +5,14 @@ import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 
-const CountdownTimer = () => {
-  const dueDate = new Date("2025-08-15");
+const CountdownTimer = ({ dueDate, honoreeName }: { dueDate?: Date; honoreeName?: string }) => {
+  const target = dueDate || new Date("2025-08-15");
   const now = new Date();
-  const diff = dueDate.getTime() - now.getTime();
+  const diff = target.getTime() - now.getTime();
   const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   const weeks = Math.floor(days / 7);
   const remainingDays = days % 7;
+  const dateLabel = `Due: ${target.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
 
   return (
     <div className="bg-gradient-to-br from-primary/20 via-lavender/50 to-peach/50 rounded-2xl p-6 text-center">
@@ -27,7 +28,7 @@ const CountdownTimer = () => {
           <p className="text-xs text-muted-foreground font-medium">days</p>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mt-3">Due: August 15, 2025</p>
+      <p className="text-xs text-muted-foreground mt-3">{dateLabel}</p>
     </div>
   );
 };
@@ -41,7 +42,6 @@ const quickActions = [
 
 /* ── Choose-mode landing ── */
 const ModeChooser = () => {
-  const { setMode } = useAppMode();
   const navigate = useNavigate();
 
   return (
@@ -59,7 +59,7 @@ const ModeChooser = () => {
       <div className="px-6 space-y-4 pb-10">
         <Card
           className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => { setMode("shower"); navigate("/"); }}
+          onClick={() => navigate("/setup/shower")}
         >
           <CardContent className="p-5 flex items-start gap-4">
             <div className="bg-lavender p-3 rounded-2xl shrink-0">
@@ -76,7 +76,7 @@ const ModeChooser = () => {
 
         <Card
           className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
-          onClick={() => { setMode("registry"); navigate("/registry"); }}
+          onClick={() => navigate("/setup/registry")}
         >
           <CardContent className="p-5 flex items-start gap-4">
             <div className="bg-peach p-3 rounded-2xl shrink-0">
@@ -98,6 +98,8 @@ const ModeChooser = () => {
 /* ── Full shower dashboard ── */
 const ShowerDashboard = () => {
   const navigate = useNavigate();
+  const { setupData } = useAppMode();
+  const displayName = setupData.honoreeName || "Your";
 
   return (
     <MobileLayout>
@@ -114,12 +116,12 @@ const ShowerDashboard = () => {
           <span className="text-primary">Bump City</span> 🎀
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Sarah & Mike's baby shower hub
+          {displayName}'s baby shower hub
         </p>
       </div>
 
       <div className="px-6 space-y-6">
-        <CountdownTimer />
+        <CountdownTimer dueDate={setupData.dueDate} honoreeName={setupData.honoreeName} />
 
         <div>
           <h2 className="text-lg font-bold mb-3">Quick Actions</h2>
