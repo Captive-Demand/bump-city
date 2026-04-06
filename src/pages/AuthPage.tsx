@@ -49,7 +49,7 @@ const AuthPage = () => {
       toast.error(error.message);
     } else if (data.session) {
       toast.success("Account created! Welcome to Bump City!");
-      navigate("/");
+      navigate(redirectTo);
     } else {
       toast.success("Check your email to verify your account!");
     }
