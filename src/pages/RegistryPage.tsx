@@ -9,16 +9,16 @@ import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 const categories = ["All", "Essentials", "Nursery", "Clothing", "Toys", "Feeding"];
 
 const registryItems = [
-  { id: 1, name: "Baby Stroller", category: "Essentials", price: 299, claimed: true, claimedBy: "Emma", emoji: "🍼" },
+  { id: 1, name: "Baby Stroller", category: "Essentials", price: 299, claimed: false, claimedBy: null, emoji: "🍼" },
   { id: 2, name: "Crib Bedding Set", category: "Nursery", price: 89, claimed: false, claimedBy: null, emoji: "🛏️" },
-  { id: 3, name: "Onesie Pack (6)", category: "Clothing", price: 35, claimed: true, claimedBy: "Lisa", emoji: "👶" },
+  { id: 3, name: "Onesie Pack (6)", category: "Clothing", price: 35, claimed: false, claimedBy: null, emoji: "👶" },
   { id: 4, name: "Diaper Bag", category: "Essentials", price: 65, claimed: false, claimedBy: null, emoji: "👜" },
   { id: 5, name: "Stuffed Giraffe", category: "Toys", price: 25, claimed: false, claimedBy: null, emoji: "🦒" },
-  { id: 6, name: "Bottle Warmer", category: "Feeding", price: 45, claimed: true, claimedBy: "Jake", emoji: "🍶" },
+  { id: 6, name: "Bottle Warmer", category: "Feeding", price: 45, claimed: false, claimedBy: null, emoji: "🍶" },
   { id: 7, name: "Mobile for Crib", category: "Nursery", price: 40, claimed: false, claimedBy: null, emoji: "🌙" },
   { id: 8, name: "Swaddle Blankets", category: "Clothing", price: 28, claimed: false, claimedBy: null, emoji: "🧸" },
   { id: 9, name: "High Chair", category: "Feeding", price: 120, claimed: false, claimedBy: null, emoji: "🪑" },
-  { id: 10, name: "Baby Monitor", category: "Essentials", price: 150, claimed: true, claimedBy: "Mom", emoji: "📱" },
+  { id: 10, name: "Baby Monitor", category: "Essentials", price: 150, claimed: false, claimedBy: null, emoji: "📱" },
   { id: 11, name: "Play Mat", category: "Toys", price: 55, claimed: false, claimedBy: null, emoji: "🎨" },
   { id: 12, name: "Rocking Chair", category: "Nursery", price: 200, claimed: false, claimedBy: null, emoji: "🪑" },
 ];
