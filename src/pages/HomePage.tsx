@@ -6,6 +6,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
+import ShareInviteButton from "@/components/ShareInviteButton";
 
 const CountdownTimer = ({ dueDate, honoreeName }: { dueDate?: Date; honoreeName?: string }) => {
   const target = dueDate || new Date("2025-08-15");
@@ -132,7 +133,10 @@ const ShowerDashboard = () => {
         <h1 className="text-3xl font-bold tracking-tight">
           Welcome to<br /><span className="text-primary">Bump City</span>
         </h1>
-        <p className="text-muted-foreground mt-1 text-sm">{displayName}'s baby shower hub</p>
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground mt-1 text-sm">{displayName}'s baby shower hub</p>
+          <ShareInviteButton />
+        </div>
       </div>
       <div className="px-6 space-y-6">
         <CountdownTimer dueDate={setupData.dueDate} honoreeName={setupData.honoreeName} />

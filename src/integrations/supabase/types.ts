@@ -106,6 +106,38 @@ export type Database = {
         }
         Relationships: []
       }
+      event_members: {
+        Row: {
+          event_id: string
+          id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_members_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           city: string | null
@@ -250,6 +282,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          event_id: string
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          use_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          event_id: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          use_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          use_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_codes_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
@@ -497,6 +570,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_invite_use: { Args: { code_text: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import bumpCityIcon from "@/assets/bump-city-icon.png";
 
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -27,7 +29,7 @@ const AuthPage = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      navigate("/");
+      navigate(redirectTo);
     }
   };
 
@@ -47,7 +49,7 @@ const AuthPage = () => {
       toast.error(error.message);
     } else if (data.session) {
       toast.success("Account created! Welcome to Bump City!");
-      navigate("/");
+      navigate(redirectTo);
     } else {
       toast.success("Check your email to verify your account!");
     }
