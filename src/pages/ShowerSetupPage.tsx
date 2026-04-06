@@ -49,7 +49,6 @@ const ShowerSetupPage = () => {
   const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
   const [clearWrapping, setClearWrapping] = useState(false);
   const [surpriseMode, setSurpriseMode] = useState(false);
-  const [clearWrapping, setClearWrapping] = useState(false);
   const [giftNote, setGiftNote] = useState("");
 
   const canNext = () => {
