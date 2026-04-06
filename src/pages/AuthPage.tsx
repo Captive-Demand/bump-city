@@ -34,7 +34,7 @@ const AuthPage = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,6 +45,9 @@ const AuthPage = () => {
     setLoading(false);
     if (error) {
       toast.error(error.message);
+    } else if (data.session) {
+      toast.success("Account created! Welcome to Bump City!");
+      navigate("/");
     } else {
       toast.success("Check your email to verify your account!");
     }
