@@ -16,6 +16,7 @@ export interface EventData {
   surprise_mode: boolean;
   registry_name: string | null;
   registry_private: boolean;
+  event_image_url: string | null;
 }
 
 export const useEvent = () => {
