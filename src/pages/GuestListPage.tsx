@@ -193,7 +193,7 @@ const GuestListPage = () => {
                   </Button>
                 )}
                 {guest.invite_sent && (
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" title="Invite sent" />
+                  <span title="Invite sent"><Mail className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 )}
                 <Badge
                   className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
