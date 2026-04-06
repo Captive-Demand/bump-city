@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, ShoppingBag } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 
 const categories = ["All", "Essentials", "Nursery", "Clothing", "Toys", "Feeding"];
 
@@ -24,8 +25,24 @@ const registryItems = [
 
 const RegistryPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [items, setItems] = useState(registryItems);
+  const { addActivity } = useActivityFeed();
 
   const filtered = activeCategory === "All"
+    ? items
+    : items.filter((item) => item.category === activeCategory);
+
+  const claimedCount = items.filter((i) => i.claimed).length;
+
+  const handleClaim = (id: number) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, claimed: true, claimedBy: "You" } : item
+      )
+    );
+    const item = items.find((i) => i.id === id);
+    if (item) addActivity("gift-claimed", `You claimed "${item.name}"`);
+  };
     ? registryItems
     : registryItems.filter((item) => item.category === activeCategory);
 
