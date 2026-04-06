@@ -28,6 +28,7 @@ const EventCard = () => {
   const honoreeName = event?.honoree_name || setupData.honoreeName;
   const eventDate = event?.event_date ? new Date(event.event_date) : setupData.eventDate;
   const city = event?.city || setupData.city;
+  const eventImageUrl = (event as any)?.event_image_url;
 
   const daysToGo = eventDate
     ? Math.max(0, Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -40,15 +41,21 @@ const EventCard = () => {
   return (
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative">
+        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative overflow-hidden">
           {daysToGo !== null && (
-            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3">
+            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3 relative z-10">
               ⏰ {daysToGo} DAYS TO GO
             </Badge>
           )}
-          <div className="flex justify-center my-2">
-            <span className="text-5xl">🎉</span>
-          </div>
+          {eventImageUrl ? (
+            <div className="flex justify-center my-2">
+              <img src={eventImageUrl} alt="Event" className="w-full h-36 object-cover rounded-xl" />
+            </div>
+          ) : (
+            <div className="flex justify-center my-2">
+              <span className="text-5xl">🎉</span>
+            </div>
+          )}
         </div>
         <div className="p-5 pt-3">
           <h2 className="text-xl font-bold">{honoreeName ? `${honoreeName}'s Baby Shower` : "Your Baby Shower"}</h2>
@@ -227,6 +234,7 @@ const ModeChooser = () => {
 const ShowerDashboard = () => {
   const { user } = useAuth();
   const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
+  const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
     <MobileLayout>
@@ -234,11 +242,15 @@ const ShowerDashboard = () => {
         {/* Header with greeting and notification */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">
-                {displayName.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">{getGreeting()},</p>
               <h1 className="text-xl font-bold leading-tight">{displayName}!</h1>

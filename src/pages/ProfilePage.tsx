@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import ShareInviteButton from "@/components/ShareInviteButton";
+import ImageUpload from "@/components/ImageUpload";
 
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
@@ -37,6 +38,20 @@ const ProfilePage = () => {
 
   const displayName = user?.user_metadata?.display_name || user?.email || "User";
   const initial = displayName.charAt(0).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url;
+
+  const handleAvatarUploaded = async (url: string) => {
+    await supabase.auth.updateUser({ data: { avatar_url: url } });
+    // Update profile table too
+    if (user) await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+  };
+
+  const handleEventImageUploaded = async (url: string) => {
+    if (!event) return;
+    await supabase.from("events").update({ event_image_url: url } as any).eq("id", event.id);
+    refetch();
+    toast.success("Event image updated!");
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -87,14 +102,47 @@ const ProfilePage = () => {
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
-            <span className="text-2xl font-bold text-primary-foreground">{initial}</span>
-          </div>
+          <ImageUpload
+            currentUrl={avatarUrl}
+            folder="avatars"
+            onUploaded={handleAvatarUploaded}
+            className="w-16 h-16 rounded-full shrink-0"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
+                <span className="text-2xl font-bold text-primary-foreground">{initial}</span>
+              </div>
+            )}
+          </ImageUpload>
           <div>
             <h1 className="text-xl font-bold">{displayName}</h1>
             <p className="text-sm text-muted-foreground">{event?.event_type === "shower" ? "Shower Planner 💕" : "Registry Builder 🎁"}</p>
           </div>
         </div>
+
+        {/* Event Image */}
+        {event && (
+          <div className="mb-6">
+            <ImageUpload
+              currentUrl={(event as any).event_image_url}
+              folder="event-images"
+              onUploaded={handleEventImageUploaded}
+              className="w-full h-40 rounded-2xl overflow-hidden"
+              overlayClassName="rounded-2xl"
+            >
+              {(event as any).event_image_url ? (
+                <img src={(event as any).event_image_url} alt="Event" className="w-full h-40 object-cover rounded-2xl" />
+              ) : (
+                <div className="w-full h-40 bg-gradient-to-br from-primary/20 via-lavender/30 to-peach/20 rounded-2xl flex flex-col items-center justify-center">
+                  <span className="text-3xl mb-1">📷</span>
+                  <p className="text-sm text-muted-foreground font-medium">Add event photo</p>
+                </div>
+              )}
+            </ImageUpload>
+          </div>
+        )}
 
         <Card className="border-none mb-6">
           <CardContent className="p-4">
