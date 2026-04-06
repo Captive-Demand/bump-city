@@ -38,6 +38,20 @@ const ProfilePage = () => {
 
   const displayName = user?.user_metadata?.display_name || user?.email || "User";
   const initial = displayName.charAt(0).toUpperCase();
+  const avatarUrl = user?.user_metadata?.avatar_url;
+
+  const handleAvatarUploaded = async (url: string) => {
+    await supabase.auth.updateUser({ data: { avatar_url: url } });
+    // Update profile table too
+    if (user) await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+  };
+
+  const handleEventImageUploaded = async (url: string) => {
+    if (!event) return;
+    await supabase.from("events").update({ event_image_url: url } as any).eq("id", event.id);
+    refetch();
+    toast.success("Event image updated!");
+  };
 
   const handleSignOut = async () => {
     await signOut();
