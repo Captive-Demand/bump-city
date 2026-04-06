@@ -148,6 +148,7 @@ const GuestListPage = () => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">{attending} attending · {pending} pending · {guests.length} total</p>
       </div>
