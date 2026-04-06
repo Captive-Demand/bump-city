@@ -186,15 +186,25 @@ const GuestListPage = () => {
                   {guest.dietary_notes && <span className="text-[10px] text-muted-foreground">🍽️ {guest.dietary_notes}</span>}
                 </div>
               </div>
-              <Badge
-                className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
-                onClick={() => {
-                  const next: RSVPStatus = guest.status === "pending" ? "attending" : guest.status === "attending" ? "declined" : "pending";
-                  toggleStatus(guest.id, next);
-                }}
-              >
-                {(statusConfig[guest.status] || statusConfig.pending).label}
-              </Badge>
+              <div className="flex items-center gap-1.5">
+                {guest.email && !guest.invite_sent && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => sendInvite(guest)} title="Send invite">
+                    <Send className="h-3.5 w-3.5 text-primary" />
+                  </Button>
+                )}
+                {guest.invite_sent && (
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" title="Invite sent" />
+                )}
+                <Badge
+                  className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
+                  onClick={() => {
+                    const next: RSVPStatus = guest.status === "pending" ? "attending" : guest.status === "attending" ? "declined" : "pending";
+                    toggleStatus(guest.id, next);
+                  }}
+                >
+                  {(statusConfig[guest.status] || statusConfig.pending).label}
+                </Badge>
+              </div>
             </CardContent>
           </Card>
         ))}
