@@ -1,113 +1,39 @@
 
 
-# Tiffany's Requested Changes from Wireframe Review
+# Changes from Check-In Call (March 24, 2026)
 
-Based on the kickoff conversation, here are the changes Tiffany (Bump City) requested while reviewing the wireframes, and how they map to updates in the current app.
+## What Tiffany Requested
 
----
+From the call transcript, Tiffany raised two key changes:
 
-## Changes to Implement
+### 1. Registry as a Standalone Experience
+Tiffany wants the registry to be accessible independently — not locked behind the baby shower planning flow. Users who just want a registry (without planning a shower) should be able to do so. The registry should work as its own product offering alongside the full shower planning experience.
 
-### 1. Rename "Games" to "Predictions" (or "Prediction Portal")
-Tiffany explicitly said "Games" feels wrong for what are really predictions and crowdsourcing activities. She suggested "Prediction Portal" or similar premium-sounding language. This affects:
-- Bottom nav tab label and icon
-- GamesPage header and content
-- HomePage quick actions card
-- Route path (optionally `/predictions` instead of `/games`)
-
-### 2. Two User Roles at Onboarding
-Users should identify as either a **planner** (planning for someone else) or the **expectant parent** (planning for themselves / managing registry). The experience adapts based on selection:
-- Planner sees: invite builder, event planning tools, vendor directory
-- Expectant parent sees: registry management, gift tracker
-- Both can see: community events, predictions
-- Add an onboarding flow screen after signup with role selection
-
-### 3. Add Gifting Settings to RSVP/Event Config
-Tiffany wants gifting preferences on the invite/RSVP settings (not just dietary restrictions):
-- "Bring a gift" / "No gifts please" / "Bring a book instead"
-- Wrapping preferences (e.g., clear wrapping)
-- Custom gifting notes
-- Add these options to the event settings or a new RSVP settings section on ProfilePage
-
-### 4. Location-Based Experience (Nashville-first)
-- Add city/location selection during onboarding
-- Nashville users get full vendor directory and local resources
-- Non-Nashville users get core features (registry, invites, predictions) but limited local content
-- Drop "Nashville" from branding — just "Bump City"
-
-### 5. Vendor Directory for Event Planning
-- Local vendors for baby showers: balloons, cakes, event spaces, photographers
-- Separate from registry service providers (night nurses, doulas, etc.)
-- Nashville-specific initially, expandable later
-- Add a vendors/resources section within the event planning area
-
-### 6. Gift Tracker
-Tiffany loved the gift tracker concept — log who gave what at the shower, track shipped items:
-- Scan/log gifts received
-- Track thank-you note status
-- Add as a feature within the registry or as its own section
-
-### 7. Download Incentive with Barcode/Gift Card
-- Show a redeemable coupon/barcode upon app download
-- Integrates with Shopify gift cards
-- Admin can customize the incentive amount
-- Same mechanism for prediction game winners (gift card rewards)
-
-### 8. Community Events Calendar
-- Bump City store events, partner brand events, free classes
-- Users opt in to push notifications for events
-- Tied to location selection (Nashville gets Bump City events)
-
-### 9. Admin Panel (for Tiffany)
-- Manage custom registry items (local vendor offerings)
-- Update download incentive/rewards
-- Upload vendor lists
-- Manage community event calendar
+### 2. "Building a Registry" Option on the Homepage
+Tiffany specifically said: *"on this homepage where I say I'm planning a baby shower, maybe we just give an option to building a registry"* — a second entry point that bypasses the shower planning flow entirely.
 
 ---
 
-## Proposed Implementation Order
+## Technical Plan
 
-**Phase A — Quick UI updates (current sprint):**
-1. Rename "Games" tab/page to "Predictions" everywhere
-2. Add gifting settings UI to the profile/event settings page
-3. Update HomePage to reflect new terminology
+### Step 1: Update HomePage with dual entry paths
+Modify `src/pages/HomePage.tsx` to present two clear options at the top:
+- **"I'm planning a baby shower"** — enters the full app experience (current flow)
+- **"I'm building a registry"** — goes directly to the registry experience
 
-**Phase B — Onboarding & Roles:**
-4. Build onboarding flow with role selection (planner vs. parent)
-5. Add location/city selection screen
-6. Conditionally show/hide features based on role
+This replaces or augments the current welcome header with a simple choice UI using two prominent cards/buttons.
 
-**Phase C — New Features:**
-7. Gift tracker page/section
-8. Vendor directory (event planning vendors)
-9. Community events calendar
-10. Download incentive/coupon screen
+### Step 2: Create a standalone Registry landing route
+Add a `/registry-standalone` or similar route in `src/App.tsx` that renders the registry page without the full shower context — no countdown, no guest list nav emphasis, just registry-focused navigation.
 
-**Phase D — Backend & Admin:**
-11. Admin panel for managing vendors, incentives, custom registry items
-12. Shopify gift card integration
-13. Push notification opt-in flow
+### Step 3: Adjust BottomNav conditionally
+When a user enters via the "registry only" path, the bottom nav could simplify to show only relevant tabs (Registry, Profile) rather than the full 5-tab set. This can be managed with a simple context/state flag.
 
 ---
 
-## Technical Details
-
-### Files to modify immediately (Phase A):
-- `src/components/layout/BottomNav.tsx` — rename "Games" tab to "Predictions", swap icon
-- `src/pages/GamesPage.tsx` — rename to `PredictionsPage.tsx`, update header text
-- `src/pages/HomePage.tsx` — update quick actions label from "Games" to "Predictions"
-- `src/App.tsx` — update route from `/games` to `/predictions`
-- `src/pages/ProfilePage.tsx` — add gifting settings section
-
-### New files for Phase B:
-- `src/pages/OnboardingPage.tsx` — role selection + city selection
-- `src/components/onboarding/RoleSelector.tsx`
-- `src/components/onboarding/CitySelector.tsx`
-
-### New files for Phase C:
-- `src/pages/GiftTrackerPage.tsx`
-- `src/pages/VendorDirectoryPage.tsx`
-- `src/pages/CommunityEventsPage.tsx`
-- `src/components/registry/GiftingSettings.tsx`
+## Files to Change
+- `src/pages/HomePage.tsx` — add dual-path entry UI
+- `src/App.tsx` — add registry-standalone route
+- `src/components/layout/BottomNav.tsx` — support a simplified nav mode
+- New: `src/contexts/AppModeContext.tsx` — store whether user chose "shower" or "registry only" mode
 
