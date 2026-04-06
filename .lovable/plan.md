@@ -1,67 +1,41 @@
 
 
-# Setup Flows for Both Paths
+# Make Recent Activity Dynamic (Tied to Real App Events)
 
-## Problem
-Right now, clicking "I'm planning a baby shower" or "I'm building a registry" immediately drops the user into the app with no setup. There's no information collection, no personalization, and no guided onboarding.
+## Current State
+The "Recent Activity" section on the HomePage is fully hardcoded — three static items with fake names and times. There's no database connected yet, so we can't pull from server-side event logs.
 
-## Solution
-Add a multi-step setup wizard for each path that collects key details before entering the main app.
+## Approach
+Since there's no backend yet, we'll create a **client-side activity feed system** using React context. Real user actions within the app (claiming a registry item, submitting an RSVP, adding a prediction) will push events into this feed, and the HomePage will render them live.
 
----
+When Lovable Cloud / Supabase is connected later, this context can be swapped to read from an `activity_log` database table instead.
 
-## Shower Setup Flow (3 steps)
+## What Changes
 
-**Step 1 — Your Role**
-- "Are you the expectant parent or planning for someone else?"
-- Radio selection: Planner / Expectant Parent
+### 1. New file: `src/contexts/ActivityFeedContext.tsx`
+- Context that holds an array of activity events: `{ id, type, text, icon, timestamp }`
+- `addActivity(type, text)` function exposed to any component
+- Events stored in state (and optionally `localStorage` so they persist across refreshes)
+- Types: `gift-claimed`, `rsvp`, `prediction`, `registry-added`, `guest-invited`
 
-**Step 2 — Event Details**
-- Honoree name(s) (e.g. "Sarah & Mike")
-- Due date (date picker)
-- Event date (date picker, optional)
-- City/location (text input, with Nashville highlighted for local features)
-- Theme (optional text input)
+### 2. Modify: `src/pages/HomePage.tsx`
+- Replace the hardcoded activity array with `useActivityFeed()` hook
+- Show "No activity yet" empty state when the feed is empty
+- Render relative timestamps from real `Date` objects
 
-**Step 3 — Gifting Preferences**
-- Gift policy: "Bring a gift" / "No gifts please" / "Bring a book instead"
-- Wrapping preference toggle (clear wrapping)
-- Custom note (optional textarea)
+### 3. Modify: `src/App.tsx`
+- Wrap app in `ActivityFeedProvider`
 
-→ On complete: save to context, navigate to shower dashboard
+### 4. Modify pages that generate events
+- `src/pages/RegistryPage.tsx` — log activity when an item is added/claimed
+- `src/pages/GuestListPage.tsx` — log activity when a guest RSVPs
+- `src/pages/PredictionsPage.tsx` — log activity when a prediction is submitted
 
-## Registry Setup Flow (2 steps)
+### 5. Future (when backend is added)
+- Create an `activity_log` table in Supabase
+- Replace context reads with a query to the table
+- Write events server-side via insert
 
-**Step 1 — About You**
-- Your name(s)
-- Due date (date picker)
-- City/location
-
-**Step 2 — Registry Preferences**
-- Registry name (auto-suggested from names)
-- Gift policy preference
-- Share link preference (public/private)
-
-→ On complete: save to context, navigate to registry page
-
----
-
-## Technical Plan
-
-### New files
-- `src/pages/ShowerSetupPage.tsx` — 3-step wizard with progress indicator
-- `src/pages/RegistrySetupPage.tsx` — 2-step wizard with progress indicator
-
-### Modified files
-- `src/contexts/AppModeContext.tsx` — expand state to store setup data (role, names, dates, city, gifting prefs, etc.)
-- `src/pages/HomePage.tsx` — change card clicks to navigate to `/setup/shower` or `/setup/registry` instead of directly entering the app
-- `src/App.tsx` — add routes for `/setup/shower` and `/setup/registry`
-- `src/pages/HomePage.tsx` (ShowerDashboard) — use stored names/dates from context instead of hardcoded "Sarah & Mike" and "August 15, 2025"
-
-### UI approach
-- Step indicator dots at top of each wizard
-- One step visible at a time with "Next" / "Back" buttons
-- Final step has a "Let's go!" CTA
-- All inputs use existing shadcn components (Input, DatePicker, RadioGroup, Switch, Textarea)
-- Validation: name and due date required, everything else optional
+## Empty State
+When there are no activities yet, show a friendly message like "No activity yet — start by adding items to your registry!" instead of a blank section.
 
