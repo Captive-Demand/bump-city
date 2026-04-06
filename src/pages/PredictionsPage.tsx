@@ -95,7 +95,7 @@ const PredictionsPage = () => {
 
       <div className="px-6 space-y-3 pb-6">
         {gameList.map((game) => (
-          <Card key={game.id} className="border-none overflow-hidden">
+          <Card key={game.id} className={`border-none overflow-hidden ${game.status === "ready" ? "cursor-pointer" : ""}`} onClick={() => game.status === "ready" && startGame(game.id)}>
             <CardContent className="p-0">
               <div className="p-4">
                 <div className="flex items-start gap-3">
