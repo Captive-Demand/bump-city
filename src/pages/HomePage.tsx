@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Baby, Calendar, Gift, Users, Gamepad2, Heart } from "lucide-react";
+import { Baby, Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 const CountdownTimer = () => {
   const dueDate = new Date("2025-08-15");
@@ -34,16 +35,72 @@ const CountdownTimer = () => {
 const quickActions = [
   { icon: Gift, label: "Registry", desc: "12 items", path: "/registry", color: "bg-peach" },
   { icon: Users, label: "Guests", desc: "24 invited", path: "/guests", color: "bg-lavender" },
-  { icon: Gamepad2, label: "Predictions", desc: "5 active", path: "/predictions", color: "bg-mint" },
+  { icon: Sparkles, label: "Predictions", desc: "5 active", path: "/predictions", color: "bg-mint" },
   { icon: Calendar, label: "Schedule", desc: "Aug 3", path: "/", color: "bg-warm" },
 ];
 
-const HomePage = () => {
+/* ── Choose-mode landing ── */
+const ModeChooser = () => {
+  const { setMode } = useAppMode();
   const navigate = useNavigate();
 
   return (
     <MobileLayout>
-      {/* Header */}
+      <div className="px-6 pt-16 pb-6 flex flex-col items-center text-center">
+        <Baby className="h-10 w-10 text-primary mb-3" />
+        <h1 className="text-3xl font-bold tracking-tight">
+          Welcome to <span className="text-primary">Bump City</span> 🎀
+        </h1>
+        <p className="text-muted-foreground mt-2 text-sm max-w-xs">
+          What would you like to do today?
+        </p>
+      </div>
+
+      <div className="px-6 space-y-4 pb-10">
+        <Card
+          className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
+          onClick={() => { setMode("shower"); navigate("/"); }}
+        >
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="bg-lavender p-3 rounded-2xl shrink-0">
+              <PartyPopper className="h-7 w-7 text-foreground/70" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base">I'm planning a baby shower</h2>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Manage invites, registry, games, vendors & everything in one place.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all"
+          onClick={() => { setMode("registry"); navigate("/registry"); }}
+        >
+          <CardContent className="p-5 flex items-start gap-4">
+            <div className="bg-peach p-3 rounded-2xl shrink-0">
+              <ClipboardList className="h-7 w-7 text-foreground/70" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base">I'm building a registry</h2>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Create & share your gift registry — no shower planning needed.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </MobileLayout>
+  );
+};
+
+/* ── Full shower dashboard ── */
+const ShowerDashboard = () => {
+  const navigate = useNavigate();
+
+  return (
+    <MobileLayout>
       <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-12 pb-6">
         <div className="flex items-center gap-2 mb-1">
           <Baby className="h-6 w-6 text-primary" />
@@ -62,10 +119,8 @@ const HomePage = () => {
       </div>
 
       <div className="px-6 space-y-6">
-        {/* Countdown */}
         <CountdownTimer />
 
-        {/* Quick Actions */}
         <div>
           <h2 className="text-lg font-bold mb-3">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-3">
@@ -89,7 +144,6 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Recent Activity */}
         <div>
           <h2 className="text-lg font-bold mb-3">Recent Activity</h2>
           <Card className="border-none">
@@ -97,7 +151,7 @@ const HomePage = () => {
               {[
                 { text: "Emma claimed the stroller", time: "2h ago", icon: Heart },
                 { text: "Jake RSVP'd — attending!", time: "5h ago", icon: Users },
-                { text: "New game added: Name That Tune", time: "1d ago", icon: Gamepad2 },
+                { text: "New prediction added", time: "1d ago", icon: Sparkles },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <div className="bg-primary/10 p-1.5 rounded-lg">
@@ -115,6 +169,13 @@ const HomePage = () => {
       </div>
     </MobileLayout>
   );
+};
+
+const HomePage = () => {
+  const { mode } = useAppMode();
+
+  if (mode === "choose") return <ModeChooser />;
+  return <ShowerDashboard />;
 };
 
 export default HomePage;

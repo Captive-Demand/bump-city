@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppModeProvider } from "@/contexts/AppModeContext";
 import HomePage from "./pages/HomePage";
 import RegistryPage from "./pages/RegistryPage";
 import GuestListPage from "./pages/GuestListPage";
@@ -15,14 +16,16 @@ const App = () => (
     <Toaster />
     <Sonner />
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/registry" element={<RegistryPage />} />
-        <Route path="/guests" element={<GuestListPage />} />
-        <Route path="/predictions" element={<PredictionsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <AppModeProvider>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/registry" element={<RegistryPage />} />
+          <Route path="/guests" element={<GuestListPage />} />
+          <Route path="/predictions" element={<PredictionsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AppModeProvider>
     </BrowserRouter>
   </TooltipProvider>
 );
