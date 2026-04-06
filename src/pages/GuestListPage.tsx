@@ -37,6 +37,7 @@ const GuestListPage = () => {
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
+  const { setupData } = useAppMode();
   const [search, setSearch] = useState("");
 
   // Add guest form
