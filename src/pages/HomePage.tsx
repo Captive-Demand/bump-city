@@ -234,6 +234,7 @@ const ModeChooser = () => {
 const ShowerDashboard = () => {
   const { user } = useAuth();
   const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
+  const avatarUrl = user?.user_metadata?.avatar_url;
 
   return (
     <MobileLayout>
@@ -241,11 +242,15 @@ const ShowerDashboard = () => {
         {/* Header with greeting and notification */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
-              <span className="text-sm font-bold text-primary-foreground">
-                {displayName.charAt(0).toUpperCase()}
-              </span>
-            </div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
             <div>
               <p className="text-sm text-muted-foreground">{getGreeting()},</p>
               <h1 className="text-xl font-bold leading-tight">{displayName}!</h1>
