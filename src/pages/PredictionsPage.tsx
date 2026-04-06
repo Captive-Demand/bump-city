@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Clock, Users } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 
 interface Game {
   id: number;
@@ -68,6 +70,17 @@ const statusColors = {
 };
 
 const PredictionsPage = () => {
+  const [gameList, setGameList] = useState(games);
+  const { addActivity } = useActivityFeed();
+
+  const startGame = (id: number) => {
+    setGameList((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, status: "in-progress" as const } : g))
+    );
+    const game = gameList.find((g) => g.id === id);
+    if (game) addActivity("prediction", `"${game.name}" started 🎉`);
+  };
+
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">

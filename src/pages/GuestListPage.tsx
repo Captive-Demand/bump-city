@@ -124,7 +124,13 @@ const GuestListPage = () => {
                   )}
                 </div>
               </div>
-              <Badge className={`${statusConfig[guest.status].className} text-[10px] border-none`}>
+              <Badge
+                className={`${statusConfig[guest.status].className} text-[10px] border-none cursor-pointer`}
+                onClick={() => {
+                  const next: RSVPStatus = guest.status === "pending" ? "attending" : guest.status === "attending" ? "declined" : "pending";
+                  toggleStatus(guest.id, next);
+                }}
+              >
                 {statusConfig[guest.status].label}
               </Badge>
             </CardContent>
