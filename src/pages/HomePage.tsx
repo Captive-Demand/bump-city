@@ -230,6 +230,7 @@ const ModeChooser = () => {
 };
 
 const ShowerDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
   const avatarUrl = user?.user_metadata?.avatar_url;
