@@ -157,7 +157,13 @@ const InviteBuilderPage = () => {
           </>
         ) : (
           <>
-            <InviteTemplatePicker selected={templateId} onSelect={setTemplateId} />
+            <InviteTemplatePicker selected={templateId} onSelect={(id) => { setTemplateId(id); setCustomImageFile(null); setCustomImagePreviewUrl(null); }} onUploadCustom={handleUploadCustom} />
+
+            {templateId === "custom" && customImagePreviewUrl && (
+              <div className="border border-border rounded-lg overflow-hidden bg-white">
+                <img src={customImagePreviewUrl} alt="Custom invite preview" className="w-full h-auto" />
+              </div>
+            )}
 
             <Card className="border-none">
               <CardContent className="p-4 space-y-4">
