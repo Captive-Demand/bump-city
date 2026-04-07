@@ -23,10 +23,10 @@ const InviteBuilderPage = () => {
   const [eventDate, setEventDate] = useState<Date | undefined>(event?.event_date ? new Date(event.event_date) : undefined);
   const [location, setLocation] = useState(event?.city || "");
   const [message, setMessage] = useState("You're invited to celebrate with us! 🎉");
-  const [templateId, setTemplateId] = useState("blush-elegance");
+  const [templateId, setTemplateId] = useState("baby-blocks");
   const [showPreview, setShowPreview] = useState(false);
 
-  const TemplateComponent = templates[templateId] || templates["blush-elegance"];
+  const TemplateComponent = templates[templateId] || templates["baby-blocks"];
 
   return (
     <MobileLayout>
