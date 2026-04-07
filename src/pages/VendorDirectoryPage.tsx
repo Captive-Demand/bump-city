@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Search, ExternalLink, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const vendorCategories = ["All", "Venues", "Balloons", "Cakes", "Photography", "Catering", "Florist"];
+// Categories derived dynamically from data
 
 interface Vendor {
   id: string;
@@ -33,6 +33,8 @@ const VendorDirectoryPage = () => {
     };
     fetch();
   }, []);
+
+  const vendorCategories = ["All", ...Array.from(new Set(vendors.map((v) => v.category))).sort()];
 
   const filtered = vendors.filter((v) => {
     if (activeCategory !== "All" && v.category !== activeCategory) return false;
