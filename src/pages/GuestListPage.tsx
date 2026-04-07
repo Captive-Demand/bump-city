@@ -16,8 +16,6 @@ import { Label } from "@/components/ui/label";
 import GuestImportDialog from "@/components/GuestImportDialog";
 import { templates } from "@/components/invites/InviteTemplates";
 import { toPng } from "html-to-image";
-import { format } from "date-fns";
-import { createRoot } from "react-dom/client";
 
 type RSVPStatus = "attending" | "declined" | "pending";
 
