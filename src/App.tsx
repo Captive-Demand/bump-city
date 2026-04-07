@@ -65,6 +65,7 @@ const App = () => (
             </Routes>
           </ActivityFeedProvider>
         </AppModeProvider>
+      </ActiveEventProvider>
       </AuthProvider>
     </BrowserRouter>
   </TooltipProvider>
