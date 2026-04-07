@@ -106,7 +106,7 @@ const RegistryPage = () => {
     const item = items.find((i) => i.id === id);
     const { error } = await supabase.from("registry_items").delete().eq("id", id);
     if (error) { toast.error("Failed to delete item"); return; }
-    if (item) addActivity("registry-removed", `Removed "${item.name}" from registry`);
+    if (item) addActivity("registry-added", `Removed "${item.name}" from registry`);
     toast.success("Item removed");
     fetchItems();
   };
