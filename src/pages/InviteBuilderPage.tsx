@@ -91,7 +91,7 @@ const InviteBuilderPage = () => {
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
                 <Eye className="h-4 w-4" /> Preview
               </Button>
-              <Button className="flex-1 gap-2" onClick={() => toast.info("Invite sending coming soon! Add guests first.")}>
+              <Button className="flex-1 gap-2" onClick={() => toast.info("Please add guests first, then send invites from the Guests page.")}>
                 <Send className="h-4 w-4" /> Send to Guests
               </Button>
             </div>
