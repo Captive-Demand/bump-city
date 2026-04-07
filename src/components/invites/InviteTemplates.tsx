@@ -20,7 +20,7 @@ const BabyBlocks = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={babyBlocksBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "22%", paddingBottom: "30%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
         You're Invited To
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a7a92" }}>
@@ -47,7 +47,7 @@ const FloralWreath = ({ title, eventDate, location, message }: TemplateProps) =>
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={floralWreathBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-14 text-center" style={{ paddingTop: "18%", paddingBottom: "22%" }}>
-      <p className="text-[10px] uppercase tracking-[0.3em] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b07850" }}>
+      <p className="text-xs uppercase tracking-[0.3em] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b07850" }}>
         Please Join Us For
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a6e50" }}>
@@ -74,7 +74,7 @@ const BlushRoses = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={blushRosesBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4917e" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4917e" }}>
         You're Invited
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#8b6b60" }}>
@@ -101,7 +101,7 @@ const GardenPeony = ({ title, eventDate, location, message }: TemplateProps) => 
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={gardenPeonyBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "18%", paddingBottom: "16%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b7f60" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b7f60" }}>
         Together With Our Families
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e40" }}>
@@ -128,7 +128,7 @@ const SageLeaf = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={sageLeafBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center text-center px-12" style={{ paddingTop: "15%", paddingRight: "8%", paddingLeft: "30%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
         You're Invited
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e48" }}>
@@ -155,7 +155,7 @@ const VintageTulip = ({ title, eventDate, location, message }: TemplateProps) =>
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={vintageTulipBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center text-center px-10" style={{ paddingTop: "12%", paddingBottom: "38%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a6050" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a6050" }}>
         Please Join Us For
       </p>
       <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#6b3a30" }}>
