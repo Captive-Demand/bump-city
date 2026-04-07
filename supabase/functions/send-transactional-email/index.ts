@@ -52,6 +52,18 @@ Deno.serve(async (req) => {
     )
   }
 
+  // Validate caller's JWT
+  const authHeader = req.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')
+  const authClient = createClient(supabaseUrl, anonKey!, { global: { headers: { Authorization: authHeader } } })
+  const { data: claimsData, error: claimsErr } = await authClient.auth.getClaims(authHeader.replace('Bearer ', ''))
+  if (claimsErr || !claimsData?.claims?.sub) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+  }
+
   // Parse request body
   let templateName: string
   let recipientEmail: string
