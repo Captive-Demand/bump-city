@@ -172,7 +172,7 @@ const GuestListPage = () => {
     });
   };
 
-  // eligibleForBulk is computed after filtered below
+  
 
   const selectAll = () => {
     const ids = eligibleForBulk.map((g) => g.id);
