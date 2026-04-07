@@ -115,7 +115,7 @@ const RegistryPage = () => {
     });
     if (error) { toast.error("Failed to add item"); return; }
     addActivity("registry-added", `Added "${newName.trim()}" to registry`);
-    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setNewImageUrl(""); setAddOpen(false);
+    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setNewImageUrl(""); setImagePreview(null); setAddOpen(false);
     fetchItems();
   };
 
