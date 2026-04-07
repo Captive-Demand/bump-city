@@ -8,6 +8,7 @@ interface RenderOptions {
   eventDate?: Date;
   location: string;
   message: string;
+  timeRange?: string;
 }
 
 /**
