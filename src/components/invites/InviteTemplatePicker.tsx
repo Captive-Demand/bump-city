@@ -14,6 +14,9 @@ const sampleData = {
   message: "Join us to celebrate!",
 };
 
+const SCALE = 0.22;
+const TEMPLATE_W = 380;
+
 const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
   <div className="space-y-3">
     <p className="text-sm font-semibold tracking-wide">Choose a Style</p>
@@ -25,20 +28,23 @@ const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
             key={t.id}
             onClick={() => onSelect(t.id)}
             className={cn(
-              "relative rounded-xl text-center transition-all border-2 group overflow-hidden",
+              "relative rounded-xl text-center transition-all border-2 group",
               selected === t.id
                 ? "border-primary ring-2 ring-primary/30 shadow-md"
                 : "border-transparent hover:border-muted-foreground/20 hover:shadow-sm"
             )}
           >
-            {/* Scaled-down live template preview */}
-            <div className="w-full aspect-[3/4] overflow-hidden rounded-lg relative">
+            {/* Clipped container with fixed aspect ratio */}
+            <div
+              className="w-full overflow-hidden rounded-lg relative"
+              style={{ aspectRatio: "3/4" }}
+            >
               <div
-                className="origin-top-left pointer-events-none"
+                className="absolute top-0 left-0 pointer-events-none"
                 style={{
-                  width: 400,
-                  transform: "scale(0.25)",
+                  width: TEMPLATE_W,
                   transformOrigin: "top left",
+                  transform: `scale(${SCALE})`,
                 }}
               >
                 <Template {...sampleData} />
