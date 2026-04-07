@@ -89,14 +89,37 @@ const GuestListPage = () => {
       toast.error("No email address for this guest");
       return;
     }
-    const honoreeName = setupData.honoreeName || "the parents-to-be";
-    const eventDate = setupData.eventDate
-      ? setupData.eventDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
-      : "a date to be announced";
-    const subject = encodeURIComponent(`You're Invited to ${honoreeName}'s Baby Shower! 🎉`);
-    const body = encodeURIComponent(
-      `Hi ${guest.name},\n\nYou're invited to ${honoreeName}'s baby shower on ${eventDate}!\n\nWe'd love for you to join us in celebrating this special occasion.\n\nPlease let us know if you can make it!\n\nWith love,\nThe Bump City Team`
+    const honoreeName = event?.honoree_name || setupData.honoreeName || "the parents-to-be";
+    const eventDateStr = event?.event_date
+      ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+      : setupData.eventDate
+        ? setupData.eventDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+        : "a date to be announced";
+    const city = event?.city || setupData.city || "";
+    const theme = event?.theme || setupData.theme || "";
+
+    const subject = encodeURIComponent(`You're Invited to ${honoreeName}'s Baby Shower!`);
+
+    let bodyLines = [
+      `Dear ${guest.name},`,
+      ``,
+      `You are cordially invited to ${honoreeName}'s Baby Shower!`,
+      ``,
+      `Date: ${eventDateStr}`,
+    ];
+    if (city) bodyLines.push(`Location: ${city}`);
+    if (theme) bodyLines.push(`Theme: ${theme}`);
+    bodyLines.push(
+      ``,
+      `We would be delighted to have you join us in celebrating this special occasion.`,
+      ``,
+      `Please let us know if you can attend!`,
+      ``,
+      `With love,`,
+      `The ${honoreeName} Shower Team`
     );
+
+    const body = encodeURIComponent(bodyLines.join("\n"));
     window.open(`mailto:${guest.email}?subject=${subject}&body=${body}`, "_blank");
 
     await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
