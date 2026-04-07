@@ -41,7 +41,11 @@ const InviteBuilderPage = () => {
       <div className="px-6 pb-6 space-y-4">
         {showPreview ? (
           <>
-            <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} />
+            <div className="max-h-[70vh] w-full flex justify-center">
+              <div className="h-full" style={{ aspectRatio: "5/7", maxHeight: "70vh" }}>
+                <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} />
+              </div>
+            </div>
             <Button variant="outline" className="w-full" onClick={() => setShowPreview(false)}>
               <Palette className="h-4 w-4 mr-2" /> Edit Invite
             </Button>
