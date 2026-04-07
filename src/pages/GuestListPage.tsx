@@ -174,7 +174,9 @@ const GuestListPage = () => {
     }
   }, [event]);
 
-  const sendInvite = async (guest: Guest) => {
+  const [confirmResend, setConfirmResend] = useState<Guest | null>(null);
+
+  const doSendInvite = async (guest: Guest) => {
     if (!guest.email) {
       toast.error("No email address for this guest");
       return;
@@ -182,10 +184,8 @@ const GuestListPage = () => {
     if (!event) return;
 
     setSendingId(guest.id);
-    // Clear cached image to force fresh render
     inviteImageUrlRef.current = null;
     try {
-      // Render invite to image and upload
       const imageUrl = await renderInviteToImage();
 
       const honoreeName = event.honoree_name || setupData.honoreeName || "the parents-to-be";
@@ -194,7 +194,6 @@ const GuestListPage = () => {
         : "a date to be announced";
       const location = event.city || "";
 
-      // Get or create an invite code for the RSVP link
       const { data: codes } = await supabase.from("invite_codes").select("code").eq("event_id", event.id).limit(1);
       let rsvpCode = codes?.[0]?.code;
       if (!rsvpCode && user) {
@@ -204,7 +203,6 @@ const GuestListPage = () => {
       const siteOrigin = "https://bump-city.lovable.app";
       const rsvpUrl = rsvpCode ? `${siteOrigin}/join?code=${rsvpCode}` : siteOrigin;
 
-      // Send via transactional email
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
           templateName: "shower-invitation",
@@ -232,6 +230,14 @@ const GuestListPage = () => {
       toast.error("Failed to send invite. Please try again.");
     } finally {
       setSendingId(null);
+    }
+  };
+
+  const sendInvite = (guest: Guest) => {
+    if (guest.invite_sent) {
+      setConfirmResend(guest);
+    } else {
+      doSendInvite(guest);
     }
   };
 
@@ -353,6 +359,22 @@ const GuestListPage = () => {
           </Card>
         ))}
       </div>
+
+      {/* Resend confirmation dialog */}
+      <Dialog open={!!confirmResend} onOpenChange={(open) => !open && setConfirmResend(null)}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader><DialogTitle>Resend Invite?</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            An invite was already sent to <span className="font-semibold">{confirmResend?.name}</span>. Send again?
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => setConfirmResend(null)}>Cancel</Button>
+            <Button size="sm" onClick={() => { if (confirmResend) { doSendInvite(confirmResend); setConfirmResend(null); } }}>
+              Resend
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
