@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useEvent } from "@/hooks/useEvent";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Palette, Eye, Save, Loader2, Clock } from "lucide-react";
+import { Mail, Palette, Eye, Save, Loader2, Clock, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -31,6 +31,7 @@ const InviteBuilderPage = () => {
   const [templateId, setTemplateId] = useState("baby-blocks");
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedImageUrl, setSavedImageUrl] = useState<string | null>(null);
 
   // Load saved invite settings from event
   useEffect(() => {
@@ -39,6 +40,7 @@ const InviteBuilderPage = () => {
       if ((event as any).invite_title) setTitle((event as any).invite_title);
       if ((event as any).invite_message) setMessage((event as any).invite_message);
       if ((event as any).invite_time_range) setTimeRange((event as any).invite_time_range);
+      if ((event as any).invite_image_url) setSavedImageUrl((event as any).invite_image_url);
     }
   }, [event]);
 
@@ -89,6 +91,7 @@ const InviteBuilderPage = () => {
         return;
       }
 
+      setSavedImageUrl(publicUrl);
       toast.success("Invite saved & image generated!");
     } catch (err) {
       console.error("Save failed:", err);
@@ -180,6 +183,27 @@ const InviteBuilderPage = () => {
                 {saving ? "Saving…" : "Save Invite"}
               </Button>
             </div>
+
+            {/* Email Image Preview */}
+            {savedImageUrl && (
+              <Card className="border-none">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">Saved Email Image</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">This is the exact image that will appear in invitation emails.</p>
+                  <div className="border border-border rounded-lg overflow-hidden bg-white">
+                    <img
+                      src={savedImageUrl}
+                      alt="Saved invite preview"
+                      className="w-full h-auto"
+                      onError={() => toast.error("Failed to load saved image — try saving again")}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
