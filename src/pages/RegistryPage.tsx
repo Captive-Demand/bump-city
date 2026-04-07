@@ -199,7 +199,7 @@ const RegistryPage = () => {
                   </div>
                   {scrapedData && (
                     <>
-                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-full h-32 object-cover rounded-lg" />}
+                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
                       <div className="space-y-1.5">
                         <Label>Item name</Label>
                         <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
@@ -246,7 +246,7 @@ const RegistryPage = () => {
                 <div className="space-y-1.5">
                   <Label>Image (optional)</Label>
                   {imagePreview && (
-                    <img src={imagePreview} alt="Preview" className="w-full h-24 object-cover rounded-lg" />
+                    <img src={imagePreview} alt="Preview" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />
                   )}
                   <div className="flex gap-2">
                     <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
