@@ -9,12 +9,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
+    let { url } = await req.json();
     if (!url || typeof url !== "string") {
       return new Response(JSON.stringify({ error: "URL is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Auto-prepend https:// if missing
+    url = url.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = `https://${url}`;
     }
 
     // Validate URL
@@ -47,14 +53,29 @@ Deno.serve(async (req) => {
       return null;
     };
 
-    // Try to extract price
-    const priceMatch = html.match(/["']price["']\s*:\s*["']?([\d.]+)/i) ||
+    // Try to extract price from JSON-LD, meta, or text
+    const priceMatch = html.match(/"price"\s*:\s*"?([\d.]+)/i) ||
+      html.match(/"priceAmount"\s*:\s*"?([\d.]+)/i) ||
+      html.match(/class="[^"]*price[^"]*"[^>]*>\s*\$?([\d,]+\.?\d{0,2})/i) ||
       html.match(/\$(\d+\.?\d{0,2})/);
 
-    const title = getOg("title") || html.match(/<title>([^<]+)<\/title>/i)?.[1] || null;
-    const image = getOg("image") || null;
+    const title = getOg("title") || html.match(/<title>([^<]+)<\/title>/i)?.[1]?.trim() || null;
+    
+    // Try multiple image sources: og:image, product image meta, first large image
+    let image = getOg("image") || null;
+    if (!image) {
+      const imgMatch = html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i) ||
+        html.match(/<img[^>]+id=["']landingImage["'][^>]+src=["']([^"']+)["']/i) ||
+        html.match(/<img[^>]+class=["'][^"']*product[^"']*["'][^>]+src=["']([^"']+)["']/i);
+      if (imgMatch) image = imgMatch[1];
+    }
+    // Make relative URLs absolute
+    if (image && !image.startsWith("http")) {
+      image = new URL(image, url).toString();
+    }
+
     const description = getOg("description") || null;
-    const price = priceMatch ? parseFloat(priceMatch[1]) : null;
+    const price = priceMatch ? parseFloat(priceMatch[1].replace(",", "")) : null;
 
     return new Response(
       JSON.stringify({ title, image, description, price, url }),
