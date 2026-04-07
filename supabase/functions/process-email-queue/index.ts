@@ -246,6 +246,7 @@ Deno.serve(async (req) => {
       }
 
       try {
+        console.log('Queue dispatch - HTML length:', typeof payload.html === 'string' ? payload.html.length : 'NOT A STRING', 'contains img:', typeof payload.html === 'string' && payload.html.includes('<img'))
         await sendLovableEmail(
           {
             run_id: payload.run_id,

@@ -293,9 +293,11 @@ Deno.serve(async (req) => {
   }
 
   // 4. Render React Email template to HTML and plain text
+  console.log('Rendering template with data keys:', Object.keys(templateData), 'imageUrl present:', !!templateData.imageUrl, 'imageUrl value:', templateData.imageUrl?.substring(0, 80))
   const html = await renderAsync(
     React.createElement(template.component, templateData)
   )
+  console.log('Rendered HTML contains img:', html.includes('<img'), 'HTML length:', html.length)
   const plainText = await renderAsync(
     React.createElement(template.component, templateData),
     { plainText: true }
