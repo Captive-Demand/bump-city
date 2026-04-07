@@ -237,6 +237,7 @@ const CommunityCard = () => {
       </Card>
     </div>
   );
+};
 
 const ModeChooser = () => {
   const navigate = useNavigate();
