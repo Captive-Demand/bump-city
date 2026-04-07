@@ -185,7 +185,7 @@ const GuestListPage = () => {
         body: {
           templateName: "shower-invitation",
           recipientEmail: guest.email,
-          idempotencyKey: `shower-invite-${guest.id}-${event.id}`,
+          idempotencyKey: `shower-invite-${guest.id}-${event.id}-${Date.now()}`,
           templateData: {
             imageUrl,
             guestName: guest.name,
