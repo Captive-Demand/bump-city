@@ -4,7 +4,7 @@ import floralWreathBg from "@/assets/invites/floral-wreath.png";
 import blushRosesBg from "@/assets/invites/blush-roses.png";
 import gardenPeonyBg from "@/assets/invites/garden-peony.png";
 import sageLeafBg from "@/assets/invites/sage-leaf.png";
-import vintageTulipBg from "@/assets/invites/vintage-tulip.png";
+
 
 interface TemplateProps {
   title: string;
@@ -150,32 +150,6 @@ const SageLeaf = ({ title, eventDate, location, message }: TemplateProps) => (
   </div>
 );
 
-/* ─── 6. Vintage Tulip ─── */
-const VintageTulip = ({ title, eventDate, location, message }: TemplateProps) => (
-  <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
-    <img src={vintageTulipBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
-    <div className="absolute inset-0 flex flex-col items-center text-center px-10" style={{ paddingTop: "12%", paddingBottom: "38%" }}>
-      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a6050" }}>
-        Please Join Us For
-      </p>
-      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#6b3a30" }}>
-        {title}
-      </h2>
-      <div className="w-16 h-px my-3" style={{ backgroundColor: "#a07060" }} />
-      <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
-        {dateStr(eventDate)}
-      </p>
-      {location && (
-        <p className="text-base font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
-          {location}
-        </p>
-      )}
-      <p className="text-sm leading-relaxed max-w-[80%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#9a7868" }}>
-        {message}
-      </p>
-    </div>
-  </div>
-);
 
 export const templateConfigs = [
   { id: "baby-blocks", name: "Baby Blocks" },
@@ -183,7 +157,7 @@ export const templateConfigs = [
   { id: "blush-roses", name: "Blush Roses" },
   { id: "garden-peony", name: "Garden Peony" },
   { id: "sage-leaf", name: "Sage Leaf" },
-  { id: "vintage-tulip", name: "Vintage Tulip" },
+  
 ];
 
 export const templates: Record<string, React.FC<TemplateProps>> = {
@@ -192,5 +166,5 @@ export const templates: Record<string, React.FC<TemplateProps>> = {
   "blush-roses": BlushRoses,
   "garden-peony": GardenPeony,
   "sage-leaf": SageLeaf,
-  "vintage-tulip": VintageTulip,
+  
 };
