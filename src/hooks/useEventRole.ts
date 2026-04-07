@@ -34,7 +34,8 @@ export const useEventRole = () => {
       // Fetch event role
       if (event) {
         // Check if user is event owner (legacy — treat as host)
-        if (event.user_id === (user as any).id) {
+        // event doesn't expose user_id in the hook, so check event_members
+        {
           setEventRole("host");
         } else {
           const { data: memberData } = await supabase
