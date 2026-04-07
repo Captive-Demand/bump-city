@@ -51,20 +51,36 @@ const InviteBuilderPage = () => {
     }
   }, [event]);
 
+  const handleUploadCustom = (file: File) => {
+    setCustomImageFile(file);
+    setCustomImagePreviewUrl(URL.createObjectURL(file));
+    setTemplateId("custom");
+  };
+
   const handleSave = async () => {
     if (!event || !user) return;
     setSaving(true);
 
     try {
-      // 1. Generate the invite image
-      const blob = await renderInviteToBlob({
-        templateId,
-        title,
-        eventDate,
-        location,
-        message,
-        timeRange,
-      });
+      // 1. Get the blob — either custom file or rendered template
+      let blob: Blob;
+      if (templateId === "custom") {
+        if (!customImageFile && !customImagePreviewUrl) {
+          toast.error("Please upload a custom image first");
+          setSaving(false);
+          return;
+        }
+        blob = customImageFile || await (await fetch(customImagePreviewUrl!)).blob();
+      } else {
+        blob = await renderInviteToBlob({
+          templateId,
+          title,
+          eventDate,
+          location,
+          message,
+          timeRange,
+        });
+      }
 
       // 2. Upload to user-owned storage path
       const path = `${user.id}/invites/${event.id}/invite.png`;
