@@ -11,6 +11,7 @@ interface TemplateProps {
   eventDate?: Date;
   location: string;
   message: string;
+  timeRange?: string;
 }
 
 const dateStr = (d?: Date) => (d ? format(d, "MMMM d, yyyy") : "Date TBD");
