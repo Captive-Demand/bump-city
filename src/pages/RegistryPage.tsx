@@ -293,23 +293,23 @@ const RegistryPage = () => {
         ))}
       </div>
 
-      <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-3">
         {filtered.length === 0 && (
           <p className="text-sm text-muted-foreground text-center col-span-full py-8">No items yet — tap "Add" to get started!</p>
         )}
         {filtered.map((item) => (
           <Card key={item.id} className={`border-none ${item.claimed ? "opacity-70" : ""}`}>
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-4 flex flex-col items-center text-center gap-3">
               {item.image_url ? (
-                <img src={item.image_url} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
+                <img src={item.image_url} alt={item.name} className="w-20 h-20 rounded-xl object-contain bg-muted" />
               ) : (
-                <div className="bg-muted w-12 h-12 rounded-xl flex items-center justify-center">
-                  <Package className="h-5 w-5 text-muted-foreground" />
+                <div className="bg-muted w-20 h-20 rounded-xl flex items-center justify-center">
+                  <Package className="h-8 w-8 text-muted-foreground" />
                 </div>
               )}
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0">
                 <p className={`font-semibold text-sm ${item.claimed ? "line-through" : ""}`}>{item.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center justify-center gap-2 mt-0.5">
                   <span className="text-xs text-muted-foreground">${item.price}</span>
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>
                 </div>
