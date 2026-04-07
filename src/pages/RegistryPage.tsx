@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, ShoppingBag, Plus, Upload, Image, Package } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Image, Package, Trash2 } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -99,6 +99,15 @@ const RegistryPage = () => {
     if (error) { toast.error("Failed to claim item"); return; }
     const item = items.find((i) => i.id === id);
     if (item) addActivity("gift-claimed", `You claimed "${item.name}"`);
+    fetchItems();
+  };
+
+  const handleDelete = async (id: string) => {
+    const item = items.find((i) => i.id === id);
+    const { error } = await supabase.from("registry_items").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete item"); return; }
+    if (item) addActivity("registry-added", `Removed "${item.name}" from registry`);
+    toast.success("Item removed");
     fetchItems();
   };
 
@@ -305,14 +314,19 @@ const RegistryPage = () => {
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>
                 </div>
               </div>
-              {item.claimed ? (
-                <div className="flex items-center gap-1 text-primary">
-                  <Check className="h-4 w-4" />
-                  <span className="text-[10px] font-medium">{item.claimed_by}</span>
-                </div>
-              ) : (
-                <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
-              )}
+              <div className="flex items-center gap-1">
+                {item.claimed ? (
+                  <div className="flex items-center gap-1 text-primary">
+                    <Check className="h-4 w-4" />
+                    <span className="text-[10px] font-medium">{item.claimed_by}</span>
+                  </div>
+                ) : (
+                  <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
+                )}
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
