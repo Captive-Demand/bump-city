@@ -14,9 +14,9 @@ const sampleData = {
   message: "Join us to celebrate!",
 };
 
-const PREVIEW_WIDTH = 132;
-const PREVIEW_SCALE = 0.34;
+const THUMB_WIDTH = 132;
 const TEMPLATE_WIDTH = 380;
+const PREVIEW_SCALE = THUMB_WIDTH / TEMPLATE_WIDTH;
 
 const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
   <div className="space-y-3">
@@ -50,7 +50,7 @@ const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
                   ? "border-primary shadow-[0_12px_30px_hsl(var(--primary)/0.18)]"
                   : "border-border hover:border-primary/30"
               )}
-              style={{ aspectRatio: "1 / 1" }}
+              style={{ aspectRatio: "5 / 7" }}
             >
               <div
                 aria-hidden="true"
