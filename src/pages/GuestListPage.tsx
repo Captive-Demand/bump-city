@@ -175,7 +175,8 @@ const GuestListPage = () => {
         rsvpCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         await supabase.from("invite_codes").insert({ event_id: event.id, created_by: user.id, code: rsvpCode });
       }
-      const rsvpUrl = rsvpCode ? `${window.location.origin}/join?code=${rsvpCode}` : window.location.origin;
+      const siteOrigin = "https://bump-city.lovable.app";
+      const rsvpUrl = rsvpCode ? `${siteOrigin}/join?code=${rsvpCode}` : siteOrigin;
 
       // Send via transactional email
       const { error } = await supabase.functions.invoke("send-transactional-email", {
