@@ -107,6 +107,18 @@ const GuestListPage = () => {
     const { createRoot: cr } = await import("react-dom/client");
     const root = cr(container);
 
+    // Helper: convert image URL to base64 data URI
+    const urlToDataUri = async (url: string): Promise<string> => {
+      const resp = await fetch(url);
+      const blob = await resp.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
+
     await new Promise<void>((resolve) => {
       root.render(
         <TemplateComponent title={inviteTitle} eventDate={eventDate} location={loc} message={inviteMessage} />
@@ -124,6 +136,18 @@ const GuestListPage = () => {
                     img.onerror = () => res();
                   })
           )
+        );
+        // Convert all image sources to inline base64 data URIs to avoid CORS/tainted canvas
+        await Promise.all(
+          Array.from(imgs).map(async (img) => {
+            if (img.src && !img.src.startsWith("data:")) {
+              try {
+                img.src = await urlToDataUri(img.src);
+              } catch (e) {
+                console.warn("Failed to convert image to data URI:", e);
+              }
+            }
+          })
         );
         // Extra buffer for fonts/rendering
         setTimeout(resolve, 500);
