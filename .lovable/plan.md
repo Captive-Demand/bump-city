@@ -1,47 +1,45 @@
 
 
-# Comprehensive Invite Styles for the Invite Builder
+# Elevate Invite Templates to Premium Quality
 
-## Summary
-Replace the current simple gradient-based theme system with a rich, visually distinct invite template gallery. Each template will have its own layout, typography treatment, decorative elements, and color palette -- making them feel like real digital invitations rather than color swaps on the same card.
-
-## Current State
-The invite builder has 6 "themes" that are just different Tailwind gradient classes applied to the same card layout. Every preview looks structurally identical -- only the background tint changes.
+## Problem
+The current templates look flat and generic. Thumbnails are just colored rectangles with tiny lines. The full templates use basic emoji (🦒🐘🌿), small SVG flourishes, simple `text-sm` typography, and generic `rounded-full` buttons. Nothing feels "premium invitation."
 
 ## Approach
-Create a template-based system where each invite style is its own React component (or render function) with unique layout, decorative SVG elements, typography hierarchy, and color palette. Users browse a visual picker grid showing thumbnails of each style, tap to select, then customize their text.
+Redesign all 8 templates and the picker to feel like high-end digital stationery. The key upgrades:
 
-## Templates (8 styles)
+### Typography Hierarchy
+- Larger, more dramatic titles (text-3xl to text-4xl) with generous letter-spacing
+- Use font-family overrides: `Playfair Display` feel via Georgia/serif with italic + light weight combos
+- More vertical whitespace between elements (py-16 instead of py-10)
+- Refined sub-labels with ultra-wide tracking (0.4em+)
 
-1. **Blush Elegance** -- Soft pink/rose background, centered serif-style text, thin gold-tone border, delicate corner flourishes (CSS borders/pseudo-elements)
-2. **Garden Party** -- Split layout with a floral-patterned left border (SVG/CSS pattern), green + cream palette, playful script-style header
-3. **Safari Adventure** -- Warm amber/tan background, animal-print accent stripe, bold uppercase headers, earthy tones
-4. **Ocean Dreams** -- Deep teal-to-aqua gradient, wave-shaped SVG divider between header and body, white text overlay
-5. **Woodland Whimsy** -- Kraft-paper-tan background, leaf/branch SVG border elements, forest green + cream text
-6. **Modern Minimal** -- Clean white card with strong black typography, single accent-color line, lots of whitespace
-7. **Boho Sunset** -- Warm terracotta/peach gradient with arch-shaped frame (CSS clip-path or border-radius), earth tones
-8. **Starry Night** -- Dark navy/purple background with subtle dot pattern (CSS radial-gradient stars), gold accent text, dreamy feel
+### Decorative Elements (replace emoji with SVG art)
+- **Blush Elegance**: Elaborate gold corner ornaments with multi-curve flourishes, double-line inner border
+- **Garden Party**: Full botanical SVG border with leaves, stems, and flower clusters along left and top edges
+- **Safari Adventure**: Replace emoji animals with elegant SVG silhouettes (giraffe, elephant, leaf branch), textured linen-style background pattern
+- **Ocean Dreams**: Layered multi-wave SVG divider with 3 wave layers at different opacities, subtle bubble dots
+- **Woodland Whimsy**: Detailed branch + leaf SVG frame around all four edges, mushroom/acorn accents
+- **Modern Minimal**: Dramatic oversized serif title, geometric line accents, asymmetric layout
+- **Boho Sunset**: Layered arch frames (double arch), dried-flower SVG motifs, warm texture overlay
+- **Starry Night**: Crescent moon SVG, constellation line patterns, more stars with varied sizes, shimmer effect
 
-## UI Changes
+### Button Upgrades
+- Elegant pill buttons with subtle box-shadow and hover states
+- Template-appropriate styling (e.g., gold outlined for Blush, frosted glass for Ocean Dreams)
 
-### Template Picker (replaces dropdown)
-- A horizontal scrollable grid of template preview cards (small thumbnail renderings of each style)
-- Each card shows the template name + a mini visual preview
-- Selected template gets a ring/check indicator
-- Sits above the text editing fields
+### Thumbnail Picker Upgrade
+- Render a **mini version of the actual template** inside each thumbnail instead of abstract colored lines
+- Show the template's signature decorative element in miniature
+- Each thumbnail gets a subtle inner shadow for depth
+- Slightly larger thumbnails with better aspect ratio
 
-### Preview
-- Full-size preview renders the selected template component with the user's custom text
-- Each template component receives `{ title, eventDate, location, message }` as props
+### Color Refinements
+- More sophisticated palettes with 3-4 tones per template instead of 2
+- Subtle background textures via CSS patterns (linen, paper grain, etc.)
+- Better contrast ratios for readability
 
 ## Files Changed
-
-- `src/pages/InviteBuilderPage.tsx` -- Refactor to use template picker + template renderer
-- `src/components/invites/InviteTemplates.tsx` (new) -- All 8 template render functions + thumbnail data (colors, preview layout)
-- `src/components/invites/InviteTemplatePicker.tsx` (new) -- Scrollable grid picker component
-
-## Technical Details
-- Templates are pure CSS/Tailwind + inline SVG decorations -- no image assets needed
-- Each template exports a preview component and a thumbnail config (name, background color, accent color)
-- Decorative elements use CSS pseudo-elements, clip-paths, border-radius tricks, and small inline SVGs for flourishes/waves/leaves
+- `src/components/invites/InviteTemplates.tsx` -- Complete rewrite of all 8 template components with premium SVG art, refined typography, and luxe color palettes
+- `src/components/invites/InviteTemplatePicker.tsx` -- Upgraded thumbnails that show miniature template previews with signature decorative elements
 
