@@ -136,7 +136,6 @@ const GuestListPage = () => {
   }, [event]);
 
   const sendInvite = async (guest: Guest) => {
-    console.log("sendInvite called for", guest.name, guest.email);
     if (!guest.email) {
       toast.error("No email address for this guest");
       return;
