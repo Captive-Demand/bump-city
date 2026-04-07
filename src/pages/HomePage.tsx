@@ -297,6 +297,7 @@ const ShowerDashboard = () => {
       <div className="px-6 pb-8 space-y-6">
         <QuickActions />
         <NextTasks />
+        <CommunityCard />
 
         <Button
           variant="outline"
