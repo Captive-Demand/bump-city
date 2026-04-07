@@ -17,6 +17,7 @@ interface ShowerInvitationProps {
 
 const ShowerInvitationEmail = ({
   imageUrl,
+  guestName,
   honoreeName,
   rsvpUrl,
 }: ShowerInvitationProps) => (
@@ -25,6 +26,12 @@ const ShowerInvitationEmail = ({
     <Preview>You're invited to {honoreeName || "a"} baby shower!</Preview>
     <Body style={main}>
       <Container style={container}>
+        {guestName && (
+          <Text style={greeting}>Dear {guestName},</Text>
+        )}
+        <Text style={introText}>
+          You're invited to celebrate {honoreeName ? `${honoreeName}'s` : 'a'} baby shower!
+        </Text>
         {imageUrl && (
           <Section style={imageSection}>
             <Img
@@ -66,6 +73,8 @@ export const template = {
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Nunito', Arial, sans-serif" }
 const container = { padding: '20px 25px', maxWidth: '600px', margin: '0 auto' }
+const greeting = { fontSize: '16px', color: '#3d2b2b', margin: '0 0 8px' }
+const introText = { fontSize: '16px', color: '#3d2b2b', lineHeight: '1.5', margin: '0 0 20px' }
 const imageSection = { margin: '0 0 24px', textAlign: 'center' as const }
 const inviteImage = { borderRadius: '8px', maxWidth: '100%' }
 const buttonSection = { textAlign: 'center' as const, margin: '0 0 24px' }
