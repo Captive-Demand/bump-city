@@ -26,6 +26,7 @@ interface RegistryItem {
   claimed: boolean;
   claimed_by: string | null;
   emoji: string;
+  image_url: string | null;
 }
 
 const RegistryPage = () => {
@@ -42,6 +43,7 @@ const RegistryPage = () => {
   const [newCategory, setNewCategory] = useState("Essentials");
   const [newPrice, setNewPrice] = useState("");
   const [newEmoji, setNewEmoji] = useState("🎁");
+  const [newImageUrl, setNewImageUrl] = useState("");
 
   // URL import
   const [urlOpen, setUrlOpen] = useState(false);
@@ -53,7 +55,7 @@ const RegistryPage = () => {
     if (!event) return;
     const { data } = await supabase
       .from("registry_items")
-      .select("id, name, category, price, claimed, claimed_by, emoji")
+      .select("id, name, category, price, claimed, claimed_by, emoji, image_url")
       .eq("event_id", event.id)
       .order("created_at", { ascending: true });
     setItems((data as RegistryItem[]) || []);
@@ -87,11 +89,12 @@ const RegistryPage = () => {
       name: newName.trim(),
       category: newCategory,
       price: parseFloat(newPrice) || 0,
-      emoji: newEmoji || "🎁",
+      emoji: newImageUrl.trim() ? null : (newEmoji || "🎁"),
+      image_url: newImageUrl.trim() || null,
     });
     if (error) { toast.error("Failed to add item"); return; }
     addActivity("registry-added", `Added "${newName.trim()}" to registry`);
-    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setAddOpen(false);
+    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setNewImageUrl(""); setAddOpen(false);
     fetchItems();
   };
 
@@ -210,15 +213,21 @@ const RegistryPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1.5">
+                  <Label>Image URL (optional)</Label>
+                  <Input placeholder="https://example.com/image.jpg" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} />
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Price ($)</Label>
                     <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label>Emoji</Label>
-                    <Input placeholder="🎁" value={newEmoji} onChange={(e) => setNewEmoji(e.target.value)} maxLength={4} />
-                  </div>
+                  {!newImageUrl.trim() && (
+                    <div className="space-y-1.5">
+                      <Label>Emoji</Label>
+                      <Input placeholder="🎁" value={newEmoji} onChange={(e) => setNewEmoji(e.target.value)} maxLength={4} />
+                    </div>
+                  )}
                 </div>
                 <Button className="w-full" onClick={handleAdd} disabled={!newName.trim()}>Add Item</Button>
               </div>
@@ -247,7 +256,11 @@ const RegistryPage = () => {
         {filtered.map((item) => (
           <Card key={item.id} className={`border-none ${item.claimed ? "opacity-70" : ""}`}>
             <CardContent className="p-4 flex items-center gap-3">
-              <div className="text-2xl bg-muted w-12 h-12 rounded-xl flex items-center justify-center">{item.emoji}</div>
+              {item.image_url ? (
+                <img src={item.image_url} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
+              ) : (
+                <div className="text-2xl bg-muted w-12 h-12 rounded-xl flex items-center justify-center">{item.emoji}</div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold text-sm ${item.claimed ? "line-through" : ""}`}>{item.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
