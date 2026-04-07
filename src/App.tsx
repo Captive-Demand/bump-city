@@ -23,6 +23,7 @@ import CommunityEventsPage from "./pages/CommunityEventsPage";
 import AdminPage from "./pages/AdminPage";
 import JoinEventPage from "./pages/JoinEventPage";
 import GuestEventPage from "./pages/GuestEventPage";
+import GetStartedPage from "./pages/GetStartedPage";
 import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
