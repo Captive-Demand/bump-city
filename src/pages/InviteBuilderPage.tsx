@@ -41,8 +41,11 @@ const InviteBuilderPage = () => {
       <div className="px-6 pb-6 space-y-4">
         {showPreview ? (
           <>
-            <div className="max-h-[70vh] w-full flex justify-center">
-              <div className="h-full" style={{ aspectRatio: "5/7", maxHeight: "70vh" }}>
+            <div className="flex w-full justify-center">
+              <div
+                className="w-full overflow-hidden border border-border/60 bg-card shadow-sm"
+                style={{ maxWidth: "calc(72vh * 5 / 7)" }}
+              >
                 <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} />
               </div>
             </div>
