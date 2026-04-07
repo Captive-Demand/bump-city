@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useEvent } from "@/hooks/useEvent";
-import { Mail, Palette, Send, Eye } from "lucide-react";
+import { Mail, Palette, Send, Eye, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { templates } from "@/components/invites/InviteTemplates";
 import InviteTemplatePicker from "@/components/invites/InviteTemplatePicker";
+import { supabase } from "@/integrations/supabase/client";
 
 const InviteBuilderPage = () => {
   const { event } = useEvent();
@@ -25,6 +26,29 @@ const InviteBuilderPage = () => {
   const [message, setMessage] = useState("You're invited to celebrate with us! 🎉");
   const [templateId, setTemplateId] = useState("baby-blocks");
   const [showPreview, setShowPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Load saved invite settings from event
+  useEffect(() => {
+    if (event) {
+      if ((event as any).invite_template) setTemplateId((event as any).invite_template);
+      if ((event as any).invite_title) setTitle((event as any).invite_title);
+      if ((event as any).invite_message) setMessage((event as any).invite_message);
+    }
+  }, [event]);
+
+  const handleSave = async () => {
+    if (!event) return;
+    setSaving(true);
+    const { error } = await supabase.from("events").update({
+      invite_template: templateId,
+      invite_title: title,
+      invite_message: message,
+    } as any).eq("id", event.id);
+    setSaving(false);
+    if (error) { toast.error("Failed to save invite"); return; }
+    toast.success("Invite saved!");
+  };
 
   const TemplateComponent = templates[templateId] || templates["baby-blocks"];
 
@@ -91,8 +115,8 @@ const InviteBuilderPage = () => {
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
                 <Eye className="h-4 w-4" /> Preview
               </Button>
-              <Button className="flex-1 gap-2" onClick={() => toast.info("Please add guests first, then send invites from the Guests page.")}>
-                <Send className="h-4 w-4" /> Send to Guests
+              <Button className="flex-1 gap-2" onClick={handleSave} disabled={saving}>
+                <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save Invite"}
               </Button>
             </div>
           </>

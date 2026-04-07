@@ -25,6 +25,7 @@ import AdminPage from "./pages/AdminPage";
 import JoinEventPage from "./pages/JoinEventPage";
 import GuestEventPage from "./pages/GuestEventPage";
 import GetStartedPage from "./pages/GetStartedPage";
+import UnsubscribePage from "./pages/UnsubscribePage";
 import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -62,6 +63,7 @@ const App = () => (
                 <Route path="/community" element={<ProtectedRoute><CommunityEventsPage /></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/unsubscribe" element={<UnsubscribePage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </ActivityFeedProvider>
