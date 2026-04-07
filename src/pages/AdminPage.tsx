@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, UserPlus, Crown } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, UserPlus, Crown, Store, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -316,11 +316,70 @@ const AdminPage = () => {
           </TabsContent>
 
           {/* Settings */}
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="space-y-4">
+            {/* Shopify Integration */}
             <Card className="border-none">
               <CardContent className="p-4 space-y-4">
-                <h3 className="font-bold text-sm">App Settings</h3>
-                {settings.map((s) => (
+                <div className="flex items-center gap-2">
+                  <Store className="h-4 w-4 text-primary" />
+                  <h3 className="font-bold text-sm">Shopify Integration</h3>
+                  {settingsEdits["shopify_store_domain"] && settingsEdits["shopify_storefront_token"] ? (
+                    <Badge className="bg-green-500/20 text-green-700 text-[10px] ml-auto"><CheckCircle2 className="h-3 w-3 mr-0.5" /> Connected</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] ml-auto"><XCircle className="h-3 w-3 mr-0.5" /> Not Connected</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Connect your Shopify store to display products and gift cards in the app.</p>
+                <div className="space-y-1">
+                  <Label>Store Domain</Label>
+                  <Input
+                    placeholder="yourstore.myshopify.com"
+                    value={settingsEdits["shopify_store_domain"] || ""}
+                    onChange={(e) => setSettingsEdits((prev) => ({ ...prev, shopify_store_domain: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Storefront Access Token</Label>
+                  <Input
+                    type="password"
+                    placeholder="shpat_..."
+                    value={settingsEdits["shopify_storefront_token"] || ""}
+                    onChange={(e) => setSettingsEdits((prev) => ({ ...prev, shopify_storefront_token: e.target.value }))}
+                  />
+                </div>
+                <div className="rounded-lg bg-muted p-3 space-y-1">
+                  <p className="text-xs font-medium">How to get your Storefront Access Token:</p>
+                  <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-0.5">
+                    <li>Go to your Shopify Admin → Settings → Apps and sales channels</li>
+                    <li>Click "Develop apps" → Create an app</li>
+                    <li>Under "Configuration", enable Storefront API access</li>
+                    <li>Install the app, then copy the Storefront Access Token</li>
+                  </ol>
+                  <a href="https://shopify.dev/docs/api/storefront" target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 mt-1">
+                    <ExternalLink className="h-3 w-3" /> Shopify Storefront API Docs
+                  </a>
+                </div>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={saveSettings}>
+                    {settingsEdits["shopify_store_domain"] && settingsEdits["shopify_storefront_token"] ? "Update Connection" : "Connect Store"}
+                  </Button>
+                  {settingsEdits["shopify_store_domain"] && (
+                    <Button variant="outline" className="text-destructive" onClick={() => {
+                      setSettingsEdits((prev) => ({ ...prev, shopify_store_domain: "", shopify_storefront_token: "" }));
+                      toast.info("Click Save to disconnect");
+                    }}>
+                      Disconnect
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* General App Settings */}
+            <Card className="border-none">
+              <CardContent className="p-4 space-y-4">
+                <h3 className="font-bold text-sm">General Settings</h3>
+                {settings.filter((s) => !s.key.startsWith("shopify_")).map((s) => (
                   <div key={s.id} className="space-y-1">
                     <Label>{s.label || s.key}</Label>
                     <Input value={settingsEdits[s.key] || ""} onChange={(e) => setSettingsEdits((prev) => ({ ...prev, [s.key]: e.target.value }))} />
