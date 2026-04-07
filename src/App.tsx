@@ -40,8 +40,8 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AuthProvider>
-        <AppModeProvider>
-          <ActivityFeedProvider>
+        <ActiveEventProvider>
+          <AppModeProvider>
             <Routes>
               <Route path="/get-started" element={<GetStartedPage />} />
               <Route path="/auth" element={<AuthPage />} />
