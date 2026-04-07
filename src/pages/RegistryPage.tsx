@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, ShoppingBag, Plus, Upload, Image } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Image, Package } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -254,12 +254,15 @@ const RegistryPage = () => {
                     <Label>Price ($)</Label>
                     <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                   </div>
-                  {!newImageUrl.trim() && (
-                    <div className="space-y-1.5">
-                      <Label>Emoji</Label>
-                      <Input placeholder="🎁" value={newEmoji} onChange={(e) => setNewEmoji(e.target.value)} maxLength={4} />
-                    </div>
-                  )}
+                  <div className="space-y-1.5">
+                    <Label>Category</Label>
+                    <Select value={newCategory} onValueChange={setNewCategory}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <Button className="w-full" onClick={handleAdd} disabled={!newName.trim()}>Add Item</Button>
               </div>
@@ -291,7 +294,9 @@ const RegistryPage = () => {
               {item.image_url ? (
                 <img src={item.image_url} alt={item.name} className="w-12 h-12 rounded-xl object-cover" />
               ) : (
-                <div className="text-2xl bg-muted w-12 h-12 rounded-xl flex items-center justify-center">{item.emoji}</div>
+                <div className="bg-muted w-12 h-12 rounded-xl flex items-center justify-center">
+                  <Package className="h-5 w-5 text-muted-foreground" />
+                </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className={`font-semibold text-sm ${item.claimed ? "line-through" : ""}`}>{item.name}</p>
