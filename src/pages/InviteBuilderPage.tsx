@@ -42,7 +42,12 @@ const InviteBuilderPage = () => {
       if ((event as any).invite_title) setTitle((event as any).invite_title);
       if ((event as any).invite_message) setMessage((event as any).invite_message);
       if ((event as any).invite_time_range) setTimeRange((event as any).invite_time_range);
-      if ((event as any).invite_image_url) setSavedImageUrl((event as any).invite_image_url);
+      if ((event as any).invite_image_url) {
+        setSavedImageUrl((event as any).invite_image_url);
+        if ((event as any).invite_template === "custom") {
+          setCustomImagePreviewUrl((event as any).invite_image_url);
+        }
+      }
     }
   }, [event]);
 
