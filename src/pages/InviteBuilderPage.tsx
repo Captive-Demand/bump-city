@@ -144,7 +144,11 @@ const InviteBuilderPage = () => {
                 className="w-full overflow-hidden border border-border/60 bg-card shadow-sm"
                 style={{ maxWidth: "calc(72vh * 5 / 7)" }}
               >
-                <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} timeRange={timeRange} />
+                {templateId === "custom" && customImagePreviewUrl ? (
+                  <img src={customImagePreviewUrl} alt="Custom invite" className="w-full h-auto" />
+                ) : (
+                  <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} timeRange={timeRange} />
+                )}
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={() => setShowPreview(false)}>
