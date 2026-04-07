@@ -27,7 +27,7 @@ export const BottomNav = () => {
   const tabs = mode === "registry" ? registryTabs : fullTabs;
 
   return (
-    <nav className="absolute bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around h-16 px-2 z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around h-16 px-2 z-50 max-w-[430px] mx-auto">
       {tabs.map((tab) => {
         const isActive = location.pathname === tab.path;
         return (
