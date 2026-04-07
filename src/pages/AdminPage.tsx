@@ -6,16 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, UserPlus, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEventRole } from "@/hooks/useEventRole";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 
 const AdminPage = () => {
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const { isAdmin, isSuperAdmin, loading: roleLoading } = useEventRole();
 
   // Stats
   const [stats, setStats] = useState({ profiles: 0, events: 0, registryItems: 0, vendors: 0, communityEvents: 0 });
@@ -36,15 +37,14 @@ const AdminPage = () => {
   const [settings, setSettings] = useState<any[]>([]);
   const [settingsEdits, setSettingsEdits] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    if (user) checkAdmin();
-  }, [user]);
+  // Admin management (super_admin only)
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [addingAdmin, setAddingAdmin] = useState(false);
 
-  const checkAdmin = async () => {
-    const { data } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
-    setIsAdmin(!!data);
-    if (data) fetchAll();
-  };
+  useEffect(() => {
+    if (!roleLoading && isAdmin) fetchAll();
+  }, [roleLoading, isAdmin]);
 
   const fetchAll = async () => {
     const [p, e, r, v, ce, s] = await Promise.all([
@@ -62,6 +62,17 @@ const AdminPage = () => {
     const edits: Record<string, string> = {};
     (s.data || []).forEach((row: any) => { edits[row.key] = row.value; });
     setSettingsEdits(edits);
+
+    if (isSuperAdmin) {
+      const { data: roles } = await supabase.from("user_roles").select("*");
+      if (roles) {
+        // Get profile display names for admin users
+        const userIds = roles.map((r: any) => r.user_id);
+        const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
+        const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.display_name]));
+        setAdminUsers(roles.map((r: any) => ({ ...r, display_name: profileMap[r.user_id] || "Unknown" })));
+      }
+    }
   };
 
   // Vendor CRUD
@@ -122,7 +133,36 @@ const AdminPage = () => {
     fetchAll(); toast.success("Settings saved!");
   };
 
-  if (isAdmin === null) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
+  // Admin management
+  const addAdmin = async () => {
+    if (!newAdminEmail.trim()) return;
+    setAddingAdmin(true);
+    // Find user by email in profiles (display_name might be email)
+    const { data: profiles } = await supabase.from("profiles").select("id, display_name").ilike("display_name", newAdminEmail.trim());
+    if (!profiles || profiles.length === 0) {
+      toast.error("No user found with that email/name");
+      setAddingAdmin(false);
+      return;
+    }
+    const targetId = profiles[0].id;
+    const { error } = await supabase.from("user_roles").insert({ user_id: targetId, role: "admin" as any });
+    if (error) {
+      toast.error(error.message.includes("duplicate") ? "User already has this role" : "Failed to add admin");
+    } else {
+      toast.success("Admin added!");
+      setNewAdminEmail("");
+      fetchAll();
+    }
+    setAddingAdmin(false);
+  };
+
+  const removeAdmin = async (roleId: string) => {
+    const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
+    if (error) { toast.error("Failed to remove"); return; }
+    fetchAll(); toast.success("Role removed");
+  };
+
+  if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
 
   if (!isAdmin) return (
     <MobileLayout>
@@ -140,6 +180,7 @@ const AdminPage = () => {
         <div className="flex items-center gap-2 mb-1">
           <Shield className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Admin Panel</h1>
+          {isSuperAdmin && <Badge className="bg-amber-500/20 text-amber-700 text-[10px]"><Crown className="h-3 w-3 mr-0.5" /> Super Admin</Badge>}
         </div>
         <p className="text-sm text-muted-foreground">Manage store items, vendors, and settings</p>
       </div>
@@ -151,6 +192,7 @@ const AdminPage = () => {
             <TabsTrigger value="vendors" className="flex-1 gap-1 text-xs"><ShoppingBag className="h-3 w-3" /> Vendors</TabsTrigger>
             <TabsTrigger value="events" className="flex-1 gap-1 text-xs"><Calendar className="h-3 w-3" /> Events</TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 gap-1 text-xs"><Settings className="h-3 w-3" /> Settings</TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="admins" className="flex-1 gap-1 text-xs"><Users className="h-3 w-3" /> Admins</TabsTrigger>}
           </TabsList>
 
           {/* Dashboard */}
@@ -264,6 +306,47 @@ const AdminPage = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Admin Management (super_admin only) */}
+          {isSuperAdmin && (
+            <TabsContent value="admins">
+              <Card className="border-none mb-4">
+                <CardContent className="p-4">
+                  <h3 className="font-bold text-sm mb-3">Add Admin</h3>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="User email or display name"
+                      value={newAdminEmail}
+                      onChange={(e) => setNewAdminEmail(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button size="sm" onClick={addAdmin} disabled={addingAdmin} className="gap-1">
+                      <UserPlus className="h-3.5 w-3.5" /> {addingAdmin ? "..." : "Add"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="space-y-2">
+                {adminUsers.map((au) => (
+                  <Card key={au.id} className="border-none">
+                    <CardContent className="p-3 flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{au.display_name}</p>
+                        <Badge variant={au.role === "super_admin" ? "default" : "secondary"} className="text-[10px]">
+                          {au.role === "super_admin" ? "Super Admin" : au.role}
+                        </Badge>
+                      </div>
+                      {au.role !== "super_admin" && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeAdmin(au.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </MobileLayout>
