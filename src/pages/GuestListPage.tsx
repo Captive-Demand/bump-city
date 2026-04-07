@@ -279,24 +279,23 @@ const GuestListPage = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                {guest.email && !guest.invite_sent && (
+                {guest.email && (
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => sendInvite(guest)}
                     disabled={sendingId === guest.id}
-                    title="Send invite"
+                    title={guest.invite_sent ? "Resend invite" : "Send invite"}
                   >
                     {sendingId === guest.id ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                    ) : guest.invite_sent ? (
+                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
                     ) : (
                       <Send className="h-3.5 w-3.5 text-primary" />
                     )}
                   </Button>
-                )}
-                {guest.invite_sent && (
-                  <span title="Invite sent"><Mail className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 )}
                 <Badge
                   className={`${(statusConfig[guest.status] || statusConfig.pending).className} text-[10px] border-none cursor-pointer`}
