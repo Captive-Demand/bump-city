@@ -1,49 +1,59 @@
 
 
-# Multi-Event Support: Current Event Context
+# Send Visual Invitation via Email
 
 ## Problem
-Right now the app assumes one event per user. `useEvent()` just grabs the most recent event. The Profile page mixes user settings with event settings. If a user creates a second shower (or plans one for someone else), they can only see/manage the latest one.
+Currently "Send" on the guest list opens a plain-text `mailto:` link. You want it to send the actual designed invitation image with an RSVP button.
 
-## Solution: Active Event Context
-Instead of always fetching "the latest event," introduce an **active event** concept — the user picks which event they're working on, and the whole app operates in that context.
+## Solution
 
-### Key Changes
+### Flow
+1. Host designs invite in Invite Builder → saves chosen template + text to the `events` table
+2. On Guest List, tapping "Send" renders the invite template to a canvas image client-side, uploads it to storage, then sends a branded HTML email containing the invitation image + RSVP button
 
-**1. Create an `ActiveEventContext` (new file)**
-- Stores the currently selected `eventId` in React context + `localStorage`
-- On load: fetch all events the user owns or is a member of (`events` + `event_members`)
-- Expose: `activeEvent`, `allEvents`, `switchEvent(eventId)`, `loading`
-- Replace the current `useEvent()` hook — all consumers switch to this context
+### Steps
 
-**2. Update `AppModeContext`**
-- Instead of querying the latest event directly, derive `mode` from the active event in `ActiveEventContext`
-- Remove the duplicate event fetch
+**1. Add invite settings columns to `events` table**
+- `invite_template` (text, nullable) — selected template ID (e.g. "baby-blocks")
+- `invite_title` (text, nullable)
+- `invite_message` (text, nullable)
 
-**3. Separate Profile Page from Event Settings**
-- **Profile section**: avatar, display name, city, sign out — user-level stuff only
-- **Event Settings section**: move honoree name, due date, event date, theme, gift policy, clear wrapping into a dedicated "Event Settings" card that reads from `activeEvent`
-- This is mostly a reorganization of what's already in `ProfilePage.tsx`
+This lets the Invite Builder save the host's choices so the Guest List page can retrieve them.
 
-**4. Add an Event Switcher**
-- Small dropdown/selector on the Home page (and optionally in the sidebar/bottom nav area) showing all the user's events
-- Tapping switches the active event context, which cascades to all pages (registry, guests, planning, etc.)
+**2. Update Invite Builder to save settings**
+- Add a "Save Invite" action that writes the selected template, title, and message to the event record
+- Auto-load saved values when the page loads
 
-**5. Update `useEvent` → use context**
-- Convert `useEvent()` from a standalone hook into a simple re-export from `ActiveEventContext`
-- All 10+ files importing `useEvent` continue to work with no API change
+**3. Scaffold transactional email infrastructure**
+- Call `setup_email_infra` + `scaffold_transactional_email` to create the `send-transactional-email` Edge Function
 
-**6. Update `useEventRole`**
-- Already depends on `useEvent` — will automatically use the active event
+**4. Create invitation email template**
+- New file: `supabase/functions/_shared/transactional-email-templates/shower-invitation.tsx`
+- Contains: a centered invitation image (from a URL passed via `templateData`), event details text below it, and a prominent "RSVP Now" button linking to the join/event page
 
-### No database changes needed
-The `events` and `event_members` tables already support multiple events per user. This is purely a frontend architecture change.
+**5. Render invite to image + upload to storage**
+- In `GuestListPage`, when "Send" is tapped:
+  - Render the chosen invite template off-screen using `html-to-image` (or `html2canvas`)
+  - Upload the PNG to Supabase Storage (`uploads` bucket, path like `invites/{eventId}.png`)
+  - Cache the URL so subsequent sends don't re-render
+
+**6. Update `sendInvite` to use transactional email**
+- Replace the `mailto:` approach with `supabase.functions.invoke('send-transactional-email', { body: { templateName: 'shower-invitation', recipientEmail, templateData: { imageUrl, rsvpUrl, guestName, honoreeName } } })`
+- The RSVP URL links to `/join?code=XXXX` (uses existing invite code system)
+
+### Technical Details
+
+**Image rendering**: Use `html-to-image` library — renders a React component to a PNG data URL client-side. The invite template component is mounted in a hidden div, captured, then uploaded.
+
+**Storage**: Use the existing `uploads` bucket. Path: `invites/{eventId}/invite.png`. Public URL is passed to the email template.
+
+**Email template**: Uses `<Img>` from React Email to display the invitation image at full width, followed by a styled RSVP button.
 
 ## Files Changed
-- `src/contexts/ActiveEventContext.tsx` — **new**: stores active event, lists all user events, provides switcher
-- `src/contexts/AppModeContext.tsx` — derive mode from ActiveEventContext instead of querying DB directly
-- `src/hooks/useEvent.ts` — thin wrapper around ActiveEventContext for backward compat
-- `src/pages/ProfilePage.tsx` — separate user profile settings from event settings
-- `src/pages/HomePage.tsx` — add event switcher UI when user has multiple events
-- `src/App.tsx` — wrap with `ActiveEventProvider`
+- **Migration**: add `invite_template`, `invite_title`, `invite_message` to `events`
+- `src/pages/InviteBuilderPage.tsx` — save/load invite settings to event
+- `supabase/functions/_shared/transactional-email-templates/shower-invitation.tsx` — new email template
+- `supabase/functions/_shared/transactional-email-templates/registry.ts` — register template
+- `src/pages/GuestListPage.tsx` — render invite to image, upload, send via transactional email
+- `package.json` — add `html-to-image` dependency
 
