@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
-import bumpCityIcon from "@/assets/bump-city-icon.png";
+import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
 const AuthPage = () => {
   const navigate = useNavigate();
