@@ -158,7 +158,8 @@ const GuestListPage = () => {
     if (!event) return;
 
     setSendingId(guest.id);
-    try {
+    // Clear cached image to force fresh render
+    inviteImageUrlRef.current = null;
       // Render invite to image and upload
       const imageUrl = await renderInviteToImage();
 
