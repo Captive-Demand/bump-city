@@ -62,7 +62,7 @@ const ShowerSetupPage = () => {
     setSaving(true);
 
     // Save event to database
-    const { error } = await supabase.from("events").insert({
+    const { data: insertedEvent, error } = await supabase.from("events").insert({
       user_id: user.id,
       event_type: "shower",
       honoree_name: honoreeName.trim(),
@@ -74,22 +74,34 @@ const ShowerSetupPage = () => {
       clear_wrapping: clearWrapping,
       gift_note: giftNote.trim() || null,
       surprise_mode: surpriseMode,
-    });
+    }).select("id").single();
 
-    // Update profile role
-    await supabase.from("profiles").update({ role, city: city.trim() || null }).eq("id", user.id);
-
-    setSaving(false);
-    if (error) {
+    if (error || !insertedEvent) {
+      setSaving(false);
       toast.error("Failed to save event. Please try again.");
       return;
     }
 
-    const data: Partial<SetupData> = {
+    // Insert event_members roles
+    const membersToInsert = [
+      { event_id: insertedEvent.id, user_id: user.id, role: "host" },
+    ];
+    // If expectant-parent, also add as honoree
+    if (role === "expectant-parent") {
+      membersToInsert.push({ event_id: insertedEvent.id, user_id: user.id, role: "honoree" });
+    }
+    await supabase.from("event_members").insert(membersToInsert);
+
+    // Update profile city (no more role column)
+    await supabase.from("profiles").update({ city: city.trim() || null }).eq("id", user.id);
+
+    setSaving(false);
+
+    const setupDataPayload: Partial<SetupData> = {
       role, honoreeName: honoreeName.trim(), dueDate, eventDate,
       city: city.trim(), theme: theme.trim(), giftPolicy, clearWrapping, giftNote: giftNote.trim(),
     };
-    updateSetupData(data);
+    updateSetupData(setupDataPayload);
     setMode("shower");
     navigate("/");
   };

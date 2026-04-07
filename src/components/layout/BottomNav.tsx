@@ -1,7 +1,8 @@
-import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, CalendarDays, Package } from "lucide-react";
+import { Home, Gift, Users, Sparkles, User, Shield } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAppMode } from "@/contexts/AppModeContext";
+import { useEventRole } from "@/hooks/useEventRole";
 
 const fullTabs = [
   { icon: Home, label: "Home", path: "/" },
@@ -17,14 +18,27 @@ const registryTabs = [
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
+const honoreeTabs = [
+  { icon: Home, label: "Home", path: "/" },
+  { icon: Gift, label: "Registry", path: "/registry" },
+  { icon: Sparkles, label: "Predictions", path: "/predictions" },
+  { icon: User, label: "Profile", path: "/profile" },
+];
+
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, modeLoading } = useAppMode();
+  const { eventRole, isAdmin, loading: roleLoading } = useEventRole();
 
-  if (modeLoading || mode === "choose") return null;
+  if (modeLoading || roleLoading || mode === "choose") return null;
 
-  const tabs = mode === "registry" ? registryTabs : fullTabs;
+  let tabs = mode === "registry" ? registryTabs : fullTabs;
+
+  // Honorees in surprise mode don't see guests/invites
+  if (eventRole === "honoree") {
+    tabs = honoreeTabs;
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around h-16 px-2 z-50 max-w-[430px] mx-auto">
