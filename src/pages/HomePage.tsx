@@ -231,6 +231,31 @@ const ModeChooser = () => {
   );
 };
 
+const EventSwitcher = () => {
+  const { allEvents, activeEvent, switchEvent } = useActiveEvent();
+  if (allEvents.length <= 1) return null;
+
+  return (
+    <div className="mb-4">
+      <Select value={activeEvent?.id || ""} onValueChange={switchEvent}>
+        <SelectTrigger className="w-full h-10 rounded-xl bg-card border-none">
+          <div className="flex items-center gap-2">
+            <ArrowLeftRight className="h-4 w-4 text-primary" />
+            <SelectValue placeholder="Select event" />
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          {allEvents.map((evt) => (
+            <SelectItem key={evt.id} value={evt.id}>
+              {evt.honoree_name ? `${evt.honoree_name}'s ${evt.event_type === "shower" ? "Shower" : "Registry"}` : `${evt.event_type === "shower" ? "Baby Shower" : "Registry"}`}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 const ShowerDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
