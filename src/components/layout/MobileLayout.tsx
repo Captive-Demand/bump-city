@@ -36,7 +36,7 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
     <div className="flex justify-center min-h-screen bg-muted/50">
       <div className="w-full max-w-[430px] md:max-w-none min-h-screen bg-background relative flex flex-col shadow-2xl md:shadow-none">
         <main className="flex-1 overflow-y-auto pb-20">
-          <BrandHeader />
+          {!hideNav && <BrandHeader />}
           {children}
         </main>
         {!hideNav && <BottomNav />}
