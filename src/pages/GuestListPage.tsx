@@ -94,37 +94,47 @@ const GuestListPage = () => {
     if (inviteImageUrlRef.current) return inviteImageUrlRef.current;
 
     const templateId = (event as any)?.invite_template || "baby-blocks";
-    const inviteTitle = (event as any)?.invite_title || event?.honoree_name ? `${event?.honoree_name}'s Baby Shower` : "Baby Shower";
+    const inviteTitle = (event as any)?.invite_title || (event?.honoree_name ? `${event?.honoree_name}'s Baby Shower` : "Baby Shower");
     const inviteMessage = (event as any)?.invite_message || "You're invited to celebrate with us! 🎉";
     const TemplateComponent = templates[templateId] || templates["baby-blocks"];
     const eventDate = event?.event_date ? new Date(event.event_date) : undefined;
-    const location = event?.city || "";
+    const loc = event?.city || "";
 
     // Create an off-screen container
     const container = document.createElement("div");
     container.style.cssText = "position:fixed;left:-9999px;top:0;width:500px;z-index:-1;";
     document.body.appendChild(container);
 
-    const root = createRoot(container);
-    root.render(
-      <TemplateComponent title={inviteTitle} eventDate={eventDate} location={location} message={inviteMessage} />
-    );
+    // Use createRoot to render React component
+    const { createRoot: cr } = await import("react-dom/client");
+    const root = cr(container);
 
-    // Wait for images to load
-    await new Promise((r) => setTimeout(r, 1000));
+    await new Promise<void>((resolve) => {
+      root.render(
+        <TemplateComponent title={inviteTitle} eventDate={eventDate} location={loc} message={inviteMessage} />
+      );
+      // Wait for render + image loading
+      setTimeout(resolve, 2000);
+    });
 
-    const dataUrl = await toPng(container, { quality: 0.95, pixelRatio: 2 });
-    root.unmount();
-    document.body.removeChild(container);
+    try {
+      const dataUrl = await toPng(container, { quality: 0.95, pixelRatio: 2 });
+      root.unmount();
+      document.body.removeChild(container);
 
-    // Upload to storage
-    const blob = await (await fetch(dataUrl)).blob();
-    const path = `invites/${event!.id}/invite.png`;
-    await supabase.storage.from("uploads").upload(path, blob, { upsert: true, contentType: "image/png" });
-    const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
-    const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
-    inviteImageUrlRef.current = publicUrl;
-    return publicUrl;
+      // Upload to storage
+      const blob = await (await fetch(dataUrl)).blob();
+      const path = `invites/${event!.id}/invite.png`;
+      await supabase.storage.from("uploads").upload(path, blob, { upsert: true, contentType: "image/png" });
+      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
+      inviteImageUrlRef.current = publicUrl;
+      return publicUrl;
+    } catch (err) {
+      root.unmount();
+      document.body.removeChild(container);
+      throw err;
+    }
   }, [event]);
 
   const sendInvite = async (guest: Guest) => {
