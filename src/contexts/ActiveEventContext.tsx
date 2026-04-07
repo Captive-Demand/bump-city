@@ -21,6 +21,7 @@ export interface EventData {
   invite_title: string | null;
   invite_message: string | null;
   invite_image_url: string | null;
+  invite_time_range: string | null;
   user_id: string;
 }
 

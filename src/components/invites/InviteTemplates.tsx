@@ -17,7 +17,7 @@ interface TemplateProps {
 const dateStr = (d?: Date) => (d ? format(d, "MMMM d, yyyy") : "Date TBD");
 
 /* ─── 1. Baby Blocks ─── */
-const BabyBlocks = ({ title, eventDate, location, message }: TemplateProps) => (
+const BabyBlocks = ({ title, eventDate, location, message, timeRange }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={babyBlocksBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "22%", paddingBottom: "30%" }}>
@@ -31,6 +31,11 @@ const BabyBlocks = ({ title, eventDate, location, message }: TemplateProps) => (
       <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
         {dateStr(eventDate)}
       </p>
+      {timeRange && (
+        <p className="text-sm mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
+          {timeRange}
+        </p>
+      )}
       {location && (
         <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
           {location}
@@ -44,7 +49,7 @@ const BabyBlocks = ({ title, eventDate, location, message }: TemplateProps) => (
 );
 
 /* ─── 2. Floral Wreath ─── */
-const FloralWreath = ({ title, eventDate, location, message }: TemplateProps) => (
+const FloralWreath = ({ title, eventDate, location, message, timeRange }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={floralWreathBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-14 text-center" style={{ paddingTop: "18%", paddingBottom: "22%" }}>
@@ -58,6 +63,11 @@ const FloralWreath = ({ title, eventDate, location, message }: TemplateProps) =>
       <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
         {dateStr(eventDate)}
       </p>
+      {timeRange && (
+        <p className="text-sm font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
+          {timeRange}
+        </p>
+      )}
       {location && (
         <p className="text-base font-light mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
           {location}
@@ -71,7 +81,7 @@ const FloralWreath = ({ title, eventDate, location, message }: TemplateProps) =>
 );
 
 /* ─── 3. Blush Roses ─── */
-const BlushRoses = ({ title, eventDate, location, message }: TemplateProps) => (
+const BlushRoses = ({ title, eventDate, location, message, timeRange }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={blushRosesBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
@@ -85,6 +95,11 @@ const BlushRoses = ({ title, eventDate, location, message }: TemplateProps) => (
       <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
         {dateStr(eventDate)}
       </p>
+      {timeRange && (
+        <p className="text-sm font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
+          {timeRange}
+        </p>
+      )}
       {location && (
         <p className="text-base font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
           {location}
@@ -98,7 +113,7 @@ const BlushRoses = ({ title, eventDate, location, message }: TemplateProps) => (
 );
 
 /* ─── 4. Garden Peony ─── */
-const GardenPeony = ({ title, eventDate, location, message }: TemplateProps) => (
+const GardenPeony = ({ title, eventDate, location, message, timeRange }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={gardenPeonyBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "18%", paddingBottom: "16%" }}>
@@ -112,6 +127,11 @@ const GardenPeony = ({ title, eventDate, location, message }: TemplateProps) => 
       <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
         {dateStr(eventDate)}
       </p>
+      {timeRange && (
+        <p className="text-sm mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
+          {timeRange}
+        </p>
+      )}
       {location && (
         <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
           {location}
@@ -125,7 +145,7 @@ const GardenPeony = ({ title, eventDate, location, message }: TemplateProps) => 
 );
 
 /* ─── 5. Sage Leaf ─── */
-const SageLeaf = ({ title, eventDate, location, message }: TemplateProps) => (
+const SageLeaf = ({ title, eventDate, location, message, timeRange }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={sageLeafBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center text-center px-12" style={{ paddingTop: "15%", paddingRight: "8%", paddingLeft: "30%" }}>
@@ -139,6 +159,11 @@ const SageLeaf = ({ title, eventDate, location, message }: TemplateProps) => (
       <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
         {dateStr(eventDate)}
       </p>
+      {timeRange && (
+        <p className="text-sm mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
+          {timeRange}
+        </p>
+      )}
       {location && (
         <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
           {location}

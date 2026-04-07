@@ -244,6 +244,7 @@ export type Database = {
           invite_image_url: string | null
           invite_message: string | null
           invite_template: string | null
+          invite_time_range: string | null
           invite_title: string | null
           registry_name: string | null
           registry_private: boolean | null
@@ -267,6 +268,7 @@ export type Database = {
           invite_image_url?: string | null
           invite_message?: string | null
           invite_template?: string | null
+          invite_time_range?: string | null
           invite_title?: string | null
           registry_name?: string | null
           registry_private?: boolean | null
@@ -290,6 +292,7 @@ export type Database = {
           invite_image_url?: string | null
           invite_message?: string | null
           invite_template?: string | null
+          invite_time_range?: string | null
           invite_title?: string | null
           registry_name?: string | null
           registry_private?: boolean | null
