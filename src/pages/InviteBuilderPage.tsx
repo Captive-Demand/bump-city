@@ -32,6 +32,8 @@ const InviteBuilderPage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedImageUrl, setSavedImageUrl] = useState<string | null>(null);
+  const [customImageFile, setCustomImageFile] = useState<File | null>(null);
+  const [customImagePreviewUrl, setCustomImagePreviewUrl] = useState<string | null>(null);
 
   // Load saved invite settings from event
   useEffect(() => {
@@ -40,24 +42,45 @@ const InviteBuilderPage = () => {
       if ((event as any).invite_title) setTitle((event as any).invite_title);
       if ((event as any).invite_message) setMessage((event as any).invite_message);
       if ((event as any).invite_time_range) setTimeRange((event as any).invite_time_range);
-      if ((event as any).invite_image_url) setSavedImageUrl((event as any).invite_image_url);
+      if ((event as any).invite_image_url) {
+        setSavedImageUrl((event as any).invite_image_url);
+        if ((event as any).invite_template === "custom") {
+          setCustomImagePreviewUrl((event as any).invite_image_url);
+        }
+      }
     }
   }, [event]);
+
+  const handleUploadCustom = (file: File) => {
+    setCustomImageFile(file);
+    setCustomImagePreviewUrl(URL.createObjectURL(file));
+    setTemplateId("custom");
+  };
 
   const handleSave = async () => {
     if (!event || !user) return;
     setSaving(true);
 
     try {
-      // 1. Generate the invite image
-      const blob = await renderInviteToBlob({
-        templateId,
-        title,
-        eventDate,
-        location,
-        message,
-        timeRange,
-      });
+      // 1. Get the blob — either custom file or rendered template
+      let blob: Blob;
+      if (templateId === "custom") {
+        if (!customImageFile && !customImagePreviewUrl) {
+          toast.error("Please upload a custom image first");
+          setSaving(false);
+          return;
+        }
+        blob = customImageFile || await (await fetch(customImagePreviewUrl!)).blob();
+      } else {
+        blob = await renderInviteToBlob({
+          templateId,
+          title,
+          eventDate,
+          location,
+          message,
+          timeRange,
+        });
+      }
 
       // 2. Upload to user-owned storage path
       const path = `${user.id}/invites/${event.id}/invite.png`;
@@ -121,7 +144,11 @@ const InviteBuilderPage = () => {
                 className="w-full overflow-hidden border border-border/60 bg-card shadow-sm"
                 style={{ maxWidth: "calc(72vh * 5 / 7)" }}
               >
-                <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} timeRange={timeRange} />
+                {templateId === "custom" && customImagePreviewUrl ? (
+                  <img src={customImagePreviewUrl} alt="Custom invite" className="w-full h-auto" />
+                ) : (
+                  <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} timeRange={timeRange} />
+                )}
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={() => setShowPreview(false)}>
@@ -130,7 +157,13 @@ const InviteBuilderPage = () => {
           </>
         ) : (
           <>
-            <InviteTemplatePicker selected={templateId} onSelect={setTemplateId} />
+            <InviteTemplatePicker selected={templateId} onSelect={(id) => { setTemplateId(id); setCustomImageFile(null); setCustomImagePreviewUrl(null); }} onUploadCustom={handleUploadCustom} />
+
+            {templateId === "custom" && customImagePreviewUrl && (
+              <div className="border border-border rounded-lg overflow-hidden bg-white">
+                <img src={customImagePreviewUrl} alt="Custom invite preview" className="w-full h-auto" />
+              </div>
+            )}
 
             <Card className="border-none">
               <CardContent className="p-4 space-y-4">
