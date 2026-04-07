@@ -49,11 +49,11 @@ const RegistryPage = () => {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !event) return;
+    if (!file || !event || !user) return;
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `registry/${event.id}/${crypto.randomUUID()}.${ext}`;
+      const path = `${user.id}/registry/${event.id}/${crypto.randomUUID()}.${ext}`;
       const { error } = await supabase.storage.from("uploads").upload(path, file);
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from("uploads").getPublicUrl(path);
