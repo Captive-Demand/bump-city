@@ -1,13 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
 import ShareInviteButton from "@/components/ShareInviteButton";
 import { useEffect, useState } from "react";
