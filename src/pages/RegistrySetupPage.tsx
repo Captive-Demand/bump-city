@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAppMode, type SetupData } from "@/contexts/AppModeContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,10 +27,25 @@ const StepDots = ({ current, total }: { current: number; total: number }) => (
 
 const RegistrySetupPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setMode, updateSetupData } = useAppMode();
   const { user } = useAuth();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const isNewEvent = searchParams.get("new") === "true";
+
+  useEffect(() => {
+    if (!user || isNewEvent) return;
+    const checkExisting = async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id")
+        .eq("user_id", user.id)
+        .limit(1);
+      if (data && data.length > 0) navigate("/", { replace: true });
+    };
+    checkExisting();
+  }, [user, isNewEvent, navigate]);
 
   const [honoreeName, setHonoreeName] = useState("");
   const [dueDate, setDueDate] = useState<Date>();

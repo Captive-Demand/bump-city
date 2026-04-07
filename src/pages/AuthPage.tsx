@@ -22,15 +22,34 @@ const AuthPage = () => {
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const getSmartRedirect = async (userId: string): Promise<string> => {
+    const { data: ownedEvents } = await supabase
+      .from("events")
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1);
+    if (ownedEvents && ownedEvents.length > 0) return "/";
+
+    const { data: memberships } = await supabase
+      .from("event_members")
+      .select("id")
+      .eq("user_id", userId)
+      .limit(1);
+    if (memberships && memberships.length > 0) return "/";
+
+    return redirectTo;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) {
       toast.error(error.message);
     } else {
-      navigate(redirectTo);
+      const dest = await getSmartRedirect(data.user.id);
+      navigate(dest);
     }
   };
 
@@ -50,7 +69,8 @@ const AuthPage = () => {
       toast.error(error.message);
     } else if (data.session) {
       toast.success("Account created! Welcome to Bump City!");
-      navigate(redirectTo);
+      const dest = await getSmartRedirect(data.session.user.id);
+      navigate(dest);
     } else {
       toast.success("Check your email to verify your account!");
     }

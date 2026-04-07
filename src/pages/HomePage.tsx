@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight } from "lucide-react";
+import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -230,6 +230,7 @@ const ModeChooser = () => {
 };
 
 const ShowerDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
   const avatarUrl = user?.user_metadata?.avatar_url;
@@ -266,6 +267,15 @@ const ShowerDashboard = () => {
       <div className="px-6 pb-8 space-y-6">
         <QuickActions />
         <NextTasks />
+
+        <Button
+          variant="outline"
+          className="w-full h-12 rounded-xl border-dashed border-2 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/get-started?new=true")}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Create New Event
+        </Button>
       </div>
     </MobileLayout>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +26,8 @@ const StepDots = ({ current, total }: { current: number; total: number }) => (
 
 const GetStartedPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isNew = searchParams.get("new") === "true";
   const [step, setStep] = useState(0);
   const [eventType, setEventType] = useState<EventType | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
@@ -34,13 +36,19 @@ const GetStartedPage = () => {
     if (step === 0 && eventType) {
       setStep(1);
     } else if (step === 1 && role) {
-      // Send them to signup with onboarding params preserved
+      const setupPath = eventType === "shower" ? "/setup/shower" : "/setup/registry";
+      const redirect = isNew ? `${setupPath}?new=true` : setupPath;
       const params = new URLSearchParams({
-        redirect: eventType === "shower" ? "/setup/shower" : "/setup/registry",
+        redirect,
         eventType,
         role,
       });
-      navigate(`/auth?${params.toString()}`);
+      if (isNew) {
+        // Already logged in, go straight to setup
+        navigate(redirect);
+      } else {
+        navigate(`/auth?${params.toString()}`);
+      }
     }
   };
 
