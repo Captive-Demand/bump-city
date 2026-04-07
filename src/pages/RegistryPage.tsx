@@ -305,14 +305,19 @@ const RegistryPage = () => {
                   <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>
                 </div>
               </div>
-              {item.claimed ? (
-                <div className="flex items-center gap-1 text-primary">
-                  <Check className="h-4 w-4" />
-                  <span className="text-[10px] font-medium">{item.claimed_by}</span>
-                </div>
-              ) : (
-                <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
-              )}
+              <div className="flex items-center gap-1">
+                {item.claimed ? (
+                  <div className="flex items-center gap-1 text-primary">
+                    <Check className="h-4 w-4" />
+                    <span className="text-[10px] font-medium">{item.claimed_by}</span>
+                  </div>
+                ) : (
+                  <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
+                )}
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
