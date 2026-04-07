@@ -1,95 +1,38 @@
 
 
-# Role System Overhaul
+# Self-Service Shopify Connection in Admin Settings
 
-## Current State
+## Summary
 
-Right now, the app has a fragmented role system:
+Add a "Shopify Store" integration card to the Admin Settings tab so Tiffany (or any admin) can connect her own Shopify store directly from the app — no developer access needed.
 
-- **`user_roles` table** — uses `app_role` enum with values: `admin`, `moderator`, `user`. Only used for admin panel access check via `has_role()`.
-- **`profiles.role` column** — stores `planner` or `expectant-parent` (set during shower setup). Not connected to `user_roles`.
-- **`event_members.role` column** — stores `guest` (default). Set when someone joins via invite code.
-- **No "super admin" distinction** — admin is a flat role with no hierarchy.
+## How It Works
 
-These three systems don't talk to each other, and there's no unified way to determine what a user can see/do.
+1. **New `app_settings` row** — store the Shopify store domain (e.g. `bumpcity.myshopify.com`) and a Shopify Storefront Access Token as app settings. These are the two things needed to pull products/gift cards via the Storefront API.
 
-## Proposed Role Architecture
+2. **Admin Settings UI** — add an "Integrations" section to the Settings tab on the Admin page with:
+   - A Shopify card showing connection status (connected / not connected)
+   - Input fields for **Shopify store domain** and **Storefront Access Token**
+   - A "Connect" / "Update" button that saves to `app_settings`
+   - A "Disconnect" button that clears the values
+   - Brief instructions telling the admin where to find the token in Shopify (Settings → Apps and sales channels → Develop apps → Storefront API)
 
-```text
-┌─────────────────────────────────────────────┐
-│  PLATFORM ROLES (user_roles table)          │
-│  Controls app-wide access                   │
-├─────────────────────────────────────────────┤
-│  super_admin  — Full platform control,      │
-│                 can promote admins           │
-│  admin        — Manage vendors, community   │
-│                 events, app settings         │
-└─────────────────────────────────────────────┘
+3. **Database** — add two new rows to `app_settings`:
+   - `shopify_store_domain` (value: empty by default)
+   - `shopify_storefront_token` (value: empty by default)
 
-┌─────────────────────────────────────────────┐
-│  EVENT ROLES (event_members.role column)     │
-│  Controls per-event access                  │
-├─────────────────────────────────────────────┤
-│  host         — Created the event, full     │
-│                 control (was "planner")      │
-│  co-host      — Can manage guests, registry │
-│  honoree      — The expectant parent,       │
-│                 limited in surprise mode     │
-│  guest        — View event, RSVP, claim     │
-│                 registry, make predictions   │
-└─────────────────────────────────────────────┘
-```
+4. **Edge function for Shopify API calls** — create `supabase/functions/shopify-proxy/index.ts` that reads the domain and token from `app_settings` and proxies Storefront API requests (products, gift cards). This keeps the token server-side.
 
-**Key insight**: Platform roles and event roles are separate concerns. A user can be a `guest` on one event and a `host` on another. Platform roles (`super_admin`/`admin`) are orthogonal.
+## Technical Details
 
-## Implementation Steps
-
-### 1. Database Migration
-
-- Add `super_admin` to the `app_role` enum
-- Update `event_members.role` to support: `host`, `co-host`, `honoree`, `guest`
-- Remove `profiles.role` column (move logic to `event_members.role`)
-- Update `has_role()` to handle super_admin (super_admin inherits admin)
-- Auto-insert event creator as `host` in `event_members` during shower setup
-
-### 2. Update Admin Panel (BC-014)
-
-- Super admins see a "Manage Admins" tab to promote/demote users
-- Regular admins see vendors, community events, settings only
-- Update `AdminPage.tsx` to distinguish super_admin vs admin
-
-### 3. Update Shower Setup Flow
-
-- Replace `profiles.role` usage with `event_members` role assignment
-- When user picks "I'm the expectant parent" → insert as `honoree` + `host`
-- When user picks "I'm planning for someone else" → insert as `host`, optionally invite the honoree
-
-### 4. Update Navigation & Permissions
-
-- **Host/Co-host**: See full nav (guests, invites, planning, predictions, registry, gift tracker)
-- **Honoree**: See home, registry, gift tracker, predictions (hide guest list & invites if surprise mode)
-- **Guest**: See guest event page only (already works via `/event/:eventId`)
-- **Admin/Super Admin**: See admin link in sidebar
-
-### 5. Update AuthContext / AppModeContext
-
-- Add a `useEventRole()` hook that returns the user's role for the current event
-- Replace `mode` logic (shower/registry/choose) with role-based navigation
-- Sidebar and bottom nav render tabs based on event role
-
-### 6. RLS Policy Updates
-
-- Co-hosts can manage guests, registry items for their event
-- Honorees can view registry, manage gifts received, but not guest list in surprise mode
-- Keep existing guest policies intact
+- **Migration**: Insert two new `app_settings` rows with keys `shopify_store_domain` and `shopify_storefront_token`
+- **AdminPage.tsx**: Add an "Integrations" section inside the Settings tab with the Shopify connection form, visible to admins
+- **Edge function**: A simple proxy that reads credentials from `app_settings` and forwards GraphQL queries to `https://{domain}/api/2024-01/graphql.json` with the storefront token
+- No Lovable-level Shopify connector needed — this is a self-service flow using Shopify's public Storefront API
 
 ## Files Changed
 
-- **Migration**: alter `app_role` enum, update `event_members.role`, drop `profiles.role`, update `has_role()`
-- **New hook**: `src/hooks/useEventRole.ts`
-- **Modified**: `AuthContext.tsx` or `AppModeContext.tsx` — integrate event role
-- **Modified**: `DesktopSidebar.tsx`, `BottomNav.tsx` — role-based tab rendering
-- **Modified**: `ShowerSetupPage.tsx` — write to `event_members` instead of `profiles.role`
-- **Modified**: `AdminPage.tsx` — super_admin vs admin distinction
-- **Modified**: `HomePage.tsx` — role-aware dashboard
+- `supabase/migrations/` — new migration for `app_settings` rows
+- `src/pages/AdminPage.tsx` — Shopify connection UI in Settings tab
+- `supabase/functions/shopify-proxy/index.ts` — new edge function
 
