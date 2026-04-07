@@ -24,7 +24,7 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
         <DesktopSidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
-            <BrandHeader />
+            {!hideNav && <BrandHeader />}
             {children}
           </div>
         </main>
