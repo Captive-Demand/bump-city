@@ -2,6 +2,7 @@ import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, Calenda
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAppMode } from "@/contexts/AppModeContext";
+import { useEventRole } from "@/hooks/useEventRole";
 import appIcon from "@/assets/Bump-City-Icon.png";
 
 const fullTabs = [
@@ -24,14 +25,32 @@ const registryTabs = [
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
+const honoreeTabs = [
+  { icon: Home, label: "Home", path: "/" },
+  { icon: Gift, label: "Registry", path: "/registry" },
+  { icon: Package, label: "Gifts", path: "/gift-tracker" },
+  { icon: Sparkles, label: "Predictions", path: "/predictions" },
+  { icon: User, label: "Profile", path: "/profile" },
+];
+
 export const DesktopSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode, modeLoading } = useAppMode();
+  const { eventRole, isAdmin, loading: roleLoading } = useEventRole();
 
-  if (modeLoading || mode === "choose") return null;
+  if (modeLoading || roleLoading || mode === "choose") return null;
 
-  const tabs = mode === "registry" ? registryTabs : fullTabs;
+  let tabs = mode === "registry" ? registryTabs : fullTabs;
+
+  if (eventRole === "honoree") {
+    tabs = honoreeTabs;
+  }
+
+  // Add admin tab for admins/super_admins
+  if (isAdmin) {
+    tabs = [...tabs, { icon: Shield, label: "Admin", path: "/admin" }];
+  }
 
   return (
     <aside className="w-20 min-h-screen bg-card border-r border-border flex flex-col items-center py-8 gap-2 shrink-0">
