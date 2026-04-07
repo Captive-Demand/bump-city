@@ -65,6 +65,7 @@ const ShowerSetupPage = () => {
   const [clearWrapping, setClearWrapping] = useState(false);
   const [surpriseMode, setSurpriseMode] = useState(false);
   const [giftNote, setGiftNote] = useState("");
+  const [pushNotifications, setPushNotifications] = useState(false);
 
   const canNext = () => {
     if (step === 0) return true;
@@ -108,7 +109,7 @@ const ShowerSetupPage = () => {
     await supabase.from("event_members").insert(membersToInsert);
 
     // Update profile city (no more role column)
-    await supabase.from("profiles").update({ city: city.trim() || null }).eq("id", user.id);
+    await supabase.from("profiles").update({ city: city.trim() || null, push_notifications: pushNotifications }).eq("id", user.id);
 
     setSaving(false);
 
@@ -220,6 +221,10 @@ const ShowerSetupPage = () => {
                   <Switch checked={surpriseMode} onCheckedChange={setSurpriseMode} />
                 </div>
               )}
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border">
+                <div><p className="font-semibold text-sm">🔔 Local event notifications</p><p className="text-xs text-muted-foreground">Get notified about community events & meetups</p></div>
+                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
+              </div>
             </div>
           )}
         </div>
