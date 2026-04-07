@@ -31,22 +31,26 @@ export const useEventRole = () => {
         }
       }
 
-      // Fetch event role
+      // Fetch event role from event_members
       if (event) {
-        // Check if user is event owner (legacy — treat as host)
-        // event doesn't expose user_id in the hook, so check event_members
-        {
-          setEventRole("host");
-        } else {
-          const { data: memberData } = await supabase
-            .from("event_members")
-            .select("role")
-            .eq("event_id", event.id)
-            .eq("user_id", user.id)
-            .maybeSingle();
+        const { data: memberData } = await supabase
+          .from("event_members")
+          .select("role")
+          .eq("event_id", event.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-          if (memberData) {
-            setEventRole(memberData.role as EventRole);
+        if (memberData) {
+          setEventRole(memberData.role as EventRole);
+        } else {
+          // Fallback: event owner without event_members row is host
+          const { data: eventData } = await supabase
+            .from("events")
+            .select("user_id")
+            .eq("id", event.id)
+            .single();
+          if (eventData && eventData.user_id === user.id) {
+            setEventRole("host");
           }
         }
       }
