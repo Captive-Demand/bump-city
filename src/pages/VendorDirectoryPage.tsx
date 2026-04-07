@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MapPin, Search, ExternalLink, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Categories are derived dynamically from vendor data
+// Categories derived dynamically from data
 
 interface Vendor {
   id: string;
