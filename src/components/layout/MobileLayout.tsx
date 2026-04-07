@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import bumpCityIcon from "@/assets/bump-city-icon.png";
+import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
 export interface MobileLayoutProps {
   children: ReactNode;
@@ -11,7 +11,7 @@ export interface MobileLayoutProps {
 
 const BrandHeader = () => (
   <div className="flex justify-center pt-4 pb-1">
-    <img src={bumpCityIcon} alt="Bump City" className="h-10 w-10 rounded-xl" />
+    <img src={bumpCityLogo} alt="Bump City" className="h-8" />
   </div>
 );
 
