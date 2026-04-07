@@ -199,7 +199,7 @@ const RegistryPage = () => {
                   </div>
                   {scrapedData && (
                     <>
-                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-full h-32 object-cover rounded-lg" />}
+                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
                       <div className="space-y-1.5">
                         <Label>Item name</Label>
                         <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
