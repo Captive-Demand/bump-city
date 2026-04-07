@@ -1,71 +1,95 @@
 
 
-# Complete Remaining Backlog Items (No External Dependencies)
+# Role System Overhaul
 
-## Items to Complete
+## Current State
 
-These 5 backlog items can be fully built without Twilio, Shopify, or any external API keys:
+Right now, the app has a fragmented role system:
 
-| Item | What's Missing |
-|------|---------------|
-| **BC-016** Host Reveal Flow | Predictions page needs a "Reveal Results" tab where the host enters actual results and the system picks winners |
-| **BC-014** Admin CRUD | Admin page is a placeholder — needs real CRUD for registry items, vendors, and community events, protected by admin role |
-| **BC-018** Admin Incentive Fields | Add an `app_settings` table and editable settings UI in admin (incentive values, reward amounts) |
-| **BC-019** Admin Dashboard | Add stats section (user count, active events, registry stats) to admin page |
-| **BC-011** Registry URL Import | Build a `scrape-url` edge function that fetches Open Graph metadata, plus an "Add from URL" button on the registry page |
+- **`user_roles` table** — uses `app_role` enum with values: `admin`, `moderator`, `user`. Only used for admin panel access check via `has_role()`.
+- **`profiles.role` column** — stores `planner` or `expectant-parent` (set during shower setup). Not connected to `user_roles`.
+- **`event_members.role` column** — stores `guest` (default). Set when someone joins via invite code.
+- **No "super admin" distinction** — admin is a flat role with no hierarchy.
 
-BC-005 (Surprise Mode) already has the `surprise_mode` column on the `events` table, but the toggle UI and conditional hiding logic are missing — I'll include that too.
+These three systems don't talk to each other, and there's no unified way to determine what a user can see/do.
 
----
+## Proposed Role Architecture
 
-## Implementation Plan
+```text
+┌─────────────────────────────────────────────┐
+│  PLATFORM ROLES (user_roles table)          │
+│  Controls app-wide access                   │
+├─────────────────────────────────────────────┤
+│  super_admin  — Full platform control,      │
+│                 can promote admins           │
+│  admin        — Manage vendors, community   │
+│                 events, app settings         │
+└─────────────────────────────────────────────┘
 
-### 1. Database Changes (single migration)
+┌─────────────────────────────────────────────┐
+│  EVENT ROLES (event_members.role column)     │
+│  Controls per-event access                  │
+├─────────────────────────────────────────────┤
+│  host         — Created the event, full     │
+│                 control (was "planner")      │
+│  co-host      — Can manage guests, registry │
+│  honoree      — The expectant parent,       │
+│                 limited in surprise mode     │
+│  guest        — View event, RSVP, claim     │
+│                 registry, make predictions   │
+└─────────────────────────────────────────────┘
+```
 
-- Create `user_roles` table with `user_id` + `role` (enum: admin, moderator, user)
-- Create `has_role()` security definer function for safe RLS checks
-- Create `app_settings` table (single-row key/value config: `download_incentive_value`, `prediction_reward_amount`)
-- Add RLS policies: admins can manage vendors, community_events, and app_settings; regular users read-only
-- Seed default app_settings row
+**Key insight**: Platform roles and event roles are separate concerns. A user can be a `guest` on one event and a `host` on another. Platform roles (`super_admin`/`admin`) are orthogonal.
 
-### 2. Admin Role System + Full CRUD Panel (BC-014, BC-018, BC-019)
+## Implementation Steps
 
-Rewrite `AdminPage.tsx` with:
-- **Dashboard tab**: query counts from events, profiles, registry_items tables to show stats
-- **Registry Items tab**: table listing all Bump City Store / local service items with add/edit/delete
-- **Vendors tab**: CRUD for vendor directory entries
-- **Community Events tab**: CRUD for community events
-- **Settings tab**: editable form for `app_settings` values (incentive amounts, reward values)
-- Route protection: check `has_role(uid, 'admin')` — show "Access denied" if not admin
+### 1. Database Migration
 
-### 3. Host Reveal Flow (BC-016)
+- Add `super_admin` to the `app_role` enum
+- Update `event_members.role` to support: `host`, `co-host`, `honoree`, `guest`
+- Remove `profiles.role` column (move logic to `event_members.role`)
+- Update `has_role()` to handle super_admin (super_admin inherits admin)
+- Auto-insert event creator as `host` in `event_members` during shower setup
 
-Add a "Results" tab to `PredictionsPage.tsx`:
-- Host enters actual birth date, gender, weight, and name
-- "Reveal Winners" button compares all predictions, scores them, marks `is_winner = true`
-- Confetti animation on reveal
-- Winner display with highlight badges
+### 2. Update Admin Panel (BC-014)
 
-### 4. Scrape URL Edge Function + Registry UI (BC-011)
+- Super admins see a "Manage Admins" tab to promote/demote users
+- Regular admins see vendors, community events, settings only
+- Update `AdminPage.tsx` to distinguish super_admin vs admin
 
-- Create `supabase/functions/scrape-url/index.ts` — fetches a URL, parses `og:title`, `og:image`, `og:description` from HTML
-- Add "Add from URL" button on registry page — paste a product link, auto-populate name/image/price fields
-- Deploy the edge function
+### 3. Update Shower Setup Flow
 
-### 5. Surprise Mode Toggle (BC-005)
+- Replace `profiles.role` usage with `event_members` role assignment
+- When user picks "I'm the expectant parent" → insert as `honoree` + `host`
+- When user picks "I'm planning for someone else" → insert as `host`, optionally invite the honoree
 
-- Add a "Surprise Mode" switch to the shower setup flow and to the home dashboard settings
-- When enabled, conditional rendering hides shower details (date, location, theme) from the expectant parent's view based on their profile role
+### 4. Update Navigation & Permissions
 
----
+- **Host/Co-host**: See full nav (guests, invites, planning, predictions, registry, gift tracker)
+- **Honoree**: See home, registry, gift tracker, predictions (hide guest list & invites if surprise mode)
+- **Guest**: See guest event page only (already works via `/event/:eventId`)
+- **Admin/Super Admin**: See admin link in sidebar
+
+### 5. Update AuthContext / AppModeContext
+
+- Add a `useEventRole()` hook that returns the user's role for the current event
+- Replace `mode` logic (shower/registry/choose) with role-based navigation
+- Sidebar and bottom nav render tabs based on event role
+
+### 6. RLS Policy Updates
+
+- Co-hosts can manage guests, registry items for their event
+- Honorees can view registry, manage gifts received, but not guest list in surprise mode
+- Keep existing guest policies intact
 
 ## Files Changed
 
-- **New migration**: `user_roles` table, `has_role()` function, `app_settings` table, updated RLS for vendors/community_events
-- **New edge function**: `supabase/functions/scrape-url/index.ts`
-- **Rewritten**: `src/pages/AdminPage.tsx` (full CRUD + dashboard + settings)
-- **Modified**: `src/pages/PredictionsPage.tsx` (add Results tab with reveal flow)
-- **Modified**: `src/pages/RegistryPage.tsx` (add "Add from URL" feature)
-- **Modified**: `src/pages/HomePage.tsx` (surprise mode conditional rendering)
-- **Modified**: `src/pages/ShowerSetupPage.tsx` (surprise mode toggle)
+- **Migration**: alter `app_role` enum, update `event_members.role`, drop `profiles.role`, update `has_role()`
+- **New hook**: `src/hooks/useEventRole.ts`
+- **Modified**: `AuthContext.tsx` or `AppModeContext.tsx` — integrate event role
+- **Modified**: `DesktopSidebar.tsx`, `BottomNav.tsx` — role-based tab rendering
+- **Modified**: `ShowerSetupPage.tsx` — write to `event_members` instead of `profiles.role`
+- **Modified**: `AdminPage.tsx` — super_admin vs admin distinction
+- **Modified**: `HomePage.tsx` — role-aware dashboard
 
