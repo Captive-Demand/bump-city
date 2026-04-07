@@ -50,7 +50,7 @@ const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
                   ? "border-primary shadow-[0_12px_30px_hsl(var(--primary)/0.18)]"
                   : "border-border hover:border-primary/30"
               )}
-              style={{ aspectRatio: "5 / 7" }}
+              style={{ aspectRatio: "1 / 1" }}
             >
               <div
                 aria-hidden="true"
