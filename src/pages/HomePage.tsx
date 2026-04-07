@@ -41,20 +41,18 @@ const EventCard = () => {
   return (
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
-        <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 p-5 pb-3 relative overflow-hidden">
-          {daysToGo !== null && (
-            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide mb-3 relative z-10">
-              ⏰ {daysToGo} DAYS TO GO
-            </Badge>
-          )}
+        <div className="relative overflow-hidden">
           {eventImageUrl ? (
-            <div className="flex justify-center my-2">
-              <img src={eventImageUrl} alt="Event" className="w-full h-36 object-cover rounded-xl" />
-            </div>
+            <img src={eventImageUrl} alt="Event" className="w-full h-44 object-cover" />
           ) : (
-            <div className="flex justify-center my-2">
+            <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 h-44 flex items-center justify-center">
               <span className="text-5xl">🎉</span>
             </div>
+          )}
+          {daysToGo !== null && (
+            <Badge className="bg-mint text-mint-foreground text-[10px] font-bold tracking-wide absolute top-3 left-3 z-10">
+              ⏰ {daysToGo} DAYS TO GO
+            </Badge>
           )}
         </div>
         <div className="p-5 pt-3">
