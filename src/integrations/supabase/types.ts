@@ -241,6 +241,7 @@ export type Database = {
           gift_policy: string | null
           honoree_name: string | null
           id: string
+          invite_image_url: string | null
           invite_message: string | null
           invite_template: string | null
           invite_title: string | null
@@ -263,6 +264,7 @@ export type Database = {
           gift_policy?: string | null
           honoree_name?: string | null
           id?: string
+          invite_image_url?: string | null
           invite_message?: string | null
           invite_template?: string | null
           invite_title?: string | null
@@ -285,6 +287,7 @@ export type Database = {
           gift_policy?: string | null
           honoree_name?: string | null
           id?: string
+          invite_image_url?: string | null
           invite_message?: string | null
           invite_template?: string | null
           invite_title?: string | null
