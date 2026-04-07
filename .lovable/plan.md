@@ -1,53 +1,54 @@
 
-Fix missing invitation image in app emails
 
-What I found
-- The app email send is succeeding, but the invite image upload is failing first.
-- Network logs show the storage write to `uploads/invites/{eventId}/invite.png` is rejected by storage rules.
-- `src/pages/GuestListPage.tsx` does not stop when that upload fails. It still builds a public URL and sends the email, which is why the email can arrive with a blank/missing image.
-- The current path also uses `upsert: true` on a shared `invites/...` path. That makes resends fragile under the current storage rules.
-- There is also a second reliability issue: the image is generated at send time from an off-screen browser render, so every email depends on a live capture succeeding in that moment.
+# Fix: Blank Invite Image — Switch to html2canvas
 
-Plan
-1. Save a real invite image on the event
-   - Generate the invitation PNG when the host saves the design in Invite Builder.
-   - Upload it to a user-owned path like `{user.id}/invites/{event.id}/invite.png` so it matches the project’s existing storage pattern and supports resends safely.
-   - Store that image URL on the event record.
+## Root Cause
 
-2. Send the saved image, not a fresh render
-   - Update the guest email flow to use the saved invite image from the selected event.
-   - If no saved image exists yet, stop and show a clear error like “Please save your invite first.”
-   - Never continue to send the email if image generation or upload fails.
+`html-to-image` (toPng) uses an SVG `foreignObject` technique to capture DOM content. This method is notoriously unreliable with:
+- Cross-origin images (even after data URI conversion, the SVG serialization can fail silently)
+- CSS features like `object-fit`, `background-size`, Tailwind classes
+- Off-screen rendering containers
 
-3. Make image export more reliable
-   - Move the PNG generation into a dedicated export helper/component with explicit width, height, and background.
-   - Keep the bundled-image data URI conversion, but use it in the export helper rather than relying on the interactive preview tree.
-   - This makes the exported PNG stable and avoids transparent captures.
+The result is a valid PNG file that is entirely white/transparent — exactly what the screenshot shows.
 
-4. Keep resend support
-   - Reuse the saved event image for resends instead of re-rendering on every click.
-   - Keep the unique idempotency key so repeated sends are treated as separate attempts.
-   - This gives consistent output every time the host resends.
+## Solution
 
-5. Fix the RSVP URL source
-   - Replace the hardcoded `https://bump-city.lovable.app` in `GuestListPage.tsx`.
-   - Use the same origin logic already used by the share-invite flow so the RSVP button respects the custom domain.
+Replace `html-to-image` with `html2canvas`, which renders directly to a Canvas element by re-implementing the browser's rendering engine in JavaScript. It handles images, CSS, and off-screen elements much more reliably.
 
-Files to update
-- `src/pages/InviteBuilderPage.tsx` — generate/upload the canonical invite PNG when saving
-- `src/pages/GuestListPage.tsx` — use the saved event invite image, fail on upload/generation errors, fix RSVP origin
-- `src/components/invites/InviteTemplates.tsx` or a new shared export helper — stable export rendering
-- `src/contexts/ActiveEventContext.tsx` — add typed invite image fields instead of relying on `any`
-- backend migration — add `invite_image_url` (and optionally `invite_image_path`) to `events`
+### Changes
 
-Technical details
-- The confirmed root cause is the failed storage upload, not just the email template.
-- The current `invites/{eventId}/invite.png` path is the wrong shape for the app’s normal storage ownership pattern.
-- Because the code ignores the upload error, users see “sent” even when the email image URL is invalid or stale.
-- The most reliable architecture is: save one canonical invite image per event, then reuse that exact image in every email.
+**1. `package.json`** — swap `html-to-image` for `html2canvas`
 
-Verification after implementation
-- Save an invite in Invite Builder and confirm the saved image loads correctly.
-- Send to yourself from Guest List and confirm the exact chosen design appears in the email.
-- Resend the same invite and confirm it still works.
-- Click the RSVP button and confirm it opens on the custom domain, not the Lovable URL.
+**2. `src/components/invites/renderInviteToBlob.ts`** — rewrite to use `html2canvas`:
+- Keep the same off-screen container approach
+- Keep the data URI pre-conversion for images (belt-and-suspenders)
+- Replace `toPng(container)` with `html2canvas(container, { useCORS: true, backgroundColor: '#ffffff', scale: 2 })`
+- Convert the resulting canvas to a Blob via `canvas.toBlob()`
+
+```typescript
+import html2canvas from "html2canvas";
+
+// After images are loaded and converted to data URIs:
+const canvas = await html2canvas(container, {
+  useCORS: true,
+  backgroundColor: "#ffffff",
+  scale: 2,
+  width: 500,
+  logging: false,
+});
+
+return new Promise<Blob>((resolve, reject) => {
+  canvas.toBlob(
+    (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+    "image/png",
+    0.95
+  );
+});
+```
+
+**3. No other files change** — InviteBuilderPage and GuestListPage already call `renderInviteToBlob` correctly.
+
+## Files Modified
+- `package.json` — remove `html-to-image`, add `html2canvas`
+- `src/components/invites/renderInviteToBlob.ts` — switch capture engine
+
