@@ -1,54 +1,34 @@
 
 
-# Fix: Blank Invite Image — Switch to html2canvas
+## Plan: Add Custom Invite Upload Option
 
-## Root Cause
+### What changes
 
-`html-to-image` (toPng) uses an SVG `foreignObject` technique to capture DOM content. This method is notoriously unreliable with:
-- Cross-origin images (even after data URI conversion, the SVG serialization can fail silently)
-- CSS features like `object-fit`, `background-size`, Tailwind classes
-- Off-screen rendering containers
+**1. InviteBuilderPage.tsx** — Add a "custom" template mode
+- Add state for `customImageFile` and `customImagePreviewUrl`
+- Add a small text link below the template picker: "Or upload your own design"
+- When clicked, open a file input for image upload (PNG/JPG)
+- When a custom image is selected, set `templateId` to `"custom"` and show the uploaded image as the preview
+- On save: skip `renderInviteToBlob` entirely — upload the custom file directly to storage as the invite image
+- The rest of the flow (saving `invite_image_url` to the event, email sending) stays identical since emails already use the saved image URL
 
-The result is a valid PNG file that is entirely white/transparent — exactly what the screenshot shows.
+**2. InviteTemplatePicker.tsx** — Minor adjustment
+- Accept an optional `onUploadCustom` callback prop
+- Render a small text link below the template grid: "Or upload your own design"
 
-## Solution
+**3. Save logic adjustment**
+- When `templateId === "custom"`, upload the raw file blob instead of calling `renderInviteToBlob`
+- Save `invite_template: "custom"` to the event so it restores correctly on reload
+- When loading a saved event with `invite_template === "custom"`, show the saved image URL as the custom preview
 
-Replace `html-to-image` with `html2canvas`, which renders directly to a Canvas element by re-implementing the browser's rendering engine in JavaScript. It handles images, CSS, and off-screen elements much more reliably.
+**4. Preview mode**
+- When custom is selected, preview shows the uploaded image directly (full-width `<img>`) instead of rendering a template component
 
-### Changes
+**5. Email — no changes needed**
+- The transactional email template (`shower-invitation.tsx`) already renders whatever `imageUrl` is provided — it will work with the custom upload URL identically to generated invites
 
-**1. `package.json`** — swap `html-to-image` for `html2canvas`
-
-**2. `src/components/invites/renderInviteToBlob.ts`** — rewrite to use `html2canvas`:
-- Keep the same off-screen container approach
-- Keep the data URI pre-conversion for images (belt-and-suspenders)
-- Replace `toPng(container)` with `html2canvas(container, { useCORS: true, backgroundColor: '#ffffff', scale: 2 })`
-- Convert the resulting canvas to a Blob via `canvas.toBlob()`
-
-```typescript
-import html2canvas from "html2canvas";
-
-// After images are loaded and converted to data URIs:
-const canvas = await html2canvas(container, {
-  useCORS: true,
-  backgroundColor: "#ffffff",
-  scale: 2,
-  width: 500,
-  logging: false,
-});
-
-return new Promise<Blob>((resolve, reject) => {
-  canvas.toBlob(
-    (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
-    "image/png",
-    0.95
-  );
-});
-```
-
-**3. No other files change** — InviteBuilderPage and GuestListPage already call `renderInviteToBlob` correctly.
-
-## Files Modified
-- `package.json` — remove `html-to-image`, add `html2canvas`
-- `src/components/invites/renderInviteToBlob.ts` — switch capture engine
+### Technical notes
+- File upload path: `{user.id}/invites/{event.id}/invite.png` (same as current)
+- No database migration needed — existing `invite_template` column stores the string `"custom"`
+- No edge function changes — email already uses `invite_image_url` from the event
 
