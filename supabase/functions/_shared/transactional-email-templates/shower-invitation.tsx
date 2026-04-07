@@ -73,6 +73,8 @@ export const template = {
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Nunito', Arial, sans-serif" }
 const container = { padding: '20px 25px', maxWidth: '600px', margin: '0 auto' }
+const greeting = { fontSize: '16px', color: '#3d2b2b', margin: '0 0 8px' }
+const introText = { fontSize: '16px', color: '#3d2b2b', lineHeight: '1.5', margin: '0 0 20px' }
 const imageSection = { margin: '0 0 24px', textAlign: 'center' as const }
 const inviteImage = { borderRadius: '8px', maxWidth: '100%' }
 const buttonSection = { textAlign: 'center' as const, margin: '0 0 24px' }
