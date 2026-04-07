@@ -102,6 +102,17 @@ const RegistryPage = () => {
     fetchItems();
   };
 
+  const handleUnclaim = async (id: string) => {
+    const { error } = await supabase
+      .from("registry_items")
+      .update({ claimed: false, claimed_by: null })
+      .eq("id", id);
+    if (error) { toast.error("Failed to unclaim item"); return; }
+    const item = items.find((i) => i.id === id);
+    if (item) addActivity("gift-claimed", `Unclaimed "${item.name}"`);
+    fetchItems();
+  };
+
   const handleDelete = async (id: string) => {
     const item = items.find((i) => i.id === id);
     const { error } = await supabase.from("registry_items").delete().eq("id", id);
@@ -316,10 +327,9 @@ const RegistryPage = () => {
               </div>
               <div className="flex items-center gap-1">
                 {item.claimed ? (
-                  <div className="flex items-center gap-1 text-primary">
-                    <Check className="h-4 w-4" />
-                    <span className="text-[10px] font-medium">{item.claimed_by}</span>
-                  </div>
+                  <Button size="sm" variant="outline" className="rounded-full text-xs h-8 gap-1" onClick={() => handleUnclaim(item.id)}>
+                    <Check className="h-3.5 w-3.5" /> Claimed
+                  </Button>
                 ) : (
                   <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
                 )}
