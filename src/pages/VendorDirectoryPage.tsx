@@ -34,6 +34,8 @@ const VendorDirectoryPage = () => {
     fetch();
   }, []);
 
+  const vendorCategories = ["All", ...Array.from(new Set(vendors.map((v) => v.category))).sort()];
+
   const filtered = vendors.filter((v) => {
     if (activeCategory !== "All" && v.category !== activeCategory) return false;
     return v.name.toLowerCase().includes(search.toLowerCase());
