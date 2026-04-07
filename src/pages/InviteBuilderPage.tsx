@@ -31,6 +31,7 @@ const InviteBuilderPage = () => {
   const [templateId, setTemplateId] = useState("baby-blocks");
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedImageUrl, setSavedImageUrl] = useState<string | null>(null);
 
   // Load saved invite settings from event
   useEffect(() => {
