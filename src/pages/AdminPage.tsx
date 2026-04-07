@@ -31,7 +31,7 @@ const AdminPage = () => {
   const [communityEvents, setCommunityEvents] = useState<any[]>([]);
   const [ceOpen, setCeOpen] = useState(false);
   const [editCe, setEditCe] = useState<any>(null);
-  const [ceTitle, setCeTitle] = useState(""); const [ceDesc, setCeDesc] = useState(""); const [ceLocation, setCeLocation] = useState(""); const [ceCity, setCeCity] = useState("Nashville"); const [ceDate, setCeDate] = useState("");
+  const [ceTitle, setCeTitle] = useState(""); const [ceDesc, setCeDesc] = useState(""); const [ceLocation, setCeLocation] = useState(""); const [ceCity, setCeCity] = useState("Nashville"); const [ceDate, setCeDate] = useState(""); const [ceImageFile, setCeImageFile] = useState<File | null>(null); const [ceImagePreview, setCeImagePreview] = useState<string | null>(null);
 
   // App Settings
   const [settings, setSettings] = useState<any[]>([]);
@@ -101,13 +101,25 @@ const AdminPage = () => {
 
   // Community Events CRUD
   const openCeForm = (ce?: any) => {
-    if (ce) { setEditCe(ce); setCeTitle(ce.title); setCeDesc(ce.description || ""); setCeLocation(ce.location || ""); setCeCity(ce.city || "Nashville"); setCeDate(ce.event_date ? new Date(ce.event_date).toISOString().slice(0, 16) : ""); }
-    else { setEditCe(null); setCeTitle(""); setCeDesc(""); setCeLocation(""); setCeCity("Nashville"); setCeDate(""); }
+    if (ce) { setEditCe(ce); setCeTitle(ce.title); setCeDesc(ce.description || ""); setCeLocation(ce.location || ""); setCeCity(ce.city || "Nashville"); setCeDate(ce.event_date ? new Date(ce.event_date).toISOString().slice(0, 16) : ""); setCeImagePreview(ce.image_url || null); }
+    else { setEditCe(null); setCeTitle(""); setCeDesc(""); setCeLocation(""); setCeCity("Nashville"); setCeDate(""); setCeImagePreview(null); }
+    setCeImageFile(null);
     setCeOpen(true);
   };
   const saveCe = async () => {
-    const payload = { title: ceTitle.trim(), description: ceDesc.trim() || null, location: ceLocation.trim() || null, city: ceCity.trim() || null, event_date: ceDate || null };
+    const payload: any = { title: ceTitle.trim(), description: ceDesc.trim() || null, location: ceLocation.trim() || null, city: ceCity.trim() || null, event_date: ceDate || null };
     if (!payload.title) { toast.error("Title required"); return; }
+
+    // Upload image if selected
+    if (ceImageFile) {
+      const fileExt = ceImageFile.name.split(".").pop();
+      const filePath = `community-events/${Date.now()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from("uploads").upload(filePath, ceImageFile);
+      if (uploadError) { toast.error("Image upload failed"); return; }
+      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(filePath);
+      payload.image_url = urlData.publicUrl;
+    }
+
     if (editCe) {
       const { error } = await supabase.from("community_events").update(payload).eq("id", editCe.id);
       if (error) { toast.error("Failed to update"); return; }
@@ -279,6 +291,18 @@ const AdminPage = () => {
                 <DialogHeader><DialogTitle>{editCe ? "Edit Event" : "Add Event"}</DialogTitle></DialogHeader>
                 <div className="space-y-3">
                   <div className="space-y-1"><Label>Title *</Label><Input value={ceTitle} onChange={(e) => setCeTitle(e.target.value)} /></div>
+                  <div className="space-y-1">
+                    <Label>Event Image</Label>
+                    <div className="flex items-center gap-3">
+                      {(ceImagePreview || (ceImageFile && URL.createObjectURL(ceImageFile))) && (
+                        <img src={ceImageFile ? URL.createObjectURL(ceImageFile) : ceImagePreview!} alt="Preview" className="h-16 w-16 rounded-lg object-cover" />
+                      )}
+                      <Input type="file" accept="image/*" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) { setCeImageFile(file); setCeImagePreview(null); }
+                      }} />
+                    </div>
+                  </div>
                   <div className="space-y-1"><Label>Description</Label><Textarea value={ceDesc} onChange={(e) => setCeDesc(e.target.value)} rows={2} /></div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1"><Label>Location</Label><Input value={ceLocation} onChange={(e) => setCeLocation(e.target.value)} /></div>
