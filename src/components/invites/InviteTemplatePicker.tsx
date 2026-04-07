@@ -14,53 +14,67 @@ const sampleData = {
   message: "Join us to celebrate!",
 };
 
-const SCALE = 0.22;
-const TEMPLATE_W = 380;
+const PREVIEW_WIDTH = 132;
+const PREVIEW_SCALE = 0.34;
+const TEMPLATE_WIDTH = 380;
 
 const InviteTemplatePicker = ({ selected, onSelect }: Props) => (
   <div className="space-y-3">
     <p className="text-sm font-semibold tracking-wide">Choose a Style</p>
-    <div className="grid grid-cols-4 gap-3">
-      {templateConfigs.map((t) => {
-        const Template = templates[t.id];
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(132px,132px))] justify-start gap-4">
+      {templateConfigs.map((template) => {
+        const TemplatePreview = templates[template.id];
+        const isSelected = selected === template.id;
+
         return (
-          <button
-            key={t.id}
-            onClick={() => onSelect(t.id)}
+          <div
+            key={template.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => onSelect(template.id)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onSelect(template.id);
+              }
+            }}
             className={cn(
-              "relative rounded-xl text-center transition-all border-2 group",
-              selected === t.id
-                ? "border-primary ring-2 ring-primary/30 shadow-md"
-                : "border-transparent hover:border-muted-foreground/20 hover:shadow-sm"
+              "relative w-[132px] cursor-pointer rounded-2xl text-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+              isSelected ? "scale-[1.01]" : "hover:-translate-y-0.5"
             )}
           >
-            {/* Clipped container with fixed aspect ratio */}
             <div
-              className="w-full overflow-hidden rounded-lg relative"
-              style={{ aspectRatio: "3/4" }}
+              className={cn(
+                "relative overflow-hidden rounded-[22px] border bg-card shadow-sm transition-all",
+                isSelected
+                  ? "border-primary shadow-[0_12px_30px_hsl(var(--primary)/0.18)]"
+                  : "border-border hover:border-primary/30"
+              )}
+              style={{ aspectRatio: "5 / 7" }}
             >
               <div
-                className="absolute top-0 left-0 pointer-events-none"
+                aria-hidden="true"
+                className="absolute left-0 top-0 origin-top-left select-none pointer-events-none"
                 style={{
-                  width: TEMPLATE_W,
+                  width: TEMPLATE_WIDTH,
+                  transform: `scale(${PREVIEW_SCALE})`,
                   transformOrigin: "top left",
-                  transform: `scale(${SCALE})`,
                 }}
               >
-                <Template {...sampleData} />
+                <TemplatePreview {...sampleData} />
               </div>
+
+              {isSelected && (
+                <div className="absolute right-1.5 top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-primary shadow-sm">
+                  <Check className="h-3 w-3 text-primary-foreground" />
+                </div>
+              )}
             </div>
 
-            <span className="text-[10px] font-semibold leading-tight block py-1.5 tracking-wide text-muted-foreground">
-              {t.name}
+            <span className="mt-2 block text-[11px] font-medium leading-tight text-foreground/80">
+              {template.name}
             </span>
-
-            {selected === t.id && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-md z-10">
-                <Check className="w-3 h-3 text-primary-foreground" />
-              </div>
-            )}
-          </button>
+          </div>
         );
       })}
     </div>
