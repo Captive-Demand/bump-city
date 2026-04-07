@@ -14,7 +14,8 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
-  const [isSignUp, setIsSignUp] = useState(false);
+  const comingFromOnboarding = searchParams.has("eventType");
+  const [isSignUp, setIsSignUp] = useState(comingFromOnboarding);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

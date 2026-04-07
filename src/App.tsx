@@ -23,6 +23,7 @@ import CommunityEventsPage from "./pages/CommunityEventsPage";
 import AdminPage from "./pages/AdminPage";
 import JoinEventPage from "./pages/JoinEventPage";
 import GuestEventPage from "./pages/GuestEventPage";
+import GetStartedPage from "./pages/GetStartedPage";
 import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +42,7 @@ const App = () => (
         <AppModeProvider>
           <ActivityFeedProvider>
             <Routes>
+              <Route path="/get-started" element={<GetStartedPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
