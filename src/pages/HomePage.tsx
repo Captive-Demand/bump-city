@@ -287,6 +287,9 @@ const ShowerDashboard = () => {
           </button>
         </div>
 
+        {/* Event Switcher */}
+        <EventSwitcher />
+
         {/* Event Card */}
         <EventCard />
       </div>
