@@ -31,7 +31,7 @@ const AdminPage = () => {
   const [communityEvents, setCommunityEvents] = useState<any[]>([]);
   const [ceOpen, setCeOpen] = useState(false);
   const [editCe, setEditCe] = useState<any>(null);
-  const [ceTitle, setCeTitle] = useState(""); const [ceDesc, setCeDesc] = useState(""); const [ceLocation, setCeLocation] = useState(""); const [ceCity, setCeCity] = useState("Nashville"); const [ceDate, setCeDate] = useState("");
+  const [ceTitle, setCeTitle] = useState(""); const [ceDesc, setCeDesc] = useState(""); const [ceLocation, setCeLocation] = useState(""); const [ceCity, setCeCity] = useState("Nashville"); const [ceDate, setCeDate] = useState(""); const [ceImageFile, setCeImageFile] = useState<File | null>(null); const [ceImagePreview, setCeImagePreview] = useState<string | null>(null);
 
   // App Settings
   const [settings, setSettings] = useState<any[]>([]);
