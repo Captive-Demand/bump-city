@@ -2,16 +2,15 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gift, Calendar, Sparkles, Users, Check, Loader2 } from "lucide-react";
+import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette } from "lucide-react";
 import { toast } from "sonner";
-import bumpCityIcon from "@/assets/bump-city-icon.png";
+import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
 interface EventData {
   id: string;
@@ -20,6 +19,7 @@ interface EventData {
   due_date: string | null;
   theme: string | null;
   city: string | null;
+  invite_time_range: string | null;
 }
 
 interface RegistryItem {
@@ -54,10 +54,10 @@ const GuestEventPage = () => {
     const load = async () => {
       if (!eventId) return;
       const [{ data: eventData }, { data: items }] = await Promise.all([
-        supabase.from("events").select("id, honoree_name, event_date, due_date, theme, city").eq("id", eventId).maybeSingle(),
+        supabase.from("events").select("id, honoree_name, event_date, due_date, theme, city, invite_time_range").eq("id", eventId).maybeSingle(),
         supabase.from("registry_items").select("id, name, category, price, emoji, claimed, claimed_by, image_url").eq("event_id", eventId).order("created_at"),
       ]);
-      setEvent(eventData);
+      setEvent(eventData as EventData | null);
       setRegistryItems((items as RegistryItem[]) || []);
       setLoading(false);
     };
@@ -95,22 +95,21 @@ const GuestEventPage = () => {
 
   if (loading) {
     return (
-      <MobileLayout hideNav>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </MobileLayout>
+      <div className="min-h-screen bg-gradient-to-b from-primary/15 to-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (!event) {
     return (
-      <MobileLayout hideNav>
-        <div className="px-6 pt-16 text-center">
+      <div className="min-h-screen bg-gradient-to-b from-primary/15 to-background">
+        <div className="px-6 pt-10 text-center">
+          <img src={bumpCityLogo} alt="Bump City" className="h-8 mx-auto mb-8" />
           <h1 className="text-2xl font-bold mb-2">Event Not Found</h1>
           <Button onClick={() => navigate("/")}>Go Home</Button>
         </div>
-      </MobileLayout>
+      </div>
     );
   }
 
@@ -119,24 +118,47 @@ const GuestEventPage = () => {
     : null;
 
   return (
-    <MobileLayout hideNav>
-      {/* Header */}
-      <div className="bg-gradient-to-b from-primary/15 to-background px-6 pt-10 pb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <img src={bumpCityIcon} alt="Bump City" className="h-8 w-8 rounded-lg" />
+    <div className="min-h-screen bg-gradient-to-b from-primary/15 via-primary/5 to-background">
+      {/* Header with logo on gradient */}
+      <div className="px-6 pt-8 pb-6 max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <img src={bumpCityLogo} alt="Bump City" className="h-7" />
           <Badge variant="secondary" className="text-[10px]">Guest View</Badge>
         </div>
+
         <h1 className="text-2xl font-bold">
           {event.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower"}
         </h1>
-        {event.event_date && (
-          <p className="text-sm text-muted-foreground mt-1">
-            <Calendar className="inline h-3.5 w-3.5 mr-1" />
-            {new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-          </p>
-        )}
+
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+          {event.event_date && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
+          )}
+          {event.invite_time_range && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" />
+              {event.invite_time_range}
+            </p>
+          )}
+          {event.city && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5" />
+              {event.city}
+            </p>
+          )}
+          {event.theme && (
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+              <Palette className="h-3.5 w-3.5" />
+              {event.theme}
+            </p>
+          )}
+        </div>
+
         {daysUntil !== null && (
-          <div className="mt-3 bg-primary/10 rounded-xl p-3 text-center">
+          <div className="mt-4 bg-primary/10 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-primary">{daysUntil}</p>
             <p className="text-xs text-muted-foreground">days until baby arrives</p>
           </div>
@@ -144,15 +166,14 @@ const GuestEventPage = () => {
       </div>
 
       {/* Tabs */}
-      <div className="px-6 pb-8">
-        <Tabs defaultValue="registry" className="mt-4">
+      <div className="px-6 pb-8 max-w-4xl mx-auto">
+        <Tabs defaultValue="registry" className="mt-2">
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="registry"><Gift className="h-3.5 w-3.5 mr-1" /> Registry</TabsTrigger>
             <TabsTrigger value="predictions"><Sparkles className="h-3.5 w-3.5 mr-1" /> Predict</TabsTrigger>
             <TabsTrigger value="details"><Users className="h-3.5 w-3.5 mr-1" /> Details</TabsTrigger>
           </TabsList>
 
-          {/* Registry Tab */}
           <TabsContent value="registry" className="mt-4 space-y-3">
             {registryItems.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">No registry items yet</p>
@@ -183,7 +204,6 @@ const GuestEventPage = () => {
             )}
           </TabsContent>
 
-          {/* Predictions Tab */}
           <TabsContent value="predictions" className="mt-4">
             {predicted ? (
               <Card className="border-none">
@@ -231,7 +251,6 @@ const GuestEventPage = () => {
             )}
           </TabsContent>
 
-          {/* Details Tab */}
           <TabsContent value="details" className="mt-4">
             <Card className="border-none">
               <CardContent className="p-6 space-y-3">
@@ -242,8 +261,11 @@ const GuestEventPage = () => {
                 {event.event_date && (
                   <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium">{new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p></div>
                 )}
+                {event.invite_time_range && (
+                  <div><p className="text-xs text-muted-foreground">Time</p><p className="font-medium">{event.invite_time_range}</p></div>
+                )}
                 {event.city && (
-                  <div><p className="text-xs text-muted-foreground">City</p><p className="font-medium">{event.city}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{event.city}</p></div>
                 )}
                 {event.theme && (
                   <div><p className="text-xs text-muted-foreground">Theme</p><p className="font-medium">{event.theme}</p></div>
@@ -253,7 +275,7 @@ const GuestEventPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </MobileLayout>
+    </div>
   );
 };
 
