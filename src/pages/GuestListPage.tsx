@@ -359,6 +359,22 @@ const GuestListPage = () => {
           </Card>
         ))}
       </div>
+
+      {/* Resend confirmation dialog */}
+      <Dialog open={!!confirmResend} onOpenChange={(open) => !open && setConfirmResend(null)}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader><DialogTitle>Resend Invite?</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            An invite was already sent to <span className="font-semibold">{confirmResend?.name}</span>. Send again?
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => setConfirmResend(null)}>Cancel</Button>
+            <Button size="sm" onClick={() => { if (confirmResend) { doSendInvite(confirmResend); setConfirmResend(null); } }}>
+              Resend
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
