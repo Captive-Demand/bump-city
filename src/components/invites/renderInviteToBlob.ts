@@ -47,6 +47,7 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
         eventDate: opts.eventDate,
         location: opts.location,
         message: opts.message,
+        timeRange: opts.timeRange,
       })
     );
     // Wait for render + image load + data URI swap
