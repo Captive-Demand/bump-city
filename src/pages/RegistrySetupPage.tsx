@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,7 @@ const RegistrySetupPage = () => {
   const [registryName, setRegistryName] = useState("");
   const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
   const [registryPrivate, setRegistryPrivate] = useState(false);
+  const [pushNotifications, setPushNotifications] = useState(false);
 
   useEffect(() => {
     if (honoreeName && !registryName) setRegistryName(`${honoreeName}'s Baby Registry`);
@@ -87,6 +89,10 @@ const RegistrySetupPage = () => {
       giftPolicy, registryPrivate,
     };
     updateSetupData(data);
+
+    // Save notification preference
+    await supabase.from("profiles").update({ push_notifications: pushNotifications }).eq("id", user.id);
+
     setMode("registry");
     navigate("/registry");
   };
@@ -161,6 +167,10 @@ const RegistrySetupPage = () => {
                     </Label>
                   ))}
                 </RadioGroup>
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-xl border border-border">
+                <div><p className="font-semibold text-sm">🔔 Local event notifications</p><p className="text-xs text-muted-foreground">Get notified about community events & meetups</p></div>
+                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
               </div>
             </div>
           )}

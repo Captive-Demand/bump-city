@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight } from "lucide-react";
+import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight, CalendarDays } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
@@ -195,6 +195,50 @@ const NextTasks = () => {
   );
 };
 
+const CommunityCard = () => {
+  const navigate = useNavigate();
+  const { event } = useEvent();
+  const [count, setCount] = useState(0);
+
+  const city = event?.city || null;
+
+  useEffect(() => {
+    if (!city) return;
+    const load = async () => {
+      const { count: c } = await supabase
+        .from("community_events")
+        .select("id", { count: "exact", head: true })
+        .eq("city", city)
+        .gte("event_date", new Date().toISOString());
+      setCount(c || 0);
+    };
+    load();
+  }, [city]);
+
+  if (!city || count === 0) return null;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-bold">Community</h2>
+        <button className="text-sm font-semibold text-primary" onClick={() => navigate("/community")}>See all</button>
+      </div>
+      <Card className="border-none cursor-pointer" onClick={() => navigate("/community")}>
+        <CardContent className="p-3.5 flex items-center gap-3">
+          <div className="bg-peach p-2.5 rounded-xl shrink-0">
+            <CalendarDays className="h-4 w-4 text-foreground/70" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm">Local Events</p>
+            <p className="text-xs text-muted-foreground">{count} upcoming event{count !== 1 ? "s" : ""} near {city}</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 const ModeChooser = () => {
   const navigate = useNavigate();
 
@@ -297,6 +341,7 @@ const ShowerDashboard = () => {
       <div className="px-6 pb-8 space-y-6">
         <QuickActions />
         <NextTasks />
+        <CommunityCard />
 
         <Button
           variant="outline"
