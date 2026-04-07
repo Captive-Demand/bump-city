@@ -225,6 +225,7 @@ const GuestListPage = () => {
   };
 
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
+  const eligibleForBulk = filtered.filter((g) => g.email);
   const attending = guests.filter((g) => g.status === "attending").length;
   const pending = guests.filter((g) => g.status === "pending").length;
   const selectedCount = selectedIds.size;
