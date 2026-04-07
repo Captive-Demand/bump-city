@@ -172,7 +172,8 @@ const GuestListPage = () => {
     });
   };
 
-  const eligibleForBulk = filtered.length > 0 ? filtered.filter((g) => g.email) : guests.filter((g) => g.email);
+  const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
+  const eligibleForBulk = filtered.filter((g) => g.email);
 
   const selectAll = () => {
     const ids = eligibleForBulk.map((g) => g.id);
