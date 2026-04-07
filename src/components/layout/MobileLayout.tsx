@@ -10,7 +10,7 @@ export interface MobileLayoutProps {
 }
 
 const BrandHeader = () => (
-  <div className="flex justify-center pt-4 pb-1">
+  <div className="flex justify-center pt-8 pb-0">
     <img src={bumpCityLogo} alt="Bump City" className="h-8" />
   </div>
 );
