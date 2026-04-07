@@ -41,6 +41,7 @@ const App = () => (
         <AppModeProvider>
           <ActivityFeedProvider>
             <Routes>
+              <Route path="/get-started" element={<GetStartedPage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
