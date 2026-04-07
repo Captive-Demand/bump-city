@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
 
 type AppMode = "choose" | "shower" | "registry";
 type UserRole = "planner" | "expectant-parent";
@@ -31,48 +30,38 @@ interface AppModeContextType {
 const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
 export const AppModeProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { activeEvent, loading: eventLoading } = useActiveEvent();
   const [mode, setMode] = useState<AppMode>("choose");
   const [setupData, setSetupData] = useState<SetupData>({});
-  const [modeLoading, setModeLoading] = useState(true);
 
   useEffect(() => {
-    const loadEvent = async () => {
-      if (!user) { setModeLoading(false); return; }
-      const { data } = await supabase
-        .from("events")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (data) {
-        setMode(data.event_type === "shower" ? "shower" : "registry");
-        setSetupData({
-          honoreeName: data.honoree_name || undefined,
-          dueDate: data.due_date ? new Date(data.due_date) : undefined,
-          eventDate: data.event_date ? new Date(data.event_date) : undefined,
-          city: data.city || undefined,
-          theme: data.theme || undefined,
-          giftPolicy: (data.gift_policy as GiftPolicy) || undefined,
-          clearWrapping: data.clear_wrapping || false,
-          giftNote: data.gift_note || undefined,
-          registryName: data.registry_name || undefined,
-          registryPrivate: data.registry_private || false,
-        });
-      }
-      setModeLoading(false);
-    };
-    loadEvent();
-  }, [user]);
+    if (eventLoading) return;
+    if (activeEvent) {
+      setMode(activeEvent.event_type === "shower" ? "shower" : "registry");
+      setSetupData({
+        honoreeName: activeEvent.honoree_name || undefined,
+        dueDate: activeEvent.due_date ? new Date(activeEvent.due_date) : undefined,
+        eventDate: activeEvent.event_date ? new Date(activeEvent.event_date) : undefined,
+        city: activeEvent.city || undefined,
+        theme: activeEvent.theme || undefined,
+        giftPolicy: (activeEvent.gift_policy as GiftPolicy) || undefined,
+        clearWrapping: activeEvent.clear_wrapping || false,
+        giftNote: activeEvent.gift_note || undefined,
+        registryName: activeEvent.registry_name || undefined,
+        registryPrivate: activeEvent.registry_private || false,
+      });
+    } else {
+      setMode("choose");
+      setSetupData({});
+    }
+  }, [activeEvent, eventLoading]);
 
   const updateSetupData = (data: Partial<SetupData>) => {
     setSetupData((prev) => ({ ...prev, ...data }));
   };
 
   return (
-    <AppModeContext.Provider value={{ mode, setMode, setupData, updateSetupData, modeLoading }}>
+    <AppModeContext.Provider value={{ mode, setMode, setupData, updateSetupData, modeLoading: eventLoading }}>
       {children}
     </AppModeContext.Provider>
   );
