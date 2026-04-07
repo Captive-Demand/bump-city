@@ -207,6 +207,7 @@ const InviteBuilderPage = () => {
                 </div>
               </CardContent>
             </Card>
+            )}
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
