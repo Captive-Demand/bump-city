@@ -375,11 +375,76 @@ const AdminPage = () => {
               </CardContent>
             </Card>
 
+            {/* Twilio SMS Integration */}
+            <Card className="border-none">
+              <CardContent className="p-4 space-y-4">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-primary" />
+                  <h3 className="font-bold text-sm">SMS / Twilio Integration</h3>
+                  {settingsEdits["twilio_account_sid"] && settingsEdits["twilio_auth_token"] && settingsEdits["twilio_phone_number"] ? (
+                    <Badge className="bg-green-500/20 text-green-700 text-[10px] ml-auto"><CheckCircle2 className="h-3 w-3 mr-0.5" /> Connected</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] ml-auto"><XCircle className="h-3 w-3 mr-0.5" /> Not Connected</Badge>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Connect your Twilio account to send SMS invites, RSVP confirmations, and event reminders.</p>
+                <div className="space-y-1">
+                  <Label>Account SID</Label>
+                  <Input
+                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={settingsEdits["twilio_account_sid"] || ""}
+                    onChange={(e) => setSettingsEdits((prev) => ({ ...prev, twilio_account_sid: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Auth Token</Label>
+                  <Input
+                    type="password"
+                    placeholder="Your Twilio Auth Token"
+                    value={settingsEdits["twilio_auth_token"] || ""}
+                    onChange={(e) => setSettingsEdits((prev) => ({ ...prev, twilio_auth_token: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Phone Number</Label>
+                  <Input
+                    placeholder="+15017122661"
+                    value={settingsEdits["twilio_phone_number"] || ""}
+                    onChange={(e) => setSettingsEdits((prev) => ({ ...prev, twilio_phone_number: e.target.value }))}
+                  />
+                </div>
+                <div className="rounded-lg bg-muted p-3 space-y-1">
+                  <p className="text-xs font-medium">How to get your Twilio credentials:</p>
+                  <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-0.5">
+                    <li>Sign up at <a href="https://www.twilio.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">twilio.com</a></li>
+                    <li>Go to Console Dashboard — your Account SID and Auth Token are displayed</li>
+                    <li>Buy or use a Twilio phone number for sending SMS</li>
+                  </ol>
+                  <a href="https://www.twilio.com/docs/sms" target="_blank" rel="noopener noreferrer" className="text-xs text-primary flex items-center gap-1 mt-1">
+                    <ExternalLink className="h-3 w-3" /> Twilio SMS Docs
+                  </a>
+                </div>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={saveSettings}>
+                    {settingsEdits["twilio_account_sid"] && settingsEdits["twilio_auth_token"] && settingsEdits["twilio_phone_number"] ? "Update Connection" : "Connect Twilio"}
+                  </Button>
+                  {settingsEdits["twilio_account_sid"] && (
+                    <Button variant="outline" className="text-destructive" onClick={() => {
+                      setSettingsEdits((prev) => ({ ...prev, twilio_account_sid: "", twilio_auth_token: "", twilio_phone_number: "" }));
+                      toast.info("Click Save to disconnect");
+                    }}>
+                      Disconnect
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* General App Settings */}
             <Card className="border-none">
               <CardContent className="p-4 space-y-4">
                 <h3 className="font-bold text-sm">General Settings</h3>
-                {settings.filter((s) => !s.key.startsWith("shopify_")).map((s) => (
+                {settings.filter((s) => !s.key.startsWith("shopify_") && !s.key.startsWith("twilio_")).map((s) => (
                   <div key={s.id} className="space-y-1">
                     <Label>{s.label || s.key}</Label>
                     <Input value={settingsEdits[s.key] || ""} onChange={(e) => setSettingsEdits((prev) => ({ ...prev, [s.key]: e.target.value }))} />
