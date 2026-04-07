@@ -308,10 +308,10 @@ const RegistryPage = () => {
                 </div>
               )}
               <div className="min-w-0">
-                <p className={`font-semibold text-sm ${item.claimed ? "line-through" : ""}`}>{item.name}</p>
-                <div className="flex items-center justify-center gap-2 mt-0.5">
+                <p className={`font-semibold text-sm leading-tight ${item.claimed ? "line-through" : ""}`}>{item.name}</p>
+                <div className="flex items-center justify-center gap-2 mt-1">
                   <span className="text-xs text-muted-foreground">${item.price}</span>
-                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{item.category}</Badge>
+                  <Badge variant="secondary" className="text-[10px] leading-none px-1.5 py-0.5">{item.category}</Badge>
                 </div>
               </div>
               <div className="flex items-center gap-1">
