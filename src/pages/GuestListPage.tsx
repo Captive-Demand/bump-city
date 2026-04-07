@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2 } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -14,6 +14,10 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import GuestImportDialog from "@/components/GuestImportDialog";
+import { templates } from "@/components/invites/InviteTemplates";
+import { toPng } from "html-to-image";
+import { format } from "date-fns";
+import { createRoot } from "react-dom/client";
 
 type RSVPStatus = "attending" | "declined" | "pending";
 
@@ -41,6 +45,8 @@ const GuestListPage = () => {
   const { event } = useEvent();
   const { setupData } = useAppMode();
   const [search, setSearch] = useState("");
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const inviteImageUrlRef = useRef<string | null>(null);
 
   // Add guest form
   const [addOpen, setAddOpen] = useState(false);
@@ -84,48 +90,99 @@ const GuestListPage = () => {
     fetchGuests();
   };
 
+  const renderInviteToImage = useCallback(async (): Promise<string> => {
+    if (inviteImageUrlRef.current) return inviteImageUrlRef.current;
+
+    const templateId = (event as any)?.invite_template || "baby-blocks";
+    const inviteTitle = (event as any)?.invite_title || event?.honoree_name ? `${event?.honoree_name}'s Baby Shower` : "Baby Shower";
+    const inviteMessage = (event as any)?.invite_message || "You're invited to celebrate with us! 🎉";
+    const TemplateComponent = templates[templateId] || templates["baby-blocks"];
+    const eventDate = event?.event_date ? new Date(event.event_date) : undefined;
+    const location = event?.city || "";
+
+    // Create an off-screen container
+    const container = document.createElement("div");
+    container.style.cssText = "position:fixed;left:-9999px;top:0;width:500px;z-index:-1;";
+    document.body.appendChild(container);
+
+    const root = createRoot(container);
+    root.render(
+      <TemplateComponent title={inviteTitle} eventDate={eventDate} location={location} message={inviteMessage} />
+    );
+
+    // Wait for images to load
+    await new Promise((r) => setTimeout(r, 1000));
+
+    const dataUrl = await toPng(container, { quality: 0.95, pixelRatio: 2 });
+    root.unmount();
+    document.body.removeChild(container);
+
+    // Upload to storage
+    const blob = await (await fetch(dataUrl)).blob();
+    const path = `invites/${event!.id}/invite.png`;
+    await supabase.storage.from("uploads").upload(path, blob, { upsert: true, contentType: "image/png" });
+    const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
+    const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
+    inviteImageUrlRef.current = publicUrl;
+    return publicUrl;
+  }, [event]);
+
   const sendInvite = async (guest: Guest) => {
     if (!guest.email) {
       toast.error("No email address for this guest");
       return;
     }
-    const honoreeName = event?.honoree_name || setupData.honoreeName || "the parents-to-be";
-    const eventDateStr = event?.event_date
-      ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
-      : setupData.eventDate
-        ? setupData.eventDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+    if (!event) return;
+
+    setSendingId(guest.id);
+    try {
+      // Render invite to image and upload
+      const imageUrl = await renderInviteToImage();
+
+      const honoreeName = event.honoree_name || setupData.honoreeName || "the parents-to-be";
+      const eventDateStr = event.event_date
+        ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
         : "a date to be announced";
-    const city = event?.city || setupData.city || "";
-    const theme = event?.theme || setupData.theme || "";
+      const location = event.city || "";
 
-    const subject = encodeURIComponent(`You're Invited to ${honoreeName}'s Baby Shower!`);
+      // Get or create an invite code for the RSVP link
+      const { data: codes } = await supabase.from("invite_codes").select("code").eq("event_id", event.id).limit(1);
+      let rsvpCode = codes?.[0]?.code;
+      if (!rsvpCode && user) {
+        rsvpCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+        await supabase.from("invite_codes").insert({ event_id: event.id, created_by: user.id, code: rsvpCode });
+      }
+      const rsvpUrl = rsvpCode ? `${window.location.origin}/join?code=${rsvpCode}` : window.location.origin;
 
-    let bodyLines = [
-      `Dear ${guest.name},`,
-      ``,
-      `You are cordially invited to ${honoreeName}'s Baby Shower!`,
-      ``,
-      `Date: ${eventDateStr}`,
-    ];
-    if (city) bodyLines.push(`Location: ${city}`);
-    if (theme) bodyLines.push(`Theme: ${theme}`);
-    bodyLines.push(
-      ``,
-      `We would be delighted to have you join us in celebrating this special occasion.`,
-      ``,
-      `Please let us know if you can attend!`,
-      ``,
-      `With love,`,
-      `The ${honoreeName} Shower Team`
-    );
+      // Send via transactional email
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "shower-invitation",
+          recipientEmail: guest.email,
+          idempotencyKey: `shower-invite-${guest.id}-${event.id}`,
+          templateData: {
+            imageUrl,
+            guestName: guest.name,
+            honoreeName,
+            rsvpUrl,
+            eventDate: eventDateStr,
+            location,
+          },
+        },
+      });
 
-    const body = encodeURIComponent(bodyLines.join("\n"));
-    window.open(`mailto:${guest.email}?subject=${subject}&body=${body}`, "_blank");
+      if (error) throw error;
 
-    await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
-    addActivity("invite-sent", `Invite sent to ${guest.name}`);
-    toast.success(`Invite opened for ${guest.name}`);
-    fetchGuests();
+      await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
+      addActivity("invite-sent", `Invite sent to ${guest.name}`);
+      toast.success(`Invite sent to ${guest.name}!`);
+      fetchGuests();
+    } catch (err) {
+      console.error("Failed to send invite:", err);
+      toast.error("Failed to send invite. Please try again.");
+    } finally {
+      setSendingId(null);
+    }
   };
 
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
@@ -215,8 +272,19 @@ const GuestListPage = () => {
               </div>
               <div className="flex items-center gap-1.5">
                 {guest.email && !guest.invite_sent && (
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => sendInvite(guest)} title="Send invite">
-                    <Send className="h-3.5 w-3.5 text-primary" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => sendInvite(guest)}
+                    disabled={sendingId === guest.id}
+                    title="Send invite"
+                  >
+                    {sendingId === guest.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5 text-primary" />
+                    )}
                   </Button>
                 )}
                 {guest.invite_sent && (
