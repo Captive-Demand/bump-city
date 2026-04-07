@@ -32,6 +32,8 @@ const InviteBuilderPage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [savedImageUrl, setSavedImageUrl] = useState<string | null>(null);
+  const [customImageFile, setCustomImageFile] = useState<File | null>(null);
+  const [customImagePreviewUrl, setCustomImagePreviewUrl] = useState<string | null>(null);
 
   // Load saved invite settings from event
   useEffect(() => {
