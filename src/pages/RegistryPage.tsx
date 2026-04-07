@@ -261,11 +261,9 @@ const RegistryPage = () => {
                   )}
                   <div className="flex gap-2">
                     <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
-                    <label className="cursor-pointer">
+                    <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                      <Button type="button" size="sm" variant="outline" className="h-9" disabled={uploading} asChild>
-                        <span><Upload className="h-3.5 w-3.5" /></span>
-                      </Button>
+                      <Upload className="h-3.5 w-3.5" />
                     </label>
                   </div>
                 </div>
