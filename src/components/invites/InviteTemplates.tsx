@@ -20,22 +20,22 @@ const BabyBlocks = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={babyBlocksBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "22%", paddingBottom: "30%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
         You're Invited To
       </p>
-      <h2 className="text-2xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a7a92" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a7a92" }}>
         {title}
       </h2>
-      <div className="w-12 h-px my-3" style={{ backgroundColor: "#d4a0b0" }} />
-      <p className="text-xs mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
+      <div className="w-16 h-px my-3" style={{ backgroundColor: "#d4a0b0" }} />
+      <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-xs mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
+        <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a9bb5" }}>
           {location}
         </p>
       )}
-      <p className="text-[11px] leading-relaxed max-w-[70%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#9ab0bf" }}>
+      <p className="text-sm leading-relaxed max-w-[70%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#9ab0bf" }}>
         {message}
       </p>
     </div>
@@ -47,22 +47,22 @@ const FloralWreath = ({ title, eventDate, location, message }: TemplateProps) =>
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={floralWreathBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-14 text-center" style={{ paddingTop: "18%", paddingBottom: "22%" }}>
-      <p className="text-[10px] uppercase tracking-[0.3em] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b07850" }}>
+      <p className="text-xs uppercase tracking-[0.3em] mb-2" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b07850" }}>
         Please Join Us For
       </p>
-      <h2 className="text-2xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a6e50" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#5a6e50" }}>
         {title}
       </h2>
-      <div className="w-10 h-px my-2.5" style={{ backgroundColor: "#c9a87a" }} />
-      <p className="text-xs font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
+      <div className="w-14 h-px my-2.5" style={{ backgroundColor: "#c9a87a" }} />
+      <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-xs font-light mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
+        <p className="text-base font-light mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6e8560" }}>
           {location}
         </p>
       )}
-      <p className="text-[11px] leading-relaxed max-w-[75%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a7a60" }}>
+      <p className="text-sm leading-relaxed max-w-[75%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a7a60" }}>
         {message}
       </p>
     </div>
@@ -74,22 +74,22 @@ const BlushRoses = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={blushRosesBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-12 text-center">
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4917e" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#c4917e" }}>
         You're Invited
       </p>
-      <h2 className="text-[26px] font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#8b6b60" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#8b6b60" }}>
         {title}
       </h2>
       <div className="w-16 h-px my-3" style={{ backgroundColor: "#d4a898" }} />
-      <p className="text-sm font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
+      <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-sm font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
+        <p className="text-base font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#a08070" }}>
           {location}
         </p>
       )}
-      <p className="text-xs leading-relaxed max-w-[80%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b09888" }}>
+      <p className="text-sm leading-relaxed max-w-[80%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#b09888" }}>
         {message}
       </p>
     </div>
@@ -101,22 +101,22 @@ const GardenPeony = ({ title, eventDate, location, message }: TemplateProps) => 
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={gardenPeonyBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-10 text-center" style={{ paddingTop: "18%", paddingBottom: "16%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b7f60" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#6b7f60" }}>
         Together With Our Families
       </p>
-      <h2 className="text-2xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e40" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e40" }}>
         {title}
       </h2>
-      <div className="w-12 h-px my-3" style={{ backgroundColor: "#8a9e7a" }} />
-      <p className="text-xs mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
+      <div className="w-14 h-px my-3" style={{ backgroundColor: "#8a9e7a" }} />
+      <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-xs mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
+        <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e50" }}>
           {location}
         </p>
       )}
-      <p className="text-[11px] leading-relaxed max-w-[75%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e6a" }}>
+      <p className="text-sm leading-relaxed max-w-[75%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e6a" }}>
         {message}
       </p>
     </div>
@@ -128,22 +128,22 @@ const SageLeaf = ({ title, eventDate, location, message }: TemplateProps) => (
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={sageLeafBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center text-center px-12" style={{ paddingTop: "15%", paddingRight: "8%", paddingLeft: "30%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
         You're Invited
       </p>
-      <h2 className="text-[22px] font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e48" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#4a5e48" }}>
         {title}
       </h2>
-      <div className="w-10 h-px my-3" style={{ backgroundColor: "#8aa088" }} />
-      <p className="text-xs mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
+      <div className="w-14 h-px my-3" style={{ backgroundColor: "#8aa088" }} />
+      <p className="text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-xs mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
+        <p className="text-base mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#5a6e58" }}>
           {location}
         </p>
       )}
-      <p className="text-[11px] leading-relaxed italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
+      <p className="text-sm leading-relaxed italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a8e78" }}>
         {message}
       </p>
     </div>
@@ -155,22 +155,22 @@ const VintageTulip = ({ title, eventDate, location, message }: TemplateProps) =>
   <div className="relative w-full" style={{ aspectRatio: "5/7" }}>
     <img src={vintageTulipBg} alt="" className="absolute inset-0 w-full h-full object-cover" />
     <div className="absolute inset-0 flex flex-col items-center text-center px-10" style={{ paddingTop: "12%", paddingBottom: "38%" }}>
-      <p className="text-[10px] uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a6050" }}>
+      <p className="text-xs uppercase tracking-[0.35em] mb-3" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#8a6050" }}>
         Please Join Us For
       </p>
-      <h2 className="text-[26px] font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#6b3a30" }}>
+      <h2 className="text-3xl md:text-4xl font-semibold leading-tight mb-2" style={{ fontFamily: "'Playfair Display', serif", color: "#6b3a30" }}>
         {title}
       </h2>
-      <div className="w-14 h-px my-3" style={{ backgroundColor: "#a07060" }} />
-      <p className="text-sm font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
+      <div className="w-16 h-px my-3" style={{ backgroundColor: "#a07060" }} />
+      <p className="text-base font-light mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
         {dateStr(eventDate)}
       </p>
       {location && (
-        <p className="text-sm font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
+        <p className="text-base font-light mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#7a5040" }}>
           {location}
         </p>
       )}
-      <p className="text-xs leading-relaxed max-w-[80%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#9a7868" }}>
+      <p className="text-sm leading-relaxed max-w-[80%] italic" style={{ fontFamily: "'Cormorant Garamond', serif", color: "#9a7868" }}>
         {message}
       </p>
     </div>
