@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppModeProvider } from "@/contexts/AppModeContext";
+import { ActiveEventProvider } from "@/contexts/ActiveEventContext";
 import { ActivityFeedProvider } from "@/contexts/ActivityFeedContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import HomePage from "./pages/HomePage";
@@ -39,31 +40,33 @@ const App = () => (
     <Sonner />
     <BrowserRouter>
       <AuthProvider>
-        <AppModeProvider>
-          <ActivityFeedProvider>
-            <Routes>
-              <Route path="/get-started" element={<GetStartedPage />} />
-              <Route path="/auth" element={<AuthPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
-              <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
-              <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-              <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
-              <Route path="/setup/registry" element={<ProtectedRoute><RegistrySetupPage /></ProtectedRoute>} />
-              <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
-              <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
-              <Route path="/predictions" element={<ProtectedRoute><PredictionsPage /></ProtectedRoute>} />
-              <Route path="/invites" element={<ProtectedRoute><InviteBuilderPage /></ProtectedRoute>} />
-              <Route path="/gift-tracker" element={<ProtectedRoute><GiftTrackerPage /></ProtectedRoute>} />
-              <Route path="/planning" element={<ProtectedRoute><PlanningPage /></ProtectedRoute>} />
-              <Route path="/vendors" element={<ProtectedRoute><VendorDirectoryPage /></ProtectedRoute>} />
-              <Route path="/community" element={<ProtectedRoute><CommunityEventsPage /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ActivityFeedProvider>
-        </AppModeProvider>
+        <ActiveEventProvider>
+          <AppModeProvider>
+            <ActivityFeedProvider>
+              <Routes>
+                <Route path="/get-started" element={<GetStartedPage />} />
+                <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
+                <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
+                <Route path="/setup/registry" element={<ProtectedRoute><RegistrySetupPage /></ProtectedRoute>} />
+                <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
+                <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
+                <Route path="/predictions" element={<ProtectedRoute><PredictionsPage /></ProtectedRoute>} />
+                <Route path="/invites" element={<ProtectedRoute><InviteBuilderPage /></ProtectedRoute>} />
+                <Route path="/gift-tracker" element={<ProtectedRoute><GiftTrackerPage /></ProtectedRoute>} />
+                <Route path="/planning" element={<ProtectedRoute><PlanningPage /></ProtectedRoute>} />
+                <Route path="/vendors" element={<ProtectedRoute><VendorDirectoryPage /></ProtectedRoute>} />
+                <Route path="/community" element={<ProtectedRoute><CommunityEventsPage /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ActivityFeedProvider>
+          </AppModeProvider>
+        </ActiveEventProvider>
       </AuthProvider>
     </BrowserRouter>
   </TooltipProvider>

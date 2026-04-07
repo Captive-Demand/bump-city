@@ -1,13 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
 import ShareInviteButton from "@/components/ShareInviteButton";
 import { useEffect, useState } from "react";
@@ -229,6 +231,31 @@ const ModeChooser = () => {
   );
 };
 
+const EventSwitcher = () => {
+  const { allEvents, activeEvent, switchEvent } = useActiveEvent();
+  if (allEvents.length <= 1) return null;
+
+  return (
+    <div className="mb-4">
+      <Select value={activeEvent?.id || ""} onValueChange={switchEvent}>
+        <SelectTrigger className="w-full h-10 rounded-xl bg-card border-none">
+          <div className="flex items-center gap-2">
+            <ArrowLeftRight className="h-4 w-4 text-primary" />
+            <SelectValue placeholder="Select event" />
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          {allEvents.map((evt) => (
+            <SelectItem key={evt.id} value={evt.id}>
+              {evt.honoree_name ? `${evt.honoree_name}'s ${evt.event_type === "shower" ? "Shower" : "Registry"}` : `${evt.event_type === "shower" ? "Baby Shower" : "Registry"}`}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 const ShowerDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -259,6 +286,9 @@ const ShowerDashboard = () => {
             <Bell className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
+
+        {/* Event Switcher */}
+        <EventSwitcher />
 
         {/* Event Card */}
         <EventCard />

@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useState } from "react";
@@ -42,7 +41,6 @@ const ProfilePage = () => {
 
   const handleAvatarUploaded = async (url: string) => {
     await supabase.auth.updateUser({ data: { avatar_url: url } });
-    // Update profile table too
     if (user) await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
   };
 
@@ -101,6 +99,7 @@ const ProfilePage = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
+        {/* User Profile Section */}
         <div className="flex items-center gap-4 mb-6">
           <ImageUpload
             currentUrl={avatarUrl}
@@ -118,138 +117,145 @@ const ProfilePage = () => {
           </ImageUpload>
           <div>
             <h1 className="text-xl font-bold">{displayName}</h1>
-            <p className="text-sm text-muted-foreground">{event?.event_type === "shower" ? "Shower Planner 💕" : "Registry Builder 🎁"}</p>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
           </div>
         </div>
 
-        {/* Event Image */}
+        {/* Event Settings Section */}
         {event && (
-          <div className="mb-6">
-            <ImageUpload
-              currentUrl={(event as any).event_image_url}
-              folder="event-images"
-              onUploaded={handleEventImageUploaded}
-              className="w-full h-40 rounded-2xl overflow-hidden"
-              overlayClassName="rounded-2xl"
-            >
-              {(event as any).event_image_url ? (
-                <img src={(event as any).event_image_url} alt="Event" className="w-full h-40 object-cover rounded-2xl" />
-              ) : (
-                <div className="w-full h-40 bg-gradient-to-br from-primary/20 via-lavender/30 to-peach/20 rounded-2xl flex flex-col items-center justify-center">
-                  <span className="text-3xl mb-1">📷</span>
-                  <p className="text-sm text-muted-foreground font-medium">Add event photo</p>
-                </div>
-              )}
-            </ImageUpload>
-          </div>
-        )}
+          <>
+            <h2 className="font-bold text-sm mb-3 text-muted-foreground uppercase tracking-wide">
+              Event Settings
+            </h2>
 
-        <Card className="border-none mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Baby className="h-4 w-4 text-primary" />
-                <h2 className="font-bold text-sm">Event Details</h2>
-              </div>
-              {!editing ? (
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={startEditing}>
-                  <Pencil className="h-3 w-3" /> Edit
-                </Button>
-              ) : (
-                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-primary" onClick={saveDetails} disabled={saving}>
-                  <Check className="h-3 w-3" /> {saving ? "Saving..." : "Save"}
-                </Button>
-              )}
-            </div>
-
-            {!editing ? (
-              <div className="space-y-2.5">
-                {[
-                  { label: "Honoree", value: event?.honoree_name || "Not set" },
-                  { label: "Due Date", value: event?.due_date ? new Date(event.due_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Not set" },
-                  { label: "Event Date", value: event?.event_date ? new Date(event.event_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Not set" },
-                  { label: "City", value: event?.city || "Not set" },
-                  { label: "Theme", value: event?.theme || "Not set" },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">{item.label}</span>
-                    <span className={cn("text-sm font-medium", item.value === "Not set" && "text-muted-foreground italic")}>{item.value}</span>
+            {/* Event Image */}
+            <div className="mb-4">
+              <ImageUpload
+                currentUrl={(event as any).event_image_url}
+                folder="event-images"
+                onUploaded={handleEventImageUploaded}
+                className="w-full h-40 rounded-2xl overflow-hidden"
+                overlayClassName="rounded-2xl"
+              >
+                {(event as any).event_image_url ? (
+                  <img src={(event as any).event_image_url} alt="Event" className="w-full h-40 object-cover rounded-2xl" />
+                ) : (
+                  <div className="w-full h-40 bg-gradient-to-br from-primary/20 via-lavender/30 to-peach/20 rounded-2xl flex flex-col items-center justify-center">
+                    <span className="text-3xl mb-1">📷</span>
+                    <p className="text-sm text-muted-foreground font-medium">Add event photo</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Honoree</Label>
-                  <Input value={honoreeName} onChange={(e) => setHonoreeName(e.target.value)} placeholder="e.g. Sarah & Mike" className="h-9 text-sm" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Due Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !dueDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-3.5 w-3.5" />{dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Event Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !eventDate && "text-muted-foreground")}>
-                        <CalendarIcon className="mr-2 h-3.5 w-3.5" />{eventDate ? format(eventDate, "PPP") : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
-                  </Popover>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">City</Label>
-                  <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Nashville, TN" className="h-9 text-sm" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Theme</Label>
-                  <Input value={theme} onChange={(e) => setTheme(e.target.value)} placeholder="e.g. Woodland, Boho" className="h-9 text-sm" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                )}
+              </ImageUpload>
+            </div>
 
-        <Card className="border-none mb-6">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Gift className="h-4 w-4 text-primary" />
-              <h2 className="font-bold text-sm">Gifting Preferences</h2>
-            </div>
-            <RadioGroup value={giftPref} onValueChange={(v) => { setGiftPref(v); saveGiftPrefs(v); }} className="space-y-2.5">
-              {[
-                { value: "bring-gift", label: "Bring a gift", icon: "🎁" },
-                { value: "no-gifts", label: "No gifts please", icon: "🚫" },
-                { value: "bring-book", label: "Bring a book instead", icon: "📚" },
-              ].map((opt) => (
-                <div key={opt.value} className="flex items-center gap-3">
-                  <RadioGroupItem value={opt.value} id={opt.value} />
-                  <Label htmlFor={opt.value} className="text-sm flex items-center gap-2 cursor-pointer">
-                    <span>{opt.icon}</span>{opt.label}
-                  </Label>
+            <Card className="border-none mb-4">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Baby className="h-4 w-4 text-primary" />
+                    <h2 className="font-bold text-sm">Event Details</h2>
+                  </div>
+                  {!editing ? (
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" onClick={startEditing}>
+                      <Pencil className="h-3 w-3" /> Edit
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1 text-primary" onClick={saveDetails} disabled={saving}>
+                      <Check className="h-3 w-3" /> {saving ? "Saving..." : "Save"}
+                    </Button>
+                  )}
                 </div>
-              ))}
-            </RadioGroup>
-            <div className="mt-4 pt-3 border-t border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <PackageOpen className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Request clear wrapping</span>
+
+                {!editing ? (
+                  <div className="space-y-2.5">
+                    {[
+                      { label: "Honoree", value: event?.honoree_name || "Not set" },
+                      { label: "Due Date", value: event?.due_date ? new Date(event.due_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Not set" },
+                      { label: "Event Date", value: event?.event_date ? new Date(event.event_date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "Not set" },
+                      { label: "City", value: event?.city || "Not set" },
+                      { label: "Theme", value: event?.theme || "Not set" },
+                    ].map((item) => (
+                      <div key={item.label} className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">{item.label}</span>
+                        <span className={cn("text-sm font-medium", item.value === "Not set" && "text-muted-foreground italic")}>{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Honoree</Label>
+                      <Input value={honoreeName} onChange={(e) => setHonoreeName(e.target.value)} placeholder="e.g. Sarah & Mike" className="h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Due Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !dueDate && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-3.5 w-3.5" />{dueDate ? format(dueDate, "PPP") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Event Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("w-full justify-start text-left font-normal h-9 text-sm", !eventDate && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-3.5 w-3.5" />{eventDate ? format(eventDate, "PPP") : "Pick a date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
+                      </Popover>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">City</Label>
+                      <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Nashville, TN" className="h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Theme</Label>
+                      <Input value={theme} onChange={(e) => setTheme(e.target.value)} placeholder="e.g. Woodland, Boho" className="h-9 text-sm" />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-none mb-6">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Gift className="h-4 w-4 text-primary" />
+                  <h2 className="font-bold text-sm">Gifting Preferences</h2>
                 </div>
-                <Switch checked={clearWrap} onCheckedChange={(v) => { setClearWrap(v); saveGiftPrefs(undefined, v); }} />
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1 ml-6">So we can play the gift guessing game!</p>
-            </div>
-          </CardContent>
-        </Card>
+                <RadioGroup value={giftPref} onValueChange={(v) => { setGiftPref(v); saveGiftPrefs(v); }} className="space-y-2.5">
+                  {[
+                    { value: "bring-gift", label: "Bring a gift", icon: "🎁" },
+                    { value: "no-gifts", label: "No gifts please", icon: "🚫" },
+                    { value: "bring-book", label: "Bring a book instead", icon: "📚" },
+                  ].map((opt) => (
+                    <div key={opt.value} className="flex items-center gap-3">
+                      <RadioGroupItem value={opt.value} id={opt.value} />
+                      <Label htmlFor={opt.value} className="text-sm flex items-center gap-2 cursor-pointer">
+                        <span>{opt.icon}</span>{opt.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <PackageOpen className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm">Request clear wrapping</span>
+                    </div>
+                    <Switch checked={clearWrap} onCheckedChange={(v) => { setClearWrap(v); saveGiftPrefs(undefined, v); }} />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 ml-6">So we can play the gift guessing game!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         <h2 className="font-bold text-sm mb-3">Settings</h2>
         <div className="space-y-2">
