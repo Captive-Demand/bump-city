@@ -111,8 +111,23 @@ const GuestListPage = () => {
       root.render(
         <TemplateComponent title={inviteTitle} eventDate={eventDate} location={loc} message={inviteMessage} />
       );
-      // Wait for render + image loading
-      setTimeout(resolve, 2000);
+      // Wait for React render, then wait for all images to load
+      setTimeout(async () => {
+        const imgs = container.querySelectorAll("img");
+        await Promise.all(
+          Array.from(imgs).map(
+            (img) =>
+              img.complete
+                ? Promise.resolve()
+                : new Promise<void>((res) => {
+                    img.onload = () => res();
+                    img.onerror = () => res();
+                  })
+          )
+        );
+        // Extra buffer for fonts/rendering
+        setTimeout(resolve, 500);
+      }, 300);
     });
 
     try {
