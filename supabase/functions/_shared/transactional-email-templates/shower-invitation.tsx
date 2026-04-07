@@ -17,6 +17,7 @@ interface ShowerInvitationProps {
 
 const ShowerInvitationEmail = ({
   imageUrl,
+  guestName,
   honoreeName,
   rsvpUrl,
 }: ShowerInvitationProps) => (
@@ -25,6 +26,12 @@ const ShowerInvitationEmail = ({
     <Preview>You're invited to {honoreeName || "a"} baby shower!</Preview>
     <Body style={main}>
       <Container style={container}>
+        {guestName && (
+          <Text style={greeting}>Dear {guestName},</Text>
+        )}
+        <Text style={introText}>
+          You're invited to celebrate {honoreeName ? `${honoreeName}'s` : 'a'} baby shower!
+        </Text>
         {imageUrl && (
           <Section style={imageSection}>
             <Img
