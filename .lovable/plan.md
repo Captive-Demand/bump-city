@@ -1,28 +1,47 @@
 
 
-# Skip Setup for Returning Users + "Create New Event" from App
+# Comprehensive Invite Styles for the Invite Builder
 
 ## Summary
-Returning users who already have an event skip setup screens and go straight to the dashboard. A new "Create New Event" option in the app lets them add a second shower or registry anytime.
+Replace the current simple gradient-based theme system with a rich, visually distinct invite template gallery. Each template will have its own layout, typography treatment, decorative elements, and color palette -- making them feel like real digital invitations rather than color swaps on the same card.
 
-## Changes
+## Current State
+The invite builder has 6 "themes" that are just different Tailwind gradient classes applied to the same card layout. Every preview looks structurally identical -- only the background tint changes.
 
-### 1. Smart post-login redirect (AuthPage.tsx)
-After successful login/signup, query `events` and `event_members` for the user. If any rows exist, redirect to `/` instead of the setup path. Only first-time users flow through to `/setup/shower` or `/setup/registry`.
+## Approach
+Create a template-based system where each invite style is its own React component (or render function) with unique layout, decorative SVG elements, typography hierarchy, and color palette. Users browse a visual picker grid showing thumbnails of each style, tap to select, then customize their text.
 
-### 2. Guard on setup pages (ShowerSetupPage.tsx, RegistrySetupPage.tsx)
-Add a `useEffect` that checks if the user already owns an event. If so, redirect to `/`. This prevents direct URL access to setup when they already have data. Skip this guard if a URL param like `?new=true` is present (used by the "Create New Event" flow).
+## Templates (8 styles)
 
-### 3. "Create New Event" button on HomePage
-Add a card or button (e.g. "+" or "Create New Event") on the home dashboard that links to `/get-started?new=true`. This passes through the event type/role selection, then into the setup wizard with the `?new=true` flag so the guard doesn't block it.
+1. **Blush Elegance** -- Soft pink/rose background, centered serif-style text, thin gold-tone border, delicate corner flourishes (CSS borders/pseudo-elements)
+2. **Garden Party** -- Split layout with a floral-patterned left border (SVG/CSS pattern), green + cream palette, playful script-style header
+3. **Safari Adventure** -- Warm amber/tan background, animal-print accent stripe, bold uppercase headers, earthy tones
+4. **Ocean Dreams** -- Deep teal-to-aqua gradient, wave-shaped SVG divider between header and body, white text overlay
+5. **Woodland Whimsy** -- Kraft-paper-tan background, leaf/branch SVG border elements, forest green + cream text
+6. **Modern Minimal** -- Clean white card with strong black typography, single accent-color line, lots of whitespace
+7. **Boho Sunset** -- Warm terracotta/peach gradient with arch-shaped frame (CSS clip-path or border-radius), earth tones
+8. **Starry Night** -- Dark navy/purple background with subtle dot pattern (CSS radial-gradient stars), gold accent text, dreamy feel
 
-### 4. GetStartedPage update
-When accessed with `?new=true`, pass that param through to the setup redirect so the guard knows to allow it.
+## UI Changes
+
+### Template Picker (replaces dropdown)
+- A horizontal scrollable grid of template preview cards (small thumbnail renderings of each style)
+- Each card shows the template name + a mini visual preview
+- Selected template gets a ring/check indicator
+- Sits above the text editing fields
+
+### Preview
+- Full-size preview renders the selected template component with the user's custom text
+- Each template component receives `{ title, eventDate, location, message }` as props
 
 ## Files Changed
-- `src/pages/AuthPage.tsx` -- smart redirect after login
-- `src/pages/ShowerSetupPage.tsx` -- guard + `?new=true` bypass
-- `src/pages/RegistrySetupPage.tsx` -- guard + `?new=true` bypass
-- `src/pages/HomePage.tsx` -- "Create New Event" button
-- `src/pages/GetStartedPage.tsx` -- pass `?new=true` through
+
+- `src/pages/InviteBuilderPage.tsx` -- Refactor to use template picker + template renderer
+- `src/components/invites/InviteTemplates.tsx` (new) -- All 8 template render functions + thumbnail data (colors, preview layout)
+- `src/components/invites/InviteTemplatePicker.tsx` (new) -- Scrollable grid picker component
+
+## Technical Details
+- Templates are pure CSS/Tailwind + inline SVG decorations -- no image assets needed
+- Each template exports a preview component and a thumbnail config (name, background color, accent color)
+- Decorative elements use CSS pseudo-elements, clip-paths, border-radius tricks, and small inline SVGs for flourishes/waves/leaves
 
