@@ -1,5 +1,5 @@
 import { templates } from "@/components/invites/InviteTemplates";
-import { toPng } from "html-to-image";
+import html2canvas from "html2canvas";
 import { createElement } from "react";
 
 interface RenderOptions {
@@ -12,13 +12,11 @@ interface RenderOptions {
 }
 
 /**
- * Renders an invite template off-screen to a PNG Blob.
- * Converts all <img> sources to data URIs first to avoid CORS issues.
+ * Renders an invite template off-screen to a PNG Blob using html2canvas.
  */
 export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
   const TemplateComponent = templates[opts.templateId] || templates["baby-blocks"];
 
-  // Create off-screen container with explicit dimensions
   const container = document.createElement("div");
   container.style.cssText =
     "position:fixed;left:-9999px;top:0;width:500px;z-index:-1;background:#ffffff;";
@@ -27,7 +25,6 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
   const { createRoot } = await import("react-dom/client");
   const root = createRoot(container);
 
-  // Helper: fetch URL → base64 data URI
   const urlToDataUri = async (url: string): Promise<string> => {
     const resp = await fetch(url);
     const blob = await resp.blob();
@@ -39,7 +36,6 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
     });
   };
 
-  // Render template
   await new Promise<void>((resolve) => {
     root.render(
       createElement(TemplateComponent, {
@@ -50,10 +46,8 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
         timeRange: opts.timeRange,
       })
     );
-    // Wait for render + image load + data URI swap
     setTimeout(async () => {
       const imgs = container.querySelectorAll("img");
-      // Wait for images to load
       await Promise.all(
         Array.from(imgs).map((img) =>
           img.complete
@@ -64,7 +58,6 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
               })
         )
       );
-      // Convert to inline data URIs
       await Promise.all(
         Array.from(imgs).map(async (img) => {
           if (img.src && !img.src.startsWith("data:")) {
@@ -76,22 +69,29 @@ export async function renderInviteToBlob(opts: RenderOptions): Promise<Blob> {
           }
         })
       );
-      // Extra buffer for fonts
       setTimeout(resolve, 500);
     }, 300);
   });
 
   try {
-    const dataUrl = await toPng(container, {
-      quality: 0.95,
-      pixelRatio: 2,
+    const canvas = await html2canvas(container, {
+      useCORS: true,
       backgroundColor: "#ffffff",
+      scale: 2,
+      width: 500,
+      logging: false,
     });
+
     root.unmount();
     document.body.removeChild(container);
 
-    const res = await fetch(dataUrl);
-    return await res.blob();
+    return new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))),
+        "image/png",
+        0.95
+      );
+    });
   } catch (err) {
     root.unmount();
     document.body.removeChild(container);
