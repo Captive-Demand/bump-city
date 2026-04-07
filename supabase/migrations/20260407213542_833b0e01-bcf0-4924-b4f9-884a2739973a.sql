@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN push_notifications boolean NOT NULL DEFAULT false;

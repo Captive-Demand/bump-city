@@ -530,6 +530,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          push_notifications: boolean
           role: string | null
           updated_at: string
         }
@@ -539,6 +540,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          push_notifications?: boolean
           role?: string | null
           updated_at?: string
         }
@@ -548,6 +550,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          push_notifications?: boolean
           role?: string | null
           updated_at?: string
         }
