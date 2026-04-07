@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, ShoppingBag, Plus } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Image } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,6 +44,27 @@ const RegistryPage = () => {
   const [newPrice, setNewPrice] = useState("");
   const [newEmoji, setNewEmoji] = useState("🎁");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !event) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `registry/${event.id}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("uploads").upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("uploads").getPublicUrl(path);
+      setNewImageUrl(publicUrl);
+      setImagePreview(publicUrl);
+      toast.success("Image uploaded!");
+    } catch {
+      toast.error("Failed to upload image");
+    }
+    setUploading(false);
+  };
 
   // URL import
   const [urlOpen, setUrlOpen] = useState(false);
@@ -94,7 +115,7 @@ const RegistryPage = () => {
     });
     if (error) { toast.error("Failed to add item"); return; }
     addActivity("registry-added", `Added "${newName.trim()}" to registry`);
-    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setNewImageUrl(""); setAddOpen(false);
+    setNewName(""); setNewPrice(""); setNewEmoji("🎁"); setNewImageUrl(""); setImagePreview(null); setAddOpen(false);
     fetchItems();
   };
 
@@ -214,8 +235,19 @@ const RegistryPage = () => {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Image URL (optional)</Label>
-                  <Input placeholder="https://example.com/image.jpg" value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} />
+                  <Label>Image (optional)</Label>
+                  {imagePreview && (
+                    <img src={imagePreview} alt="Preview" className="w-full h-24 object-cover rounded-lg" />
+                  )}
+                  <div className="flex gap-2">
+                    <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
+                    <label className="cursor-pointer">
+                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                      <Button type="button" size="sm" variant="outline" className="h-9" disabled={uploading} asChild>
+                        <span><Upload className="h-3.5 w-3.5" /></span>
+                      </Button>
+                    </label>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
