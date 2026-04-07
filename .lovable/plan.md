@@ -1,17 +1,25 @@
 
 
-## Plan: Custom Upload Shows Image Only (No Text Overlay)
+## Plan: Implement 4 Community Features (Skip Bottom Nav)
 
-### What changes
+Dropping the Community tab from the bottom nav as requested. Implementing the remaining 4 items:
 
-When `templateId === "custom"`, the form fields (title, date, location, message, time) should be hidden since the uploaded image already contains all the design/text the user wants.
+### 1. City-based filtering + event images on Community page
+**File: `src/pages/CommunityEventsPage.tsx`**
+- Import `useEvent` to get the active event's city
+- Filter query with `.eq("city", city)` when available
+- Add `image_url` to the interface and render it in cards when present
 
-### Changes
+### 2. Community Events card on dashboard
+**File: `src/pages/HomePage.tsx`**
+- Add a "Community Events" card after NextTasks section
+- Fetch count of upcoming events for user's city
+- Link to `/community`
 
-**1. `src/pages/InviteBuilderPage.tsx`**
-- Wrap the form `Card` (title, date, time, location, message fields) in a condition: only show when `templateId !== "custom"`
-- When custom is selected, show just the uploaded image preview and the action buttons (Preview / Save)
-- On save with custom template, skip rendering — upload the raw file directly (already implemented)
+### 3. Push notification opt-in during onboarding
+**File: `src/pages/ShowerSetupPage.tsx`** (and `RegistrySetupPage.tsx`)
+- Add a toggle/prompt asking to enable notifications for local events
+- Save to `profiles.push_notifications`
 
-This is a small conditional visibility change — no logic changes needed since the save flow already handles custom uploads correctly.
+**Database migration:** Add `push_notifications` boolean column (default `false`) to `profiles` table.
 
