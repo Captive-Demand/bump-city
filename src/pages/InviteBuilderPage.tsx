@@ -165,6 +165,7 @@ const InviteBuilderPage = () => {
               </div>
             )}
 
+            {templateId !== "custom" && (
             <Card className="border-none">
               <CardContent className="p-4 space-y-4">
                 <div className="space-y-1.5">
@@ -206,6 +207,7 @@ const InviteBuilderPage = () => {
                 </div>
               </CardContent>
             </Card>
+            )}
 
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1 gap-2" onClick={() => setShowPreview(true)}>
