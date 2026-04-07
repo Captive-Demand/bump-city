@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useEvent } from "@/hooks/useEvent";
-import { Mail, Palette, Send, Eye, Save } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Mail, Palette, Eye, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,9 +17,11 @@ import { CalendarIcon } from "lucide-react";
 import { templates } from "@/components/invites/InviteTemplates";
 import InviteTemplatePicker from "@/components/invites/InviteTemplatePicker";
 import { supabase } from "@/integrations/supabase/client";
+import { renderInviteToBlob } from "@/components/invites/renderInviteToBlob";
 
 const InviteBuilderPage = () => {
   const { event } = useEvent();
+  const { user } = useAuth();
 
   const [title, setTitle] = useState(event?.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower");
   const [eventDate, setEventDate] = useState<Date | undefined>(event?.event_date ? new Date(event.event_date) : undefined);
@@ -38,16 +41,57 @@ const InviteBuilderPage = () => {
   }, [event]);
 
   const handleSave = async () => {
-    if (!event) return;
+    if (!event || !user) return;
     setSaving(true);
-    const { error } = await supabase.from("events").update({
-      invite_template: templateId,
-      invite_title: title,
-      invite_message: message,
-    } as any).eq("id", event.id);
-    setSaving(false);
-    if (error) { toast.error("Failed to save invite"); return; }
-    toast.success("Invite saved!");
+
+    try {
+      // 1. Generate the invite image
+      const blob = await renderInviteToBlob({
+        templateId,
+        title,
+        eventDate,
+        location,
+        message,
+      });
+
+      // 2. Upload to user-owned storage path
+      const path = `${user.id}/invites/${event.id}/invite.png`;
+      const { error: uploadError } = await supabase.storage
+        .from("uploads")
+        .upload(path, blob, { upsert: true, contentType: "image/png" });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        toast.error("Failed to upload invite image");
+        setSaving(false);
+        return;
+      }
+
+      // 3. Get public URL
+      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
+      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
+
+      // 4. Save settings + image URL to event
+      const { error } = await supabase.from("events").update({
+        invite_template: templateId,
+        invite_title: title,
+        invite_message: message,
+        invite_image_url: publicUrl,
+      } as any).eq("id", event.id);
+
+      if (error) {
+        toast.error("Failed to save invite");
+        setSaving(false);
+        return;
+      }
+
+      toast.success("Invite saved & image generated!");
+    } catch (err) {
+      console.error("Save failed:", err);
+      toast.error("Failed to generate invite image");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const TemplateComponent = templates[templateId] || templates["baby-blocks"];
@@ -116,7 +160,8 @@ const InviteBuilderPage = () => {
                 <Eye className="h-4 w-4" /> Preview
               </Button>
               <Button className="flex-1 gap-2" onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4" /> {saving ? "Saving…" : "Save Invite"}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {saving ? "Saving…" : "Save Invite"}
               </Button>
             </div>
           </>

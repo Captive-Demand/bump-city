@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,6 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import GuestImportDialog from "@/components/GuestImportDialog";
-import { templates } from "@/components/invites/InviteTemplates";
-import { toPng } from "html-to-image";
 
 type RSVPStatus = "attending" | "declined" | "pending";
 
@@ -44,7 +42,6 @@ const GuestListPage = () => {
   const { setupData } = useAppMode();
   const [search, setSearch] = useState("");
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const inviteImageUrlRef = useRef<string | null>(null);
 
   // Add guest form
   const [addOpen, setAddOpen] = useState(false);
@@ -88,92 +85,6 @@ const GuestListPage = () => {
     fetchGuests();
   };
 
-  const renderInviteToImage = useCallback(async (): Promise<string> => {
-    if (inviteImageUrlRef.current) return inviteImageUrlRef.current;
-
-    const templateId = (event as any)?.invite_template || "baby-blocks";
-    const inviteTitle = (event as any)?.invite_title || (event?.honoree_name ? `${event?.honoree_name}'s Baby Shower` : "Baby Shower");
-    const inviteMessage = (event as any)?.invite_message || "You're invited to celebrate with us! 🎉";
-    const TemplateComponent = templates[templateId] || templates["baby-blocks"];
-    const eventDate = event?.event_date ? new Date(event.event_date) : undefined;
-    const loc = event?.city || "";
-
-    // Create an off-screen container
-    const container = document.createElement("div");
-    container.style.cssText = "position:fixed;left:-9999px;top:0;width:500px;z-index:-1;";
-    document.body.appendChild(container);
-
-    // Use createRoot to render React component
-    const { createRoot: cr } = await import("react-dom/client");
-    const root = cr(container);
-
-    // Helper: convert image URL to base64 data URI
-    const urlToDataUri = async (url: string): Promise<string> => {
-      const resp = await fetch(url);
-      const blob = await resp.blob();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    };
-
-    await new Promise<void>((resolve) => {
-      root.render(
-        <TemplateComponent title={inviteTitle} eventDate={eventDate} location={loc} message={inviteMessage} />
-      );
-      // Wait for React render, then wait for all images to load
-      setTimeout(async () => {
-        const imgs = container.querySelectorAll("img");
-        await Promise.all(
-          Array.from(imgs).map(
-            (img) =>
-              img.complete
-                ? Promise.resolve()
-                : new Promise<void>((res) => {
-                    img.onload = () => res();
-                    img.onerror = () => res();
-                  })
-          )
-        );
-        // Convert all image sources to inline base64 data URIs to avoid CORS/tainted canvas
-        await Promise.all(
-          Array.from(imgs).map(async (img) => {
-            if (img.src && !img.src.startsWith("data:")) {
-              try {
-                img.src = await urlToDataUri(img.src);
-              } catch (e) {
-                console.warn("Failed to convert image to data URI:", e);
-              }
-            }
-          })
-        );
-        // Extra buffer for fonts/rendering
-        setTimeout(resolve, 500);
-      }, 300);
-    });
-
-    try {
-      const dataUrl = await toPng(container, { quality: 0.95, pixelRatio: 2 });
-      root.unmount();
-      document.body.removeChild(container);
-
-      // Upload to storage
-      const blob = await (await fetch(dataUrl)).blob();
-      const path = `invites/${event!.id}/invite.png`;
-      await supabase.storage.from("uploads").upload(path, blob, { upsert: true, contentType: "image/png" });
-      const { data: urlData } = supabase.storage.from("uploads").getPublicUrl(path);
-      const publicUrl = urlData.publicUrl + `?t=${Date.now()}`;
-      inviteImageUrlRef.current = publicUrl;
-      return publicUrl;
-    } catch (err) {
-      root.unmount();
-      document.body.removeChild(container);
-      throw err;
-    }
-  }, [event]);
-
   const [confirmResend, setConfirmResend] = useState<Guest | null>(null);
 
   const doSendInvite = async (guest: Guest) => {
@@ -183,11 +94,15 @@ const GuestListPage = () => {
     }
     if (!event) return;
 
-    setSendingId(guest.id);
-    inviteImageUrlRef.current = null;
-    try {
-      const imageUrl = await renderInviteToImage();
+    // Use the saved invite image from the event
+    const inviteImageUrl = (event as any).invite_image_url;
+    if (!inviteImageUrl) {
+      toast.error("Please save your invite design in Invite Builder first.");
+      return;
+    }
 
+    setSendingId(guest.id);
+    try {
       const honoreeName = event.honoree_name || setupData.honoreeName || "the parents-to-be";
       const eventDateStr = event.event_date
         ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
@@ -200,7 +115,9 @@ const GuestListPage = () => {
         rsvpCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         await supabase.from("invite_codes").insert({ event_id: event.id, created_by: user.id, code: rsvpCode });
       }
-      const siteOrigin = "https://bump-city.lovable.app";
+
+      // Use current origin so custom domains work
+      const siteOrigin = window.location.origin;
       const rsvpUrl = rsvpCode ? `${siteOrigin}/join?code=${rsvpCode}` : siteOrigin;
 
       const { error } = await supabase.functions.invoke("send-transactional-email", {
@@ -209,7 +126,7 @@ const GuestListPage = () => {
           recipientEmail: guest.email,
           idempotencyKey: `shower-invite-${guest.id}-${event.id}-${Date.now()}`,
           templateData: {
-            imageUrl,
+            imageUrl: inviteImageUrl,
             guestName: guest.name,
             honoreeName,
             rsvpUrl,

@@ -17,6 +17,10 @@ export interface EventData {
   registry_name: string | null;
   registry_private: boolean;
   event_image_url: string | null;
+  invite_template: string | null;
+  invite_title: string | null;
+  invite_message: string | null;
+  invite_image_url: string | null;
   user_id: string;
 }
 
