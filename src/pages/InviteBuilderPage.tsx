@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useEvent } from "@/hooks/useEvent";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail, Palette, Eye, Save, Loader2 } from "lucide-react";
+import { Mail, Palette, Eye, Save, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -27,6 +27,7 @@ const InviteBuilderPage = () => {
   const [eventDate, setEventDate] = useState<Date | undefined>(event?.event_date ? new Date(event.event_date) : undefined);
   const [location, setLocation] = useState(event?.city || "");
   const [message, setMessage] = useState("You're invited to celebrate with us! 🎉");
+  const [timeRange, setTimeRange] = useState("");
   const [templateId, setTemplateId] = useState("baby-blocks");
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -37,6 +38,7 @@ const InviteBuilderPage = () => {
       if ((event as any).invite_template) setTemplateId((event as any).invite_template);
       if ((event as any).invite_title) setTitle((event as any).invite_title);
       if ((event as any).invite_message) setMessage((event as any).invite_message);
+      if ((event as any).invite_time_range) setTimeRange((event as any).invite_time_range);
     }
   }, [event]);
 
@@ -52,6 +54,7 @@ const InviteBuilderPage = () => {
         eventDate,
         location,
         message,
+        timeRange,
       });
 
       // 2. Upload to user-owned storage path
@@ -77,6 +80,7 @@ const InviteBuilderPage = () => {
         invite_title: title,
         invite_message: message,
         invite_image_url: publicUrl,
+        invite_time_range: timeRange || null,
       } as any).eq("id", event.id);
 
       if (error) {
@@ -114,7 +118,7 @@ const InviteBuilderPage = () => {
                 className="w-full overflow-hidden border border-border/60 bg-card shadow-sm"
                 style={{ maxWidth: "calc(72vh * 5 / 7)" }}
               >
-                <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} />
+                <TemplateComponent title={title} eventDate={eventDate} location={location} message={message} timeRange={timeRange} />
               </div>
             </div>
             <Button variant="outline" className="w-full" onClick={() => setShowPreview(false)}>
@@ -143,6 +147,18 @@ const InviteBuilderPage = () => {
                       <Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus className="p-3 pointer-events-auto" />
                     </PopoverContent>
                   </Popover>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Time</Label>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      value={timeRange}
+                      onChange={(e) => setTimeRange(e.target.value)}
+                      placeholder="e.g. 2:00 PM - 5:00 PM"
+                      className="pl-9"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Location</Label>
