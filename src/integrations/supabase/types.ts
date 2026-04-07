@@ -241,6 +241,9 @@ export type Database = {
           gift_policy: string | null
           honoree_name: string | null
           id: string
+          invite_message: string | null
+          invite_template: string | null
+          invite_title: string | null
           registry_name: string | null
           registry_private: boolean | null
           surprise_mode: boolean | null
@@ -260,6 +263,9 @@ export type Database = {
           gift_policy?: string | null
           honoree_name?: string | null
           id?: string
+          invite_message?: string | null
+          invite_template?: string | null
+          invite_title?: string | null
           registry_name?: string | null
           registry_private?: boolean | null
           surprise_mode?: boolean | null
@@ -279,6 +285,9 @@ export type Database = {
           gift_policy?: string | null
           honoree_name?: string | null
           id?: string
+          invite_message?: string | null
+          invite_template?: string | null
+          invite_title?: string | null
           registry_name?: string | null
           registry_private?: boolean | null
           surprise_mode?: boolean | null
