@@ -83,6 +83,7 @@ export type Database = {
           description: string | null
           event_date: string | null
           id: string
+          image_url: string | null
           location: string | null
           title: string
         }
@@ -92,6 +93,7 @@ export type Database = {
           description?: string | null
           event_date?: string | null
           id?: string
+          image_url?: string | null
           location?: string | null
           title: string
         }
@@ -101,6 +103,7 @@ export type Database = {
           description?: string | null
           event_date?: string | null
           id?: string
+          image_url?: string | null
           location?: string | null
           title?: string
         }
