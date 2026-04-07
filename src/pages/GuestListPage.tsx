@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send, Loader2 } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import GuestImportDialog from "@/components/GuestImportDialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type RSVPStatus = "attending" | "declined" | "pending";
 
@@ -42,6 +43,9 @@ const GuestListPage = () => {
   const { setupData } = useAppMode();
   const [search, setSearch] = useState("");
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkMode, setBulkMode] = useState(false);
 
   // Add guest form
   const [addOpen, setAddOpen] = useState(false);
@@ -86,6 +90,7 @@ const GuestListPage = () => {
   };
 
   const [confirmResend, setConfirmResend] = useState<Guest | null>(null);
+  const [confirmBulk, setConfirmBulk] = useState(false);
 
   const doSendInvite = async (guest: Guest) => {
     if (!guest.email) {
@@ -94,7 +99,6 @@ const GuestListPage = () => {
     }
     if (!event) return;
 
-    // Use the saved invite image from the event
     const inviteImageUrl = (event as any).invite_image_url;
     if (!inviteImageUrl) {
       toast.error("Please save your invite design in Invite Builder first.");
@@ -116,7 +120,6 @@ const GuestListPage = () => {
         await supabase.from("invite_codes").insert({ event_id: event.id, created_by: user.id, code: rsvpCode });
       }
 
-      // Use current origin so custom domains work
       const siteOrigin = window.location.origin;
       const rsvpUrl = rsvpCode ? `${siteOrigin}/join?code=${rsvpCode}` : siteOrigin;
 
@@ -140,11 +143,10 @@ const GuestListPage = () => {
 
       await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
       addActivity("invite-sent", `Invite sent to ${guest.name}`);
-      toast.success(`Invite sent to ${guest.name}!`);
-      fetchGuests();
+      return true;
     } catch (err) {
       console.error("Failed to send invite:", err);
-      toast.error("Failed to send invite. Please try again.");
+      return false;
     } finally {
       setSendingId(null);
     }
@@ -154,13 +156,80 @@ const GuestListPage = () => {
     if (guest.invite_sent) {
       setConfirmResend(guest);
     } else {
-      doSendInvite(guest);
+      doSendInvite(guest).then((ok) => {
+        if (ok) { toast.success(`Invite sent to ${guest.name}!`); fetchGuests(); }
+        else toast.error("Failed to send invite.");
+      });
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  
+
+  const selectAll = () => {
+    const ids = eligibleForBulk.map((g) => g.id);
+    setSelectedIds(new Set(ids));
+  };
+
+  const selectNone = () => setSelectedIds(new Set());
+
+  const handleBulkSend = async () => {
+    if (!event) return;
+    const inviteImageUrl = (event as any).invite_image_url;
+    if (!inviteImageUrl) {
+      toast.error("Please save your invite design in Invite Builder first.");
+      return;
+    }
+
+    const toSend = guests.filter((g) => selectedIds.has(g.id) && g.email);
+    const hasResends = toSend.some((g) => g.invite_sent);
+
+    if (hasResends) {
+      setConfirmBulk(true);
+      return;
+    }
+
+    await executeBulkSend(toSend);
+  };
+
+  const executeBulkSend = async (toSend: Guest[]) => {
+    setBulkSending(true);
+    let sent = 0;
+    let failed = 0;
+
+    for (const guest of toSend) {
+      const ok = await doSendInvite(guest);
+      if (ok) sent++;
+      else failed++;
+    }
+
+    setBulkSending(false);
+    fetchGuests();
+
+    if (failed === 0) {
+      toast.success(`${sent} invite${sent !== 1 ? "s" : ""} sent successfully!`);
+    } else {
+      toast.error(`${sent} sent, ${failed} failed. Check emails and try again.`);
+    }
+
+    setBulkMode(false);
+    setSelectedIds(new Set());
+  };
+
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
+  const eligibleForBulk = filtered.filter((g) => g.email);
   const attending = guests.filter((g) => g.status === "attending").length;
   const pending = guests.filter((g) => g.status === "pending").length;
+  const selectedCount = selectedIds.size;
+  const selectedWithEmail = guests.filter((g) => selectedIds.has(g.id) && g.email).length;
 
   if (loading) {
     return (
@@ -219,10 +288,46 @@ const GuestListPage = () => {
         ))}
       </div>
 
-      <div className="px-6 mb-4">
+      <div className="px-6 mb-4 space-y-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input placeholder="Search guests..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 rounded-full bg-muted border-none" />
+        </div>
+
+        {/* Bulk send toolbar */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant={bulkMode ? "secondary" : "outline"}
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() => {
+              setBulkMode(!bulkMode);
+              if (bulkMode) setSelectedIds(new Set());
+            }}
+          >
+            <SendHorizonal className="h-3.5 w-3.5" />
+            {bulkMode ? "Cancel" : "Bulk Send"}
+          </Button>
+
+          {bulkMode && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={selectedCount === eligibleForBulk.length ? selectNone : selectAll}>
+                {selectedCount === eligibleForBulk.length ? "Deselect All" : "Select All"}
+              </Button>
+              <Button
+                size="sm"
+                className="h-8 gap-1.5"
+                disabled={selectedWithEmail === 0 || bulkSending}
+                onClick={handleBulkSend}
+              >
+                {bulkSending ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Sending...</>
+                ) : (
+                  <><Send className="h-3.5 w-3.5" /> Send ({selectedWithEmail})</>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -233,18 +338,27 @@ const GuestListPage = () => {
         {filtered.map((guest) => (
           <Card key={guest.id} className="border-none">
             <CardContent className="p-3 flex items-center gap-3">
+              {bulkMode && (
+                <Checkbox
+                  checked={selectedIds.has(guest.id)}
+                  onCheckedChange={() => toggleSelect(guest.id)}
+                  disabled={!guest.email}
+                  className="shrink-0"
+                />
+              )}
               <div className="w-10 h-10 rounded-full bg-lavender flex items-center justify-center font-bold text-sm text-lavender-foreground">
                 {guest.name.split(" ").map((n) => n[0]).join("")}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{guest.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
+                  {guest.invite_sent && <span className="text-[10px] text-muted-foreground">✉️ Sent</span>}
                   {guest.plus_one && <span className="text-[10px] text-muted-foreground">+1</span>}
                   {guest.dietary_notes && <span className="text-[10px] text-muted-foreground">🍽️ {guest.dietary_notes}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
-                {guest.email && (
+                {!bulkMode && guest.email && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -286,8 +400,36 @@ const GuestListPage = () => {
           </p>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={() => setConfirmResend(null)}>Cancel</Button>
-            <Button size="sm" onClick={() => { if (confirmResend) { doSendInvite(confirmResend); setConfirmResend(null); } }}>
+            <Button size="sm" onClick={() => {
+              if (confirmResend) {
+                doSendInvite(confirmResend).then((ok) => {
+                  if (ok) { toast.success(`Invite resent to ${confirmResend.name}!`); fetchGuests(); }
+                  else toast.error("Failed to resend invite.");
+                });
+                setConfirmResend(null);
+              }
+            }}>
               Resend
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk resend confirmation dialog */}
+      <Dialog open={confirmBulk} onOpenChange={setConfirmBulk}>
+        <DialogContent className="max-w-xs">
+          <DialogHeader><DialogTitle>Send Invites?</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Some selected guests have already received invites. This will resend to those guests as well. Continue?
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => setConfirmBulk(false)}>Cancel</Button>
+            <Button size="sm" onClick={() => {
+              setConfirmBulk(false);
+              const toSend = guests.filter((g) => selectedIds.has(g.id) && g.email);
+              executeBulkSend(toSend);
+            }}>
+              Send All
             </Button>
           </div>
         </DialogContent>
