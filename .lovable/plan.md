@@ -1,57 +1,49 @@
 
 
-# Use Uploaded Backgrounds for Premium Invite Templates
+# Multi-Event Support: Current Event Context
 
-## Summary
-Replace the current 8 CSS/SVG-based templates with 6 image-backed templates using your uploaded background images. Each template becomes a full-bleed background image with elegantly positioned text overlaid in the open space, using fonts that match each design's aesthetic.
+## Problem
+Right now the app assumes one event per user. `useEvent()` just grabs the most recent event. The Profile page mixes user settings with event settings. If a user creates a second shower (or plans one for someone else), they can only see/manage the latest one.
 
-## Background-to-Template Mapping
+## Solution: Active Event Context
+Instead of always fetching "the latest event," introduce an **active event** concept — the user picks which event they're working on, and the whole app operates in that context.
 
-| # | Image | Style Name | Text Position | Font Style |
-|---|-------|-----------|---------------|------------|
-| 1 | `1_copy_2.png` | Baby Blocks | Center (upper-mid area, between bunting and bottom art) | Rounded, playful serif |
-| 2 | `2_copy_2.png` | Floral Wreath | Center (inside the wreath opening) | Elegant script + light serif |
-| 3 | `3_copy_2.png` | Blush Roses | Center (large open white area) | Romantic serif, soft rose tones |
-| 4 | `4_copy_2.png` | Garden Peony | Center (between top and bottom borders) | Classic serif, sage green text |
-| 5 | `5_copy_2.png` | Sage Leaf | Center-right (leaves are on the left) | Modern minimal serif, muted green |
-| 6 | `6_copy_2.png` | Vintage Tulip | Upper area (flowers are at bottom) | Warm serif, deep burgundy text |
+### Key Changes
 
-## Approach
+**1. Create an `ActiveEventContext` (new file)**
+- Stores the currently selected `eventId` in React context + `localStorage`
+- On load: fetch all events the user owns or is a member of (`events` + `event_members`)
+- Expose: `activeEvent`, `allEvents`, `switchEvent(eventId)`, `loading`
+- Replace the current `useEvent()` hook — all consumers switch to this context
 
-### 1. Copy images into `src/assets/invites/`
-All 6 uploaded PNGs get copied into the project as static assets.
+**2. Update `AppModeContext`**
+- Instead of querying the latest event directly, derive `mode` from the active event in `ActiveEventContext`
+- Remove the duplicate event fetch
 
-### 2. Rewrite `InviteTemplates.tsx`
-- Reduce from 8 templates to 6 (matching the 6 backgrounds)
-- Each template: full-size `<img>` background with `object-cover`, then absolutely positioned text container in the open space
-- Text uses Google Fonts loaded via `index.html` link tags -- likely **Playfair Display** (elegant serif) and **Cormorant Garamond** (refined body) to match the watercolor/botanical aesthetic
-- Text color and positioning tuned per template to sit naturally in each image's open area
+**3. Separate Profile Page from Event Settings**
+- **Profile section**: avatar, display name, city, sign out — user-level stuff only
+- **Event Settings section**: move honoree name, due date, event date, theme, gift policy, clear wrapping into a dedicated "Event Settings" card that reads from `activeEvent`
+- This is mostly a reorganization of what's already in `ProfilePage.tsx`
 
-### 3. Update `templateConfigs` array
-Trim to 6 entries with updated names matching the new designs.
+**4. Add an Event Switcher**
+- Small dropdown/selector on the Home page (and optionally in the sidebar/bottom nav area) showing all the user's events
+- Tapping switches the active event context, which cascades to all pages (registry, guests, planning, etc.)
 
-### 4. Add Google Font links to `index.html`
-Two `<link>` tags for Playfair Display and Cormorant Garamond.
+**5. Update `useEvent` → use context**
+- Convert `useEvent()` from a standalone hook into a simple re-export from `ActiveEventContext`
+- All 10+ files importing `useEvent` continue to work with no API change
 
-## Template Component Pattern
-```text
-┌──────────────────────┐
-│  <img> background    │
-│  (absolute, cover)   │
-│                      │
-│   ┌──────────────┐   │
-│   │  TITLE       │   │  ← absolutely positioned
-│   │  date        │   │     in the open area
-│   │  location    │   │
-│   │  message     │   │
-│   └──────────────┘   │
-│                      │
-└──────────────────────┘
-```
+**6. Update `useEventRole`**
+- Already depends on `useEvent` — will automatically use the active event
+
+### No database changes needed
+The `events` and `event_members` tables already support multiple events per user. This is purely a frontend architecture change.
 
 ## Files Changed
-- `index.html` -- add Google Font links
-- `src/assets/invites/` -- 6 new image files (copied from uploads)
-- `src/components/invites/InviteTemplates.tsx` -- full rewrite: 6 image-backed templates
-- `src/components/invites/InviteTemplatePicker.tsx` -- no structural change needed (already renders live previews)
+- `src/contexts/ActiveEventContext.tsx` — **new**: stores active event, lists all user events, provides switcher
+- `src/contexts/AppModeContext.tsx` — derive mode from ActiveEventContext instead of querying DB directly
+- `src/hooks/useEvent.ts` — thin wrapper around ActiveEventContext for backward compat
+- `src/pages/ProfilePage.tsx` — separate user profile settings from event settings
+- `src/pages/HomePage.tsx` — add event switcher UI when user has multiple events
+- `src/App.tsx` — wrap with `ActiveEventProvider`
 
