@@ -37,10 +37,14 @@ const AdminPage = () => {
   const [settings, setSettings] = useState<any[]>([]);
   const [settingsEdits, setSettingsEdits] = useState<Record<string, string>>({});
 
-  // Admin management (super_admin only)
-  const [adminUsers, setAdminUsers] = useState<any[]>([]);
-  const [newAdminEmail, setNewAdminEmail] = useState("");
-  const [addingAdmin, setAddingAdmin] = useState(false);
+  // User management
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userRolesMap, setUserRolesMap] = useState<Record<string, { id: string; role: string }[]>>({});
+  const [userPage, setUserPage] = useState(0);
+  const [userTotal, setUserTotal] = useState(0);
+  const [userSearch, setUserSearch] = useState("");
+  const [addingRole, setAddingRole] = useState<string | null>(null);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     if (!roleLoading && isAdmin) fetchAll();
