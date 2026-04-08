@@ -50,6 +50,31 @@ const AdminPage = () => {
     if (!roleLoading && isAdmin) fetchAll();
   }, [roleLoading, isAdmin]);
 
+  useEffect(() => {
+    if (isAdmin) fetchUsers();
+  }, [isAdmin, userPage, userSearch]);
+
+  const fetchUsers = async () => {
+    const from = userPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    let query = supabase.from("profiles").select("id, display_name, avatar_url, created_at, city", { count: "exact" });
+    if (userSearch.trim()) {
+      query = query.ilike("display_name", `%${userSearch.trim()}%`);
+    }
+    const { data, count } = await query.order("created_at", { ascending: false }).range(from, to);
+    setAllUsers(data || []);
+    setUserTotal(count || 0);
+
+    // Fetch all roles
+    const { data: roles } = await supabase.from("user_roles").select("*");
+    const map: Record<string, { id: string; role: string }[]> = {};
+    (roles || []).forEach((r: any) => {
+      if (!map[r.user_id]) map[r.user_id] = [];
+      map[r.user_id].push({ id: r.id, role: r.role });
+    });
+    setUserRolesMap(map);
+  };
+
   const fetchAll = async () => {
     const [p, e, r, v, ce, s] = await Promise.all([
       supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -66,17 +91,6 @@ const AdminPage = () => {
     const edits: Record<string, string> = {};
     (s.data || []).forEach((row: any) => { edits[row.key] = row.value; });
     setSettingsEdits(edits);
-
-    if (isSuperAdmin) {
-      const { data: roles } = await supabase.from("user_roles").select("*");
-      if (roles) {
-        // Get profile display names for admin users
-        const userIds = roles.map((r: any) => r.user_id);
-        const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
-        const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.display_name]));
-        setAdminUsers(roles.map((r: any) => ({ ...r, display_name: profileMap[r.user_id] || "Unknown" })));
-      }
-    }
   };
 
   // Vendor CRUD
