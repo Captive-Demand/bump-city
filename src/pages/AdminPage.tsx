@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, ChevronDown, ChevronUp, KeyRound, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -44,6 +44,10 @@ const AdminPage = () => {
   const [userTotal, setUserTotal] = useState(0);
   const [userSearch, setUserSearch] = useState("");
   const [addingRole, setAddingRole] = useState<string | null>(null);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
+  const [sendingReset, setSendingReset] = useState<string | null>(null);
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -179,6 +183,33 @@ const AdminPage = () => {
     const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
     if (error) { toast.error("Failed to remove"); return; }
     fetchUsers(); toast.success("Role removed");
+  };
+
+  const toggleExpandUser = async (userId: string) => {
+    if (expandedUser === userId) { setExpandedUser(null); return; }
+    setExpandedUser(userId);
+    if (!userEmails[userId]) {
+      setLoadingEmail(userId);
+      try {
+        const res = await supabase.functions.invoke("admin-user-actions", {
+          body: { action: "get_email", userId },
+        });
+        if (res.data?.email) setUserEmails((prev) => ({ ...prev, [userId]: res.data.email }));
+      } catch { /* ignore */ }
+      setLoadingEmail(null);
+    }
+  };
+
+  const sendPasswordReset = async (userId: string) => {
+    setSendingReset(userId);
+    try {
+      const res = await supabase.functions.invoke("admin-user-actions", {
+        body: { action: "reset_password", userId },
+      });
+      if (res.data?.success) toast.success(`Password reset sent to ${res.data.email}`);
+      else toast.error(res.data?.error || "Failed to send reset");
+    } catch { toast.error("Failed to send reset"); }
+    setSendingReset(null);
   };
 
   if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
@@ -475,10 +506,11 @@ const AdminPage = () => {
             <div className="space-y-2">
               {allUsers.map((u) => {
                 const roles = userRolesMap[u.id] || [];
+                const isExpanded = expandedUser === u.id;
                 return (
                   <Card key={u.id} className="border-none">
                     <CardContent className="p-3">
-                      <div className="flex items-center gap-3">
+                      <button className="flex items-center gap-3 w-full text-left" onClick={() => toggleExpandUser(u.id)}>
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
                           {u.avatar_url ? <img src={u.avatar_url} className="h-8 w-8 rounded-full object-cover" /> : (u.display_name?.[0] || "?")}
                         </div>
@@ -486,7 +518,32 @@ const AdminPage = () => {
                           <p className="font-semibold text-sm truncate">{u.display_name || "Unknown"}</p>
                           <p className="text-[10px] text-muted-foreground">{u.city || "No city"} · Joined {new Date(u.created_at).toLocaleDateString()}</p>
                         </div>
-                      </div>
+                        {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+                      </button>
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-border space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            {loadingEmail === u.id ? (
+                              <span className="text-xs text-muted-foreground">Loading...</span>
+                            ) : userEmails[u.id] ? (
+                              <span className="text-xs">{userEmails[u.id]}</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">Could not load email</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            disabled={sendingReset === u.id || !userEmails[u.id]}
+                            onClick={() => sendPasswordReset(u.id)}
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                            {sendingReset === u.id ? "Sending..." : "Send Password Reset"}
+                          </Button>
+                        </div>
+                      )}
                       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                         {roles.length === 0 && <span className="text-[10px] text-muted-foreground italic">No roles</span>}
                         {roles.map((r) => (
