@@ -211,7 +211,7 @@ const AdminPage = () => {
             <TabsTrigger value="vendors" className="flex-1 gap-1 text-xs"><ShoppingBag className="h-3 w-3" /> Vendors</TabsTrigger>
             <TabsTrigger value="events" className="flex-1 gap-1 text-xs"><Calendar className="h-3 w-3" /> Events</TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 gap-1 text-xs"><Settings className="h-3 w-3" /> Settings</TabsTrigger>
-            {isSuperAdmin && <TabsTrigger value="admins" className="flex-1 gap-1 text-xs"><Users className="h-3 w-3" /> Admins</TabsTrigger>}
+            <TabsTrigger value="users" className="flex-1 gap-1 text-xs"><Users className="h-3 w-3" /> Users</TabsTrigger>
           </TabsList>
 
           {/* Dashboard */}
