@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette } from "lucide-react";
+import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
@@ -182,7 +182,13 @@ const GuestEventPage = () => {
                 {registryItems.map((item) => (
                   <Card key={item.id} className="border-none">
                     <CardContent className="p-4 flex items-center gap-3">
-                      <div className="text-2xl">{item.emoji || "🎁"}</div>
+                      {item.image_url ? (
+                        <img src={item.image_url} alt={item.name} className="h-10 w-10 rounded-md object-cover shrink-0" />
+                      ) : (
+                        <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
+                          <Package className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm truncate">{item.name}</p>
                         <p className="text-xs text-muted-foreground">{item.category}{item.price ? ` · $${item.price}` : ""}</p>
