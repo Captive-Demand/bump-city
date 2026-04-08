@@ -462,46 +462,66 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
 
-          {/* Admin Management (super_admin only) */}
-          {isSuperAdmin && (
-            <TabsContent value="admins">
-              <Card className="border-none mb-4">
-                <CardContent className="p-4">
-                  <h3 className="font-bold text-sm mb-3">Add Admin</h3>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="User email or display name"
-                      value={newAdminEmail}
-                      onChange={(e) => setNewAdminEmail(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button size="sm" onClick={addAdmin} disabled={addingAdmin} className="gap-1">
-                      <UserPlus className="h-3.5 w-3.5" /> {addingAdmin ? "..." : "Add"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="space-y-2">
-                {adminUsers.map((au) => (
-                  <Card key={au.id} className="border-none">
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">{au.display_name}</p>
-                        <Badge variant={au.role === "super_admin" ? "default" : "secondary"} className="text-[10px]">
-                          {au.role === "super_admin" ? "Super Admin" : au.role}
-                        </Badge>
+          {/* User Management */}
+          <TabsContent value="users">
+            <div className="mb-3">
+              <Input
+                placeholder="Search by name..."
+                value={userSearch}
+                onChange={(e) => { setUserSearch(e.target.value); setUserPage(0); }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">{userTotal} users total · Page {userPage + 1} of {Math.max(1, Math.ceil(userTotal / PAGE_SIZE))}</p>
+            <div className="space-y-2">
+              {allUsers.map((u) => {
+                const roles = userRolesMap[u.id] || [];
+                return (
+                  <Card key={u.id} className="border-none">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+                          {u.avatar_url ? <img src={u.avatar_url} className="h-8 w-8 rounded-full object-cover" /> : (u.display_name?.[0] || "?")}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{u.display_name || "Unknown"}</p>
+                          <p className="text-[10px] text-muted-foreground">{u.city || "No city"} · Joined {new Date(u.created_at).toLocaleDateString()}</p>
+                        </div>
                       </div>
-                      {au.role !== "super_admin" && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeAdmin(au.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {roles.length === 0 && <span className="text-[10px] text-muted-foreground italic">No roles</span>}
+                        {roles.map((r) => (
+                          <Badge key={r.id} variant={r.role === "super_admin" ? "default" : "secondary"} className="text-[10px] gap-0.5">
+                            {r.role === "super_admin" ? "Super Admin" : r.role}
+                            {isSuperAdmin && r.role !== "super_admin" && (
+                              <button onClick={() => removeRole(r.id)} className="ml-0.5 hover:text-destructive">×</button>
+                            )}
+                          </Badge>
+                        ))}
+                        {isSuperAdmin && (
+                          <select
+                            className="text-[10px] border rounded px-1 py-0.5 bg-background"
+                            value=""
+                            disabled={addingRole === u.id}
+                            onChange={(e) => { if (e.target.value) addRoleToUser(u.id, e.target.value); }}
+                          >
+                            <option value="">+ Add role</option>
+                            <option value="admin">admin</option>
+                            <option value="moderator">moderator</option>
+                          </select>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
+                );
+              })}
+            </div>
+            {userTotal > PAGE_SIZE && (
+              <div className="flex justify-between items-center mt-4">
+                <Button variant="outline" size="sm" disabled={userPage === 0} onClick={() => setUserPage((p) => p - 1)}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={(userPage + 1) * PAGE_SIZE >= userTotal} onClick={() => setUserPage((p) => p + 1)}>Next</Button>
               </div>
-            </TabsContent>
-          )}
+            )}
+          </TabsContent>
         </Tabs>
       </div>
     </MobileLayout>
