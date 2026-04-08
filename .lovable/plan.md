@@ -1,25 +1,16 @@
 
 
-## Plan: Implement 4 Community Features (Skip Bottom Nav)
+## Plan: Make Guest Registry Items Clickable with Product Links
 
-Dropping the Community tab from the bottom nav as requested. Implementing the remaining 4 items:
+The `registry_items` table already has `external_url` and `source` columns that aren't being fetched or displayed on the guest page.
 
-### 1. City-based filtering + event images on Community page
-**File: `src/pages/CommunityEventsPage.tsx`**
-- Import `useEvent` to get the active event's city
-- Filter query with `.eq("city", city)` when available
-- Add `image_url` to the interface and render it in cards when present
+### Changes — single file: `src/pages/GuestEventPage.tsx`
 
-### 2. Community Events card on dashboard
-**File: `src/pages/HomePage.tsx`**
-- Add a "Community Events" card after NextTasks section
-- Fetch count of upcoming events for user's city
-- Link to `/community`
+1. **Fetch `external_url` and `source`** — add them to the select query and the `RegistryItem` interface
 
-### 3. Push notification opt-in during onboarding
-**File: `src/pages/ShowerSetupPage.tsx`** (and `RegistrySetupPage.tsx`)
-- Add a toggle/prompt asking to enable notifications for local events
-- Save to `profiles.push_notifications`
+2. **Make items clickable** — when `external_url` exists, wrap the item name/image in a link that opens in a new tab. Add a small "View Item" or external link icon so guests know it's tappable.
 
-**Database migration:** Add `push_notifications` boolean column (default `false`) to `profiles` table.
+3. **Show source badge** — if `source` is set (e.g. "Amazon", "Target"), display it as a small text label under the item name for context
+
+No database changes needed — all data already exists.
 
