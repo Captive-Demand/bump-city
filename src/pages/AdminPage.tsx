@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, UserPlus, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, Phone } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -37,14 +37,43 @@ const AdminPage = () => {
   const [settings, setSettings] = useState<any[]>([]);
   const [settingsEdits, setSettingsEdits] = useState<Record<string, string>>({});
 
-  // Admin management (super_admin only)
-  const [adminUsers, setAdminUsers] = useState<any[]>([]);
-  const [newAdminEmail, setNewAdminEmail] = useState("");
-  const [addingAdmin, setAddingAdmin] = useState(false);
+  // User management
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [userRolesMap, setUserRolesMap] = useState<Record<string, { id: string; role: string }[]>>({});
+  const [userPage, setUserPage] = useState(0);
+  const [userTotal, setUserTotal] = useState(0);
+  const [userSearch, setUserSearch] = useState("");
+  const [addingRole, setAddingRole] = useState<string | null>(null);
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     if (!roleLoading && isAdmin) fetchAll();
   }, [roleLoading, isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) fetchUsers();
+  }, [isAdmin, userPage, userSearch]);
+
+  const fetchUsers = async () => {
+    const from = userPage * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    let query = supabase.from("profiles").select("id, display_name, avatar_url, created_at, city", { count: "exact" });
+    if (userSearch.trim()) {
+      query = query.ilike("display_name", `%${userSearch.trim()}%`);
+    }
+    const { data, count } = await query.order("created_at", { ascending: false }).range(from, to);
+    setAllUsers(data || []);
+    setUserTotal(count || 0);
+
+    // Fetch all roles
+    const { data: roles } = await supabase.from("user_roles").select("*");
+    const map: Record<string, { id: string; role: string }[]> = {};
+    (roles || []).forEach((r: any) => {
+      if (!map[r.user_id]) map[r.user_id] = [];
+      map[r.user_id].push({ id: r.id, role: r.role });
+    });
+    setUserRolesMap(map);
+  };
 
   const fetchAll = async () => {
     const [p, e, r, v, ce, s] = await Promise.all([
@@ -62,17 +91,6 @@ const AdminPage = () => {
     const edits: Record<string, string> = {};
     (s.data || []).forEach((row: any) => { edits[row.key] = row.value; });
     setSettingsEdits(edits);
-
-    if (isSuperAdmin) {
-      const { data: roles } = await supabase.from("user_roles").select("*");
-      if (roles) {
-        // Get profile display names for admin users
-        const userIds = roles.map((r: any) => r.user_id);
-        const { data: profiles } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
-        const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.display_name]));
-        setAdminUsers(roles.map((r: any) => ({ ...r, display_name: profileMap[r.user_id] || "Unknown" })));
-      }
-    }
   };
 
   // Vendor CRUD
@@ -145,33 +163,22 @@ const AdminPage = () => {
     fetchAll(); toast.success("Settings saved!");
   };
 
-  // Admin management
-  const addAdmin = async () => {
-    if (!newAdminEmail.trim()) return;
-    setAddingAdmin(true);
-    // Find user by email in profiles (display_name might be email)
-    const { data: profiles } = await supabase.from("profiles").select("id, display_name").ilike("display_name", newAdminEmail.trim());
-    if (!profiles || profiles.length === 0) {
-      toast.error("No user found with that email/name");
-      setAddingAdmin(false);
-      return;
-    }
-    const targetId = profiles[0].id;
-    const { error } = await supabase.from("user_roles").insert({ user_id: targetId, role: "admin" as any });
+  const addRoleToUser = async (userId: string, role: string) => {
+    setAddingRole(userId);
+    const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
     if (error) {
-      toast.error(error.message.includes("duplicate") ? "User already has this role" : "Failed to add admin");
+      toast.error(error.message.includes("duplicate") ? "User already has this role" : "Failed to add role");
     } else {
-      toast.success("Admin added!");
-      setNewAdminEmail("");
-      fetchAll();
+      toast.success("Role added!");
+      fetchUsers();
     }
-    setAddingAdmin(false);
+    setAddingRole(null);
   };
 
-  const removeAdmin = async (roleId: string) => {
+  const removeRole = async (roleId: string) => {
     const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
     if (error) { toast.error("Failed to remove"); return; }
-    fetchAll(); toast.success("Role removed");
+    fetchUsers(); toast.success("Role removed");
   };
 
   if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
@@ -204,7 +211,7 @@ const AdminPage = () => {
             <TabsTrigger value="vendors" className="flex-1 gap-1 text-xs"><ShoppingBag className="h-3 w-3" /> Vendors</TabsTrigger>
             <TabsTrigger value="events" className="flex-1 gap-1 text-xs"><Calendar className="h-3 w-3" /> Events</TabsTrigger>
             <TabsTrigger value="settings" className="flex-1 gap-1 text-xs"><Settings className="h-3 w-3" /> Settings</TabsTrigger>
-            {isSuperAdmin && <TabsTrigger value="admins" className="flex-1 gap-1 text-xs"><Users className="h-3 w-3" /> Admins</TabsTrigger>}
+            <TabsTrigger value="users" className="flex-1 gap-1 text-xs"><Users className="h-3 w-3" /> Users</TabsTrigger>
           </TabsList>
 
           {/* Dashboard */}
@@ -455,46 +462,66 @@ const AdminPage = () => {
             </Card>
           </TabsContent>
 
-          {/* Admin Management (super_admin only) */}
-          {isSuperAdmin && (
-            <TabsContent value="admins">
-              <Card className="border-none mb-4">
-                <CardContent className="p-4">
-                  <h3 className="font-bold text-sm mb-3">Add Admin</h3>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="User email or display name"
-                      value={newAdminEmail}
-                      onChange={(e) => setNewAdminEmail(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button size="sm" onClick={addAdmin} disabled={addingAdmin} className="gap-1">
-                      <UserPlus className="h-3.5 w-3.5" /> {addingAdmin ? "..." : "Add"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <div className="space-y-2">
-                {adminUsers.map((au) => (
-                  <Card key={au.id} className="border-none">
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm truncate">{au.display_name}</p>
-                        <Badge variant={au.role === "super_admin" ? "default" : "secondary"} className="text-[10px]">
-                          {au.role === "super_admin" ? "Super Admin" : au.role}
-                        </Badge>
+          {/* User Management */}
+          <TabsContent value="users">
+            <div className="mb-3">
+              <Input
+                placeholder="Search by name..."
+                value={userSearch}
+                onChange={(e) => { setUserSearch(e.target.value); setUserPage(0); }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">{userTotal} users total · Page {userPage + 1} of {Math.max(1, Math.ceil(userTotal / PAGE_SIZE))}</p>
+            <div className="space-y-2">
+              {allUsers.map((u) => {
+                const roles = userRolesMap[u.id] || [];
+                return (
+                  <Card key={u.id} className="border-none">
+                    <CardContent className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
+                          {u.avatar_url ? <img src={u.avatar_url} className="h-8 w-8 rounded-full object-cover" /> : (u.display_name?.[0] || "?")}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{u.display_name || "Unknown"}</p>
+                          <p className="text-[10px] text-muted-foreground">{u.city || "No city"} · Joined {new Date(u.created_at).toLocaleDateString()}</p>
+                        </div>
                       </div>
-                      {au.role !== "super_admin" && (
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeAdmin(au.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
+                      <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                        {roles.length === 0 && <span className="text-[10px] text-muted-foreground italic">No roles</span>}
+                        {roles.map((r) => (
+                          <Badge key={r.id} variant={r.role === "super_admin" ? "default" : "secondary"} className="text-[10px] gap-0.5">
+                            {r.role === "super_admin" ? "Super Admin" : r.role}
+                            {isSuperAdmin && r.role !== "super_admin" && (
+                              <button onClick={() => removeRole(r.id)} className="ml-0.5 hover:text-destructive">×</button>
+                            )}
+                          </Badge>
+                        ))}
+                        {isSuperAdmin && (
+                          <select
+                            className="text-[10px] border rounded px-1 py-0.5 bg-background"
+                            value=""
+                            disabled={addingRole === u.id}
+                            onChange={(e) => { if (e.target.value) addRoleToUser(u.id, e.target.value); }}
+                          >
+                            <option value="">+ Add role</option>
+                            <option value="admin">admin</option>
+                            <option value="moderator">moderator</option>
+                          </select>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
+                );
+              })}
+            </div>
+            {userTotal > PAGE_SIZE && (
+              <div className="flex justify-between items-center mt-4">
+                <Button variant="outline" size="sm" disabled={userPage === 0} onClick={() => setUserPage((p) => p - 1)}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={(userPage + 1) * PAGE_SIZE >= userTotal} onClick={() => setUserPage((p) => p + 1)}>Next</Button>
               </div>
-            </TabsContent>
-          )}
+            )}
+          </TabsContent>
         </Tabs>
       </div>
     </MobileLayout>
