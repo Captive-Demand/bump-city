@@ -506,10 +506,11 @@ const AdminPage = () => {
             <div className="space-y-2">
               {allUsers.map((u) => {
                 const roles = userRolesMap[u.id] || [];
+                const isExpanded = expandedUser === u.id;
                 return (
                   <Card key={u.id} className="border-none">
                     <CardContent className="p-3">
-                      <div className="flex items-center gap-3">
+                      <button className="flex items-center gap-3 w-full text-left" onClick={() => toggleExpandUser(u.id)}>
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-bold shrink-0">
                           {u.avatar_url ? <img src={u.avatar_url} className="h-8 w-8 rounded-full object-cover" /> : (u.display_name?.[0] || "?")}
                         </div>
@@ -517,7 +518,32 @@ const AdminPage = () => {
                           <p className="font-semibold text-sm truncate">{u.display_name || "Unknown"}</p>
                           <p className="text-[10px] text-muted-foreground">{u.city || "No city"} · Joined {new Date(u.created_at).toLocaleDateString()}</p>
                         </div>
-                      </div>
+                        {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+                      </button>
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-border space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                            {loadingEmail === u.id ? (
+                              <span className="text-xs text-muted-foreground">Loading...</span>
+                            ) : userEmails[u.id] ? (
+                              <span className="text-xs">{userEmails[u.id]}</span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground italic">Could not load email</span>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 text-xs"
+                            disabled={sendingReset === u.id || !userEmails[u.id]}
+                            onClick={() => sendPasswordReset(u.id)}
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                            {sendingReset === u.id ? "Sending..." : "Send Password Reset"}
+                          </Button>
+                        </div>
+                      )}
                       <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                         {roles.length === 0 && <span className="text-[10px] text-muted-foreground italic">No roles</span>}
                         {roles.map((r) => (
