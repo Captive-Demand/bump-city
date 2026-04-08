@@ -185,6 +185,33 @@ const AdminPage = () => {
     fetchUsers(); toast.success("Role removed");
   };
 
+  const toggleExpandUser = async (userId: string) => {
+    if (expandedUser === userId) { setExpandedUser(null); return; }
+    setExpandedUser(userId);
+    if (!userEmails[userId]) {
+      setLoadingEmail(userId);
+      try {
+        const res = await supabase.functions.invoke("admin-user-actions", {
+          body: { action: "get_email", userId },
+        });
+        if (res.data?.email) setUserEmails((prev) => ({ ...prev, [userId]: res.data.email }));
+      } catch { /* ignore */ }
+      setLoadingEmail(null);
+    }
+  };
+
+  const sendPasswordReset = async (userId: string) => {
+    setSendingReset(userId);
+    try {
+      const res = await supabase.functions.invoke("admin-user-actions", {
+        body: { action: "reset_password", userId },
+      });
+      if (res.data?.success) toast.success(`Password reset sent to ${res.data.email}`);
+      else toast.error(res.data?.error || "Failed to send reset");
+    } catch { toast.error("Failed to send reset"); }
+    setSendingReset(null);
+  };
+
   if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
 
   if (!isAdmin) return (
