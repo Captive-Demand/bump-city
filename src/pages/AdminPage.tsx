@@ -163,33 +163,22 @@ const AdminPage = () => {
     fetchAll(); toast.success("Settings saved!");
   };
 
-  // Admin management
-  const addAdmin = async () => {
-    if (!newAdminEmail.trim()) return;
-    setAddingAdmin(true);
-    // Find user by email in profiles (display_name might be email)
-    const { data: profiles } = await supabase.from("profiles").select("id, display_name").ilike("display_name", newAdminEmail.trim());
-    if (!profiles || profiles.length === 0) {
-      toast.error("No user found with that email/name");
-      setAddingAdmin(false);
-      return;
-    }
-    const targetId = profiles[0].id;
-    const { error } = await supabase.from("user_roles").insert({ user_id: targetId, role: "admin" as any });
+  const addRoleToUser = async (userId: string, role: string) => {
+    setAddingRole(userId);
+    const { error } = await supabase.from("user_roles").insert({ user_id: userId, role: role as any });
     if (error) {
-      toast.error(error.message.includes("duplicate") ? "User already has this role" : "Failed to add admin");
+      toast.error(error.message.includes("duplicate") ? "User already has this role" : "Failed to add role");
     } else {
-      toast.success("Admin added!");
-      setNewAdminEmail("");
-      fetchAll();
+      toast.success("Role added!");
+      fetchUsers();
     }
-    setAddingAdmin(false);
+    setAddingRole(null);
   };
 
-  const removeAdmin = async (roleId: string) => {
+  const removeRole = async (roleId: string) => {
     const { error } = await supabase.from("user_roles").delete().eq("id", roleId);
     if (error) { toast.error("Failed to remove"); return; }
-    fetchAll(); toast.success("Role removed");
+    fetchUsers(); toast.success("Role removed");
   };
 
   if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
