@@ -44,6 +44,10 @@ const AdminPage = () => {
   const [userTotal, setUserTotal] = useState(0);
   const [userSearch, setUserSearch] = useState("");
   const [addingRole, setAddingRole] = useState<string | null>(null);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [userEmails, setUserEmails] = useState<Record<string, string>>({});
+  const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
+  const [sendingReset, setSendingReset] = useState<string | null>(null);
   const PAGE_SIZE = 20;
 
   useEffect(() => {
