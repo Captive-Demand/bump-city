@@ -31,6 +31,8 @@ interface RegistryItem {
   claimed: boolean;
   claimed_by: string | null;
   image_url: string | null;
+  external_url: string | null;
+  source: string | null;
 }
 
 const GuestEventPage = () => {
