@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package } from "lucide-react";
+import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
