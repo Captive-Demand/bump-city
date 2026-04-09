@@ -83,7 +83,7 @@ const InviteBuilderPage = () => {
       }
 
       // 2. Upload to user-owned storage path
-      const path = `${user.id}/invites/${event.id}/invite.png`;
+      const path = `invites/${user.id}/${event.id}/invite.png`;
       const { error: uploadError } = await supabase.storage
         .from("uploads")
         .upload(path, blob, { upsert: true, contentType: "image/png" });
