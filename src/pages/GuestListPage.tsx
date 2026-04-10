@@ -343,7 +343,7 @@ const GuestListPage = () => {
           <p className="text-sm text-muted-foreground text-center col-span-full py-8">No guests yet — tap "Add" to invite someone!</p>
         )}
         {filtered.map((guest) => (
-          <Card key={guest.id} className="border-none">
+          <Card key={guest.id} className="border-none group relative">
             <CardContent className="p-3 flex items-center gap-3">
               {bulkMode && (
                 <Checkbox
@@ -365,6 +365,17 @@ const GuestListPage = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
+                {!bulkMode && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                    onClick={() => deleteGuest(guest)}
+                    title="Remove guest"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 {!bulkMode && guest.email && (
                   <Button
                     variant="ghost"
