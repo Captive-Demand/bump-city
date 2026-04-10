@@ -89,6 +89,13 @@ const GuestListPage = () => {
     fetchGuests();
   };
 
+  const deleteGuest = async (guest: Guest) => {
+    const { error } = await supabase.from("guests").delete().eq("id", guest.id);
+    if (error) { toast.error("Failed to delete guest"); return; }
+    toast.success(`${guest.name} removed`);
+    fetchGuests();
+  };
+
   const [confirmResend, setConfirmResend] = useState<Guest | null>(null);
   const [confirmBulk, setConfirmBulk] = useState(false);
 
