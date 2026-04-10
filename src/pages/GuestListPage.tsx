@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2 } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
