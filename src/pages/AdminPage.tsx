@@ -562,6 +562,7 @@ const AdminPage = () => {
                             onChange={(e) => { if (e.target.value) addRoleToUser(u.id, e.target.value); }}
                           >
                             <option value="">+ Add role</option>
+                            <option value="user">user</option>
                             <option value="admin">admin</option>
                             <option value="moderator">moderator</option>
                           </select>
