@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2 } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -86,6 +86,13 @@ const GuestListPage = () => {
     if (error) { toast.error("Failed to add guest"); return; }
     addActivity("guest-invited", `Invited ${newName.trim()}`);
     setNewName(""); setNewEmail(""); setAddOpen(false);
+    fetchGuests();
+  };
+
+  const deleteGuest = async (guest: Guest) => {
+    const { error } = await supabase.from("guests").delete().eq("id", guest.id);
+    if (error) { toast.error("Failed to delete guest"); return; }
+    toast.success(`${guest.name} removed`);
     fetchGuests();
   };
 
@@ -336,7 +343,7 @@ const GuestListPage = () => {
           <p className="text-sm text-muted-foreground text-center col-span-full py-8">No guests yet — tap "Add" to invite someone!</p>
         )}
         {filtered.map((guest) => (
-          <Card key={guest.id} className="border-none">
+          <Card key={guest.id} className="border-none group relative">
             <CardContent className="p-3 flex items-center gap-3">
               {bulkMode && (
                 <Checkbox
@@ -358,6 +365,17 @@ const GuestListPage = () => {
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
+                {!bulkMode && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                    onClick={() => deleteGuest(guest)}
+                    title="Remove guest"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
                 {!bulkMode && guest.email && (
                   <Button
                     variant="ghost"
