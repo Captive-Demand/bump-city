@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Check, ShoppingBag, Plus, Upload, Image, Package, Trash2 } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Image, Package, Trash2, Pencil } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +46,62 @@ const RegistryPage = () => {
   const [newImageUrl, setNewImageUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  // Edit item form
+  const [editOpen, setEditOpen] = useState(false);
+  const [editItem, setEditItem] = useState<RegistryItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("Essentials");
+  const [editPrice, setEditPrice] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editUploading, setEditUploading] = useState(false);
+
+  const openEdit = (item: RegistryItem) => {
+    setEditItem(item);
+    setEditName(item.name);
+    setEditCategory(item.category);
+    setEditPrice(String(item.price || ""));
+    setEditImageUrl(item.image_url || "");
+    setEditImagePreview(item.image_url || null);
+    setEditOpen(true);
+  };
+
+  const handleEditImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !event || !user) return;
+    setEditUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/registry/${event.id}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("uploads").upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("uploads").getPublicUrl(path);
+      setEditImageUrl(publicUrl);
+      setEditImagePreview(publicUrl);
+      toast.success("Image uploaded!");
+    } catch {
+      toast.error("Failed to upload image");
+    }
+    setEditUploading(false);
+  };
+
+  const handleEdit = async () => {
+    if (!editItem || !editName.trim()) return;
+    const { error } = await supabase.from("registry_items").update({
+      name: editName.trim(),
+      category: editCategory,
+      price: parseFloat(editPrice) || 0,
+      emoji: editImageUrl.trim() ? null : "🎁",
+      image_url: editImageUrl.trim() || null,
+    }).eq("id", editItem.id);
+    if (error) { toast.error("Failed to update item"); return; }
+    toast.success("Item updated");
+    addActivity("registry-added", `Updated "${editName.trim()}" in registry`);
+    setEditOpen(false);
+    setEditItem(null);
+    fetchItems();
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
