@@ -387,6 +387,9 @@ const RegistryPage = () => {
                 ) : (
                   <Button size="sm" className="rounded-full text-xs h-8" onClick={() => handleClaim(item.id)}>Claim</Button>
                 )}
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
@@ -395,6 +398,46 @@ const RegistryPage = () => {
           </Card>
         ))}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Registry Item</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Item name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Category</Label>
+              <Select value={editCategory} onValueChange={setEditCategory}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Image (optional)</Label>
+              {editImagePreview && (
+                <img src={editImagePreview} alt="Preview" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />
+              )}
+              <div className="flex gap-2">
+                <Input placeholder="https://..." value={editImageUrl} onChange={(e) => { setEditImageUrl(e.target.value); setEditImagePreview(e.target.value); }} className="flex-1" />
+                <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleEditImageUpload} />
+                  <Upload className="h-3.5 w-3.5" />
+                </label>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Price ($)</Label>
+              <Input type="number" placeholder="0" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} />
+            </div>
+            <Button className="w-full" onClick={handleEdit} disabled={!editName.trim()}>Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
