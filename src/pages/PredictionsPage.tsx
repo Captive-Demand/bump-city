@@ -91,41 +91,85 @@ const PredictionsPage = () => {
     fetchPredictions();
   };
 
+  const [categoryWinners, setCategoryWinners] = useState<{
+    date: Prediction[];
+    gender: Prediction[];
+    name: Prediction[];
+    weight: Prediction[];
+  }>({ date: [], gender: [], name: [], weight: [] });
+
   const handleReveal = async () => {
     if (!event || predictions.length === 0) return;
     setRevealing(true);
 
-    // Score predictions
-    const scored = predictions.map((p) => {
-      let score = 0;
-      if (actualGender && p.predicted_gender === actualGender) score += 3;
-      if (actualName && p.predicted_name?.toLowerCase() === actualName.toLowerCase()) score += 3;
-      if (actualDate && p.predicted_date) {
-        const diff = Math.abs(new Date(p.predicted_date).getTime() - actualDate.getTime());
-        const daysDiff = diff / (1000 * 60 * 60 * 24);
-        if (daysDiff === 0) score += 5;
-        else if (daysDiff <= 3) score += 3;
-        else if (daysDiff <= 7) score += 1;
+    // Closest date wins
+    let dateWinners: Prediction[] = [];
+    if (actualDate) {
+      const withDates = predictions.filter((p) => p.predicted_date);
+      if (withDates.length > 0) {
+        const diffs = withDates.map((p) => ({
+          p,
+          diff: Math.abs(new Date(p.predicted_date!).getTime() - actualDate.getTime()),
+        }));
+        const minDiff = Math.min(...diffs.map((d) => d.diff));
+        dateWinners = diffs.filter((d) => d.diff === minDiff).map((d) => d.p);
       }
-      if (actualWeight && p.predicted_weight === actualWeight) score += 2;
-      return { ...p, score };
-    });
+    }
 
-    scored.sort((a, b) => b.score - a.score);
-    const topScore = scored[0]?.score || 0;
-    const winners = scored.filter((s) => s.score === topScore && topScore > 0);
+    // Exact gender match wins
+    const genderWinners = actualGender
+      ? predictions.filter((p) => p.predicted_gender === actualGender)
+      : [];
 
-    // Mark winners
-    for (const w of winners) {
-      await supabase.from("predictions").update({ is_winner: true }).eq("id", w.id);
+    // Exact name match (case-insensitive) wins
+    const nameWinners = actualName
+      ? predictions.filter((p) => p.predicted_name?.trim().toLowerCase() === actualName.trim().toLowerCase())
+      : [];
+
+    // Closest weight wins (parse "X lbs Y oz" -> total ounces)
+    const parseWeight = (w: string): number | null => {
+      const lbs = w.match(/(\d+(?:\.\d+)?)\s*lb/i);
+      const oz = w.match(/(\d+(?:\.\d+)?)\s*oz/i);
+      if (!lbs && !oz) {
+        const num = parseFloat(w);
+        return isNaN(num) ? null : num * 16;
+      }
+      return (lbs ? parseFloat(lbs[1]) * 16 : 0) + (oz ? parseFloat(oz[1]) : 0);
+    };
+    let weightWinners: Prediction[] = [];
+    if (actualWeight) {
+      const targetOz = parseWeight(actualWeight);
+      if (targetOz !== null) {
+        const withWeights = predictions
+          .map((p) => ({ p, oz: p.predicted_weight ? parseWeight(p.predicted_weight) : null }))
+          .filter((x) => x.oz !== null) as { p: Prediction; oz: number }[];
+        if (withWeights.length > 0) {
+          const diffs = withWeights.map((x) => ({ p: x.p, diff: Math.abs(x.oz - targetOz) }));
+          const minDiff = Math.min(...diffs.map((d) => d.diff));
+          weightWinners = diffs.filter((d) => d.diff === minDiff).map((d) => d.p);
+        }
+      }
+    }
+
+    setCategoryWinners({ date: dateWinners, gender: genderWinners, name: nameWinners, weight: weightWinners });
+
+    // Mark anyone who won at least one category
+    const allWinnerIds = new Set([
+      ...dateWinners.map((p) => p.id),
+      ...genderWinners.map((p) => p.id),
+      ...nameWinners.map((p) => p.id),
+      ...weightWinners.map((p) => p.id),
+    ]);
+    for (const id of allWinnerIds) {
+      await supabase.from("predictions").update({ is_winner: true }).eq("id", id);
     }
 
     setRevealing(false);
     setConfetti(true);
     setRevealed(true);
     setTimeout(() => setConfetti(false), 4000);
-    addActivity("prediction", `Results revealed! ${winners.length} winner(s)! 🎉`);
-    toast.success(`🎉 ${winners.length} winner(s) selected!`);
+    addActivity("prediction", `Results revealed! ${allWinnerIds.size} winner(s)! 🎉`);
+    toast.success(`🎉 ${allWinnerIds.size} winner(s) across ${[dateWinners, genderWinners, nameWinners, weightWinners].filter((w) => w.length > 0).length} categories!`);
     fetchPredictions();
   };
 
@@ -169,7 +213,7 @@ const PredictionsPage = () => {
               <CardContent className="p-4 space-y-4">
                 <div>
                   <h3 className="font-bold text-sm mb-1">Make Your Prediction</h3>
-                  <p className="text-xs text-muted-foreground">Guess the baby's arrival details!</p>
+                  <p className="text-xs text-muted-foreground">Win a prize in any category — date, gender, name, or weight! 🏆</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Your name *</Label>
@@ -254,20 +298,36 @@ const PredictionsPage = () => {
                   <CardContent className="p-6 text-center">
                     <PartyPopper className="h-10 w-10 text-primary mx-auto mb-2" />
                     <h3 className="text-lg font-bold mb-1">🎉 Winners Revealed!</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{winners.length} winner{winners.length > 1 ? "s" : ""} selected</p>
-                    {winners.map((w) => (
-                      <div key={w.id} className="bg-card rounded-xl p-4 mb-2">
-                        <p className="font-bold text-primary">{w.guest_name}</p>
-                        <div className="flex flex-wrap gap-2 mt-1 justify-center">
-                          {w.predicted_date && <Badge variant="secondary" className="text-[10px]">📅 {new Date(w.predicted_date).toLocaleDateString()}</Badge>}
-                          {w.predicted_gender && <Badge variant="secondary" className="text-[10px]">{w.predicted_gender === "boy" ? "👦" : "👧"} {w.predicted_gender}</Badge>}
-                          {w.predicted_name && <Badge variant="secondary" className="text-[10px]">👶 {w.predicted_name}</Badge>}
-                          {w.predicted_weight && <Badge variant="secondary" className="text-[10px]">⚖️ {w.predicted_weight}</Badge>}
-                        </div>
-                      </div>
-                    ))}
+                    <p className="text-sm text-muted-foreground">A prize for every category 🏆</p>
                   </CardContent>
                 </Card>
+
+                {[
+                  { key: "date", label: "Closest Due Date", icon: "📅", winners: categoryWinners.date, getValue: (p: Prediction) => p.predicted_date ? new Date(p.predicted_date).toLocaleDateString() : "" },
+                  { key: "gender", label: "Gender Guess", icon: "👶", winners: categoryWinners.gender, getValue: (p: Prediction) => p.predicted_gender || "" },
+                  { key: "name", label: "Name Guess", icon: "✨", winners: categoryWinners.name, getValue: (p: Prediction) => p.predicted_name || "" },
+                  { key: "weight", label: "Closest Weight", icon: "⚖️", winners: categoryWinners.weight, getValue: (p: Prediction) => p.predicted_weight || "" },
+                ].filter((cat) => cat.winners.length > 0).map((cat) => (
+                  <Card key={cat.key} className="border-none">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">{cat.icon}</span>
+                        <h4 className="font-bold text-sm">{cat.label}</h4>
+                        <Badge className="bg-primary text-primary-foreground text-[10px] border-none ml-auto">
+                          🏆 {cat.winners.length} winner{cat.winners.length > 1 ? "s" : ""}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {cat.winners.map((w) => (
+                          <div key={w.id} className="bg-primary/5 rounded-xl p-3 flex items-center justify-between">
+                            <p className="font-semibold text-sm text-primary">{w.guest_name}</p>
+                            <Badge variant="secondary" className="text-[10px]">{cat.getValue(w)}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             ) : (
               <Card className="border-none">
