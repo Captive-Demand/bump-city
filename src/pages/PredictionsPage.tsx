@@ -298,20 +298,36 @@ const PredictionsPage = () => {
                   <CardContent className="p-6 text-center">
                     <PartyPopper className="h-10 w-10 text-primary mx-auto mb-2" />
                     <h3 className="text-lg font-bold mb-1">🎉 Winners Revealed!</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{winners.length} winner{winners.length > 1 ? "s" : ""} selected</p>
-                    {winners.map((w) => (
-                      <div key={w.id} className="bg-card rounded-xl p-4 mb-2">
-                        <p className="font-bold text-primary">{w.guest_name}</p>
-                        <div className="flex flex-wrap gap-2 mt-1 justify-center">
-                          {w.predicted_date && <Badge variant="secondary" className="text-[10px]">📅 {new Date(w.predicted_date).toLocaleDateString()}</Badge>}
-                          {w.predicted_gender && <Badge variant="secondary" className="text-[10px]">{w.predicted_gender === "boy" ? "👦" : "👧"} {w.predicted_gender}</Badge>}
-                          {w.predicted_name && <Badge variant="secondary" className="text-[10px]">👶 {w.predicted_name}</Badge>}
-                          {w.predicted_weight && <Badge variant="secondary" className="text-[10px]">⚖️ {w.predicted_weight}</Badge>}
-                        </div>
-                      </div>
-                    ))}
+                    <p className="text-sm text-muted-foreground">A prize for every category 🏆</p>
                   </CardContent>
                 </Card>
+
+                {[
+                  { key: "date", label: "Closest Due Date", icon: "📅", winners: categoryWinners.date, getValue: (p: Prediction) => p.predicted_date ? new Date(p.predicted_date).toLocaleDateString() : "" },
+                  { key: "gender", label: "Gender Guess", icon: "👶", winners: categoryWinners.gender, getValue: (p: Prediction) => p.predicted_gender || "" },
+                  { key: "name", label: "Name Guess", icon: "✨", winners: categoryWinners.name, getValue: (p: Prediction) => p.predicted_name || "" },
+                  { key: "weight", label: "Closest Weight", icon: "⚖️", winners: categoryWinners.weight, getValue: (p: Prediction) => p.predicted_weight || "" },
+                ].filter((cat) => cat.winners.length > 0).map((cat) => (
+                  <Card key={cat.key} className="border-none">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">{cat.icon}</span>
+                        <h4 className="font-bold text-sm">{cat.label}</h4>
+                        <Badge className="bg-primary text-primary-foreground text-[10px] border-none ml-auto">
+                          🏆 {cat.winners.length} winner{cat.winners.length > 1 ? "s" : ""}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {cat.winners.map((w) => (
+                          <div key={w.id} className="bg-primary/5 rounded-xl p-3 flex items-center justify-between">
+                            <p className="font-semibold text-sm text-primary">{w.guest_name}</p>
+                            <Badge variant="secondary" className="text-[10px]">{cat.getValue(w)}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             ) : (
               <Card className="border-none">
