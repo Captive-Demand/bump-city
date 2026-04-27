@@ -407,8 +407,17 @@ const RegistryPage = () => {
         <p className="text-xs text-muted-foreground italic">{blurb}</p>
       </div>
 
-      {/* === GUIDED JOURNEY === */}
-      <div className="px-6 pt-4 space-y-3">
+      {/* === ADD TO REGISTRY SECTION === */}
+      <div className="px-6 pt-4 pb-1 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Add to Registry</h2>
+        <button
+          onClick={scrollToRegistry}
+          className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+        >
+          Jump to Your Registry ↓
+        </button>
+      </div>
+      <div className="px-6 pt-2 space-y-3">
         {/* Step 1 — Bump City (always expanded) */}
         <Card className="border-2 border-primary/30 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-transparent">
           <CardContent className="p-4 space-y-3">
