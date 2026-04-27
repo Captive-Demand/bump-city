@@ -249,6 +249,38 @@ const GuestListPage = () => {
     setSelectedIds(new Set());
   };
 
+  const sendSmsReminders = async () => {
+    if (!event) return;
+    const recipients = guests.filter(
+      (g) => g.status === "attending" && g.phone && g.sms_opt_in
+    );
+    if (recipients.length === 0) {
+      toast.error("No attending guests with SMS opt-in and a phone number.");
+      return;
+    }
+    const honoreeName = event.honoree_name || setupData.honoreeName || "the parents-to-be";
+    const eventDateStr = event.event_date
+      ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+      : "soon";
+    const message = `Reminder: ${honoreeName}'s baby shower is ${eventDateStr}. Can't wait to see you!`;
+    setSmsReminderSending(true);
+    let sent = 0;
+    let failed = 0;
+    for (const g of recipients) {
+      try {
+        const { error } = await supabase.functions.invoke("send-sms", {
+          body: { to: g.phone, message },
+        });
+        if (error) failed++;
+        else sent++;
+      } catch {
+        failed++;
+      }
+    }
+    setSmsReminderSending(false);
+    if (failed === 0) toast.success(`SMS reminder sent to ${sent} guest${sent !== 1 ? "s" : ""}!`);
+    else toast.error(`${sent} sent, ${failed} failed.`);
+
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
   const eligibleForBulk = filtered.filter((g) => g.email);
   const attending = guests.filter((g) => g.status === "attending").length;
