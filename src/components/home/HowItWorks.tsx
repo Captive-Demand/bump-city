@@ -5,7 +5,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { X, type LucideIcon } from "lucide-react";
+import { ChevronDown, HelpCircle, X, type LucideIcon } from "lucide-react";
 
 export interface HowItWorksStep {
   number: number;
@@ -21,15 +21,19 @@ interface HowItWorksProps {
 }
 
 export const HowItWorks = ({ title = "How it works", steps, storageKey }: HowItWorksProps) => {
-  const [dismissed, setDismissed] = useState(true);
+  const [visited, setVisited] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [api, setApi] = useState<any>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   useEffect(() => {
     try {
-      setDismissed(localStorage.getItem(storageKey) === "1");
+      const seen = localStorage.getItem(storageKey) === "1";
+      setVisited(seen);
+      setExpanded(!seen);
     } catch {
-      setDismissed(false);
+      setVisited(false);
+      setExpanded(true);
     }
   }, [storageKey]);
 
@@ -44,12 +48,15 @@ export const HowItWorks = ({ title = "How it works", steps, storageKey }: HowItW
     };
   }, [api]);
 
-  const dismiss = () => {
+  const markVisited = () => {
     try { localStorage.setItem(storageKey, "1"); } catch {}
-    setDismissed(true);
+    setVisited(true);
   };
 
-  if (dismissed) return null;
+  const collapse = () => {
+    markVisited();
+    setExpanded(false);
+  };
 
   const renderCard = (step: HowItWorksStep) => {
     const Icon = step.icon;
@@ -67,17 +74,39 @@ export const HowItWorks = ({ title = "How it works", steps, storageKey }: HowItW
     );
   };
 
+  // Collapsed link state (after first visit)
+  if (visited && !expanded) {
+    return (
+      <button
+        onClick={() => setExpanded(true)}
+        className="w-full text-left"
+        aria-expanded={false}
+        aria-label={`Show ${title}`}
+      >
+        <Card className="border-none bg-gradient-to-br from-primary/10 via-lavender/20 to-peach/15 hover:from-primary/15 transition-all">
+          <CardContent className="p-3 flex items-center gap-3">
+            <span className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/15 shrink-0">
+              <HelpCircle className="h-4 w-4" strokeWidth={2.25} />
+            </span>
+            <span className="text-sm font-semibold flex-1">{title}</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </button>
+    );
+  }
+
   return (
     <Card className="border-none bg-gradient-to-br from-primary/10 via-lavender/20 to-peach/15">
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-bold">{title}</h2>
           <button
-            onClick={dismiss}
-            aria-label="Dismiss"
+            onClick={collapse}
+            aria-label={visited ? "Collapse" : "Dismiss"}
             className="p-1 rounded-full hover:bg-background/50 text-muted-foreground"
           >
-            <X className="h-3.5 w-3.5" />
+            {visited ? <ChevronDown className="h-3.5 w-3.5 rotate-180" /> : <X className="h-3.5 w-3.5" />}
           </button>
         </div>
 
