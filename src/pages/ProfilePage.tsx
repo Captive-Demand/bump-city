@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check } from "lucide-react";
+import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check, MessageSquare, Smartphone, Mail as MailIcon } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useNavigate } from "react-router-dom";
@@ -19,14 +20,46 @@ import { toast } from "sonner";
 import ShareInviteButton from "@/components/ShareInviteButton";
 import ImageUpload from "@/components/ImageUpload";
 
+const PREF_LABELS: Record<string, { label: string; icon: string }> = {
+  bring_gift: { label: "Bring a gift", icon: "🎁" },
+  bring_book: { label: "Bring a book", icon: "📚" },
+  no_gifts: { label: "No gifts", icon: "💖" },
+  clear_wrapping: { label: "Clear wrapping", icon: "🎀" },
+  ship_to_home: { label: "Ship to home", icon: "📦" },
+  bring_to_event: { label: "Bring to event", icon: "🎈" },
+};
+
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const { event, refetch } = useEvent();
   const navigate = useNavigate();
-  const [giftPref, setGiftPref] = useState(event?.gift_policy || "bring-gift");
+  const initialPrefs = (event as any)?.gift_preferences || { bring_gift: true, bring_to_event: true };
+  const [giftPrefs, setGiftPrefs] = useState<Record<string, boolean>>(initialPrefs);
   const [clearWrap, setClearWrap] = useState(event?.clear_wrapping || false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Notification toggles
+  const [emailNotif, setEmailNotif] = useState(true);
+  const [smsNotif, setSmsNotif] = useState(false);
+  const [pushNotif, setPushNotif] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select("email_notifications, sms_opt_in, push_notifications").eq("id", user.id).maybeSingle();
+      if (data) {
+        setEmailNotif(data.email_notifications ?? true);
+        setSmsNotif(data.sms_opt_in ?? false);
+        setPushNotif(data.push_notifications ?? false);
+      }
+    })();
+  }, [user]);
+
+  const updateNotif = async (field: "email_notifications" | "sms_opt_in" | "push_notifications", value: boolean) => {
+    if (!user) return;
+    await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+  };
 
   // Editable fields
   const [honoreeName, setHonoreeName] = useState(event?.honoree_name || "");
