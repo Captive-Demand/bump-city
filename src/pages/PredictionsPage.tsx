@@ -91,41 +91,85 @@ const PredictionsPage = () => {
     fetchPredictions();
   };
 
+  const [categoryWinners, setCategoryWinners] = useState<{
+    date: Prediction[];
+    gender: Prediction[];
+    name: Prediction[];
+    weight: Prediction[];
+  }>({ date: [], gender: [], name: [], weight: [] });
+
   const handleReveal = async () => {
     if (!event || predictions.length === 0) return;
     setRevealing(true);
 
-    // Score predictions
-    const scored = predictions.map((p) => {
-      let score = 0;
-      if (actualGender && p.predicted_gender === actualGender) score += 3;
-      if (actualName && p.predicted_name?.toLowerCase() === actualName.toLowerCase()) score += 3;
-      if (actualDate && p.predicted_date) {
-        const diff = Math.abs(new Date(p.predicted_date).getTime() - actualDate.getTime());
-        const daysDiff = diff / (1000 * 60 * 60 * 24);
-        if (daysDiff === 0) score += 5;
-        else if (daysDiff <= 3) score += 3;
-        else if (daysDiff <= 7) score += 1;
+    // Closest date wins
+    let dateWinners: Prediction[] = [];
+    if (actualDate) {
+      const withDates = predictions.filter((p) => p.predicted_date);
+      if (withDates.length > 0) {
+        const diffs = withDates.map((p) => ({
+          p,
+          diff: Math.abs(new Date(p.predicted_date!).getTime() - actualDate.getTime()),
+        }));
+        const minDiff = Math.min(...diffs.map((d) => d.diff));
+        dateWinners = diffs.filter((d) => d.diff === minDiff).map((d) => d.p);
       }
-      if (actualWeight && p.predicted_weight === actualWeight) score += 2;
-      return { ...p, score };
-    });
+    }
 
-    scored.sort((a, b) => b.score - a.score);
-    const topScore = scored[0]?.score || 0;
-    const winners = scored.filter((s) => s.score === topScore && topScore > 0);
+    // Exact gender match wins
+    const genderWinners = actualGender
+      ? predictions.filter((p) => p.predicted_gender === actualGender)
+      : [];
 
-    // Mark winners
-    for (const w of winners) {
-      await supabase.from("predictions").update({ is_winner: true }).eq("id", w.id);
+    // Exact name match (case-insensitive) wins
+    const nameWinners = actualName
+      ? predictions.filter((p) => p.predicted_name?.trim().toLowerCase() === actualName.trim().toLowerCase())
+      : [];
+
+    // Closest weight wins (parse "X lbs Y oz" -> total ounces)
+    const parseWeight = (w: string): number | null => {
+      const lbs = w.match(/(\d+(?:\.\d+)?)\s*lb/i);
+      const oz = w.match(/(\d+(?:\.\d+)?)\s*oz/i);
+      if (!lbs && !oz) {
+        const num = parseFloat(w);
+        return isNaN(num) ? null : num * 16;
+      }
+      return (lbs ? parseFloat(lbs[1]) * 16 : 0) + (oz ? parseFloat(oz[1]) : 0);
+    };
+    let weightWinners: Prediction[] = [];
+    if (actualWeight) {
+      const targetOz = parseWeight(actualWeight);
+      if (targetOz !== null) {
+        const withWeights = predictions
+          .map((p) => ({ p, oz: p.predicted_weight ? parseWeight(p.predicted_weight) : null }))
+          .filter((x) => x.oz !== null) as { p: Prediction; oz: number }[];
+        if (withWeights.length > 0) {
+          const diffs = withWeights.map((x) => ({ p: x.p, diff: Math.abs(x.oz - targetOz) }));
+          const minDiff = Math.min(...diffs.map((d) => d.diff));
+          weightWinners = diffs.filter((d) => d.diff === minDiff).map((d) => d.p);
+        }
+      }
+    }
+
+    setCategoryWinners({ date: dateWinners, gender: genderWinners, name: nameWinners, weight: weightWinners });
+
+    // Mark anyone who won at least one category
+    const allWinnerIds = new Set([
+      ...dateWinners.map((p) => p.id),
+      ...genderWinners.map((p) => p.id),
+      ...nameWinners.map((p) => p.id),
+      ...weightWinners.map((p) => p.id),
+    ]);
+    for (const id of allWinnerIds) {
+      await supabase.from("predictions").update({ is_winner: true }).eq("id", id);
     }
 
     setRevealing(false);
     setConfetti(true);
     setRevealed(true);
     setTimeout(() => setConfetti(false), 4000);
-    addActivity("prediction", `Results revealed! ${winners.length} winner(s)! 🎉`);
-    toast.success(`🎉 ${winners.length} winner(s) selected!`);
+    addActivity("prediction", `Results revealed! ${allWinnerIds.size} winner(s)! 🎉`);
+    toast.success(`🎉 ${allWinnerIds.size} winner(s) across ${[dateWinners, genderWinners, nameWinners, weightWinners].filter((w) => w.length > 0).length} categories!`);
     fetchPredictions();
   };
 
