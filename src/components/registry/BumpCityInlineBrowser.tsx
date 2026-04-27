@@ -118,27 +118,17 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
     };
 
     return (
-      <div ref={ref} className="px-6 pb-6 space-y-4">
-        <Card className="border-none bg-primary/5">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <Store className="h-4 w-4 text-primary" />
-              <h3 className="font-bold text-sm">Bump City Boutique</h3>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Pick a category, then add to your registry. Items appear above with the rest of your gifts.
-            </p>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search Bump City..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 rounded-full bg-background border-none"
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <div ref={ref} className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search Bump City..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 rounded-full bg-background"
+          />
+        </div>
+        <p className="text-[10px] text-muted-foreground">Showing top 24 — search to find more</p>
 
         {loading && (
           <div className="flex items-center justify-center py-12">

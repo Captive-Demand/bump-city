@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart, ChevronDown } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -66,8 +66,10 @@ const RegistryPage = () => {
   const [items, setItems] = useState<RegistryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [blurb, setBlurb] = useState<string>(DEFAULT_BLURB);
-  const [shopifyOpen, setShopifyOpen] = useState(false);
-  const bumpCityRef = useRef<HTMLDivElement | null>(null);
+  const [expandedStep, setExpandedStep] = useState<"local" | "web" | null>(null);
+  const step2Ref = useRef<HTMLDivElement | null>(null);
+  const step3Ref = useRef<HTMLDivElement | null>(null);
+  const yourRegistryRef = useRef<HTMLDivElement | null>(null);
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
@@ -295,18 +297,19 @@ const RegistryPage = () => {
     );
   }
 
-  const hero = [
-    { icon: Store, title: "Bump City Boutique", desc: "Curated from our local store", className: "bg-primary/10 text-primary" },
-    { icon: Heart, title: "Local Services", desc: "Night nurses, doulas, massage", className: "bg-mint text-mint-foreground" },
-    { icon: Globe, title: "Anywhere on the Web", desc: "Paste any product URL", className: "bg-lavender text-lavender-foreground" },
-  ];
+  const shopifyAddedCount = items.filter((i) => (i.source || "").toLowerCase() === "shopify").length;
 
-  const handleShopifyClick = () => {
-    setShopifyOpen(true);
-    setActiveSource("shopify");
+  const expandStep = (step: "local" | "web") => {
+    setExpandedStep(step);
+    if (step === "local" && newCategory === "Essentials") setNewCategory("Services");
     requestAnimationFrame(() => {
-      bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const target = step === "local" ? step2Ref.current : step3Ref.current;
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+
+  const scrollToRegistry = () => {
+    yourRegistryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -404,35 +407,154 @@ const RegistryPage = () => {
         <p className="text-xs text-muted-foreground italic">{blurb}</p>
       </div>
 
-      {/* Hero pills */}
-      <div className="px-6 pt-4 pb-2 grid grid-cols-3 gap-2">
-        {hero.map((h) => (
-          <button
-            key={h.title}
-            className="text-left bg-card rounded-2xl p-3 hover:shadow-md transition-all border border-border/40"
-            onClick={() => {
-              if (h.title === "Bump City Boutique") handleShopifyClick();
-              else if (h.title === "Anywhere on the Web") setUrlOpen(true);
-              else setAddOpen(true);
-            }}
-          >
-            <div className={`h-8 w-8 rounded-xl ${h.className} flex items-center justify-center mb-1.5`}>
-              <h.icon className="h-4 w-4" />
+      {/* === GUIDED JOURNEY === */}
+      <div className="px-6 pt-4 space-y-3">
+        {/* Step 1 — Bump City (always expanded) */}
+        <Card className="border-2 border-primary/30 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-transparent">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">1</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <Store className="h-4 w-4 text-primary" />
+                  <h2 className="font-bold text-base leading-tight">Start with Bump City</h2>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">Tiffany's curated picks — added to your registry in one tap</p>
+                {shopifyAddedCount > 0 && (
+                  <p className="text-[11px] font-semibold text-primary mt-1">✓ {shopifyAddedCount} added from Bump City</p>
+                )}
+              </div>
             </div>
-            <p className="font-semibold text-[11px] leading-tight">{h.title}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight hidden md:block">{h.desc}</p>
+            {event && user && (
+              <BumpCityInlineBrowser
+                eventId={event.id}
+                userId={user.id}
+                categories={categories}
+                onAdded={fetchItems}
+              />
+            )}
+            <button
+              onClick={() => expandStep("local")}
+              className="w-full text-xs font-semibold text-primary hover:underline pt-1"
+            >
+              Continue → Add local favorites
+            </button>
+          </CardContent>
+        </Card>
+
+        {/* Step 2 — Local */}
+        <Card ref={step2Ref} className="border border-border rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setExpandedStep(expandedStep === "local" ? null : "local")}
+            className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
+          >
+            <div className="h-8 w-8 rounded-full bg-mint text-mint-foreground flex items-center justify-center font-bold text-sm shrink-0">2</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                <h2 className="font-bold text-base leading-tight">Add a local service or shop</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">Doulas, night nurses, neighborhood boutiques</p>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${expandedStep === "local" ? "rotate-180" : ""}`} />
           </button>
-        ))}
+          {expandedStep === "local" && (
+            <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Item name</Label>
+                <Input placeholder="e.g. Postpartum doula package" value={newName} onChange={(e) => setNewName(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Category</Label>
+                  <Select value={newCategory} onValueChange={setNewCategory}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Price ($)</Label>
+                  <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Image (optional)</Label>
+                {imagePreview && (
+                  <img src={imagePreview} alt="Preview" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />
+                )}
+                <div className="flex gap-2">
+                  <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
+                  <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent transition-colors">
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    <Upload className="h-3.5 w-3.5" />
+                  </label>
+                </div>
+              </div>
+              <Button className="w-full rounded-xl" onClick={async () => { await handleAdd(); scrollToRegistry(); }} disabled={!newName.trim() || uploading}>
+                Add to Registry
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* Step 3 — Web */}
+        <Card ref={step3Ref} className="border border-border rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setExpandedStep(expandedStep === "web" ? null : "web")}
+            className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
+          >
+            <div className="h-8 w-8 rounded-full bg-lavender text-lavender-foreground flex items-center justify-center font-bold text-sm shrink-0">3</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                <h2 className="font-bold text-base leading-tight">Paste any product link</h2>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">Amazon, Target, anywhere — we'll grab the photo and price</p>
+            </div>
+            <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${expandedStep === "web" ? "rotate-180" : ""}`} />
+          </button>
+          {expandedStep === "web" && (
+            <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Product URL</Label>
+                <div className="flex gap-2">
+                  <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
+                  <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
+                </div>
+              </div>
+              {scrapedData && (
+                <>
+                  {scrapedData.image && <img src={scrapedData.image} alt="" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Item name</Label>
+                    <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Price ($)</Label>
+                      <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Category</Label>
+                      <Select value={newCategory} onValueChange={setNewCategory}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button className="w-full rounded-xl" onClick={async () => { await handleAddFromUrl(); scrollToRegistry(); }} disabled={!newName.trim()}>Add to Registry</Button>
+                </>
+              )}
+            </div>
+          )}
+        </Card>
       </div>
 
-      {/* Browse Bump City CTA bar (full button) */}
-      <div className="px-6 pt-3">
-        <Button
-          className="w-full rounded-xl h-11 font-semibold gap-2"
-          onClick={handleShopifyClick}
-        >
-          <Store className="h-4 w-4" /> Browse Bump City Store
-        </Button>
+      {/* Your Registry section anchor */}
+      <div ref={yourRegistryRef} className="px-6 pt-6 pb-1">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Your Registry</h2>
       </div>
 
       {/* Progress bar */}
@@ -454,13 +576,7 @@ const RegistryPage = () => {
         {sources.map((s) => (
           <button
             key={s.id}
-            onClick={() => {
-              setActiveSource(s.id);
-              if (s.id === "shopify") {
-                setShopifyOpen(true);
-                requestAnimationFrame(() => bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
-              }
-            }}
+            onClick={() => setActiveSource(s.id)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeSource === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             <s.icon className="h-3 w-3" />
@@ -494,20 +610,9 @@ const RegistryPage = () => {
                 <ShoppingBag className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-bold text-base mb-1">Your registry is just getting started</h3>
-              <p className="text-xs text-muted-foreground mb-4">
-                Add items from Bump City Boutique, paste a URL from anywhere, or include a local service.
+              <p className="text-xs text-muted-foreground">
+                👆 Start with Step 1 above — Tiffany's Bump City picks
               </p>
-              <div className="flex flex-col gap-2 max-w-xs mx-auto">
-                <Button className="rounded-xl h-11 font-semibold gap-2" onClick={handleShopifyClick}>
-                  <Store className="h-4 w-4" /> Browse Bump City Store
-                </Button>
-                <Button variant="outline" className="rounded-xl h-11 font-semibold gap-2" onClick={() => setUrlOpen(true)}>
-                  <Globe className="h-4 w-4" /> Add from URL
-                </Button>
-                <Button variant="outline" className="rounded-xl h-11 font-semibold gap-2" onClick={() => setAddOpen(true)}>
-                  <Plus className="h-4 w-4" /> Add Local Service
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -588,16 +693,6 @@ const RegistryPage = () => {
         </div>
       )}
 
-      {/* Inline Bump City Browser */}
-      {(shopifyOpen || activeSource === "shopify") && event && user && (
-        <BumpCityInlineBrowser
-          ref={bumpCityRef}
-          eventId={event.id}
-          userId={user.id}
-          categories={categories}
-          onAdded={fetchItems}
-        />
-      )}
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
