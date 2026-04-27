@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Plus, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useActiveEvent, EventData } from "@/contexts/ActiveEventContext";
+import { getShowerImage } from "@/lib/showerPlaceholders";
 
 const formatDate = (date: string | null) =>
   date
@@ -80,13 +81,7 @@ export const ShowerBlocksGrid = ({
             >
               <CardContent className="p-0">
                 <div className="relative">
-                  {evt.event_image_url ? (
-                    <img src={evt.event_image_url} alt="" className="w-full h-44 object-cover" />
-                  ) : (
-                    <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 h-44 flex items-center justify-center">
-                      <span className="text-5xl">🎉</span>
-                    </div>
-                  )}
+                  <img src={getShowerImage(evt)} alt="" className="w-full h-44 object-cover" />
                   {days !== null && !isPast && (
                     <Badge className="bg-mint text-mint-foreground text-[10px] font-bold absolute top-3 left-3">
                       ⏰ {days === 0 ? "TODAY" : `${days} DAYS TO GO`}
