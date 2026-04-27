@@ -66,8 +66,10 @@ const RegistryPage = () => {
   const [items, setItems] = useState<RegistryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [blurb, setBlurb] = useState<string>(DEFAULT_BLURB);
-  const [shopifyOpen, setShopifyOpen] = useState(false);
-  const bumpCityRef = useRef<HTMLDivElement | null>(null);
+  const [expandedStep, setExpandedStep] = useState<"local" | "web" | null>(null);
+  const step2Ref = useRef<HTMLDivElement | null>(null);
+  const step3Ref = useRef<HTMLDivElement | null>(null);
+  const yourRegistryRef = useRef<HTMLDivElement | null>(null);
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
