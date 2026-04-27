@@ -140,7 +140,9 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
             className="pl-9 rounded-full bg-background"
           />
         </div>
-        <p className="text-[10px] text-muted-foreground">9 per page — search to filter</p>
+        <p className="text-[10px] text-muted-foreground">
+          {expanded ? "9 per page — search to filter" : "Showing 3 picks — tap Show more to browse all"}
+        </p>
 
         {loading && (
           <div className="flex items-center justify-center py-12">
