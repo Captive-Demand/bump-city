@@ -5,6 +5,12 @@ import { recoverFromStaleAppCache } from "@/lib/cacheRecovery";
 import App from "./App.tsx";
 import "./index.css";
 
+declare global {
+  interface Window {
+    __bumpCityBootTimer?: number;
+  }
+}
+
 const renderBootError = () => {
   const root = document.getElementById("root");
   if (!root) return;
@@ -24,6 +30,10 @@ const renderBootError = () => {
 void recoverFromStaleAppCache();
 
 try {
+  if (window.__bumpCityBootTimer) {
+    window.clearTimeout(window.__bumpCityBootTimer);
+  }
+
   const rootElement = document.getElementById("root");
   if (!rootElement) throw new Error("Bump City root element was not found");
 
