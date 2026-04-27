@@ -345,10 +345,6 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
         </div>
-
-        <Button variant="ghost" className="w-full mt-6 text-destructive hover:text-destructive hover:bg-destructive/10 gap-2" onClick={handleSignOut}>
-          <LogOut className="h-4 w-4" /> Sign Out
-        </Button>
       </div>
     </MobileLayout>
   );
