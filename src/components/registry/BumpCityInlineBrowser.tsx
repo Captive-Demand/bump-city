@@ -142,7 +142,7 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           />
         </div>
         <p className="text-[10px] text-muted-foreground">
-          {expanded ? "9 per page — search to filter" : "Showing 3 picks — tap Show more to browse all"}
+          {expanded ? "9 per page — search to filter" : "Swipe to browse — tap Show more for the full grid"}
         </p>
 
         {loading && (
