@@ -358,7 +358,7 @@ const ShowerDashboard = () => {
             <Bell className="h-5 w-5 text-muted-foreground" />
           </button>
         </div>
-
+        <div className="h-px w-full bg-border/60" />
       </div>
 
       <div className="px-6 pb-8 space-y-6">
