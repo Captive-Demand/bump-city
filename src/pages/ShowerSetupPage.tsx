@@ -93,7 +93,8 @@ const ShowerSetupPage = () => {
       city: city.trim() || null,
       theme: theme.trim() || null,
       gift_policy: giftPolicy,
-      clear_wrapping: clearWrapping,
+      gift_preferences: giftPrefs as any,
+      clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
       gift_note: giftNote.trim() || null,
       surprise_mode: surpriseMode,
     }).select("id").single();
