@@ -65,7 +65,9 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
     const [added, setAdded] = useState<Set<string>>(new Set());
     const [overrides, setOverrides] = useState<Record<string, string>>({});
     const [page, setPage] = useState(0);
+    const [expanded, setExpanded] = useState(false);
     const PAGE_SIZE = 9;
+    const PREVIEW_SIZE = 3;
 
     const cats = categories.filter((c) => c !== "All");
 
@@ -138,7 +140,9 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
             className="pl-9 rounded-full bg-background"
           />
         </div>
-        <p className="text-[10px] text-muted-foreground">9 per page — search to filter</p>
+        <p className="text-[10px] text-muted-foreground">
+          {expanded ? "9 per page — search to filter" : "Showing 3 picks — tap Show more to browse all"}
+        </p>
 
         {loading && (
           <div className="flex items-center justify-center py-12">
@@ -163,10 +167,12 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
         {!loading && !error && products.length > 0 && (() => {
           const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
           const safePage = Math.min(page, totalPages - 1);
-          const visible = products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+          const visible = expanded
+            ? products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+            : products.slice(0, PREVIEW_SIZE);
           return (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className={expanded ? "grid grid-cols-2 md:grid-cols-3 gap-3" : "grid grid-cols-3 gap-3"}>
                 {visible.map((p) => {
                   const isAdded = added.has(p.id);
                   const isAdding = adding === p.id;
@@ -241,8 +247,20 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
                   );
                 })}
               </div>
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2">
+              {!expanded && products.length > PREVIEW_SIZE && (
+                <div className="flex justify-center pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full h-8 text-xs"
+                    onClick={() => setExpanded(true)}
+                  >
+                    Show more ({products.length} items)
+                  </Button>
+                </div>
+              )}
+              {expanded && (
+                <div className="flex items-center justify-between pt-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -255,14 +273,28 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
                   <p className="text-xs text-muted-foreground">
                     Page {safePage + 1} of {totalPages}
                   </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full h-8 gap-1 text-xs"
+                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={safePage >= totalPages - 1}
+                    >
+                      Next <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {expanded && (
+                <div className="flex justify-center pt-1">
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="rounded-full h-8 gap-1 text-xs"
-                    onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                    disabled={safePage >= totalPages - 1}
+                    variant="ghost"
+                    className="rounded-full h-7 text-[11px] text-muted-foreground"
+                    onClick={() => { setExpanded(false); setPage(0); }}
                   >
-                    Next <ChevronRight className="h-3.5 w-3.5" />
+                    Show less
                   </Button>
                 </div>
               )}
