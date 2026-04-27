@@ -1,14 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check } from "lucide-react";
+import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check, MessageSquare, Smartphone, Mail as MailIcon } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useNavigate } from "react-router-dom";
@@ -19,14 +20,46 @@ import { toast } from "sonner";
 import ShareInviteButton from "@/components/ShareInviteButton";
 import ImageUpload from "@/components/ImageUpload";
 
+const PREF_LABELS: Record<string, { label: string; icon: string }> = {
+  bring_gift: { label: "Bring a gift", icon: "🎁" },
+  bring_book: { label: "Bring a book", icon: "📚" },
+  no_gifts: { label: "No gifts", icon: "💖" },
+  clear_wrapping: { label: "Clear wrapping", icon: "🎀" },
+  ship_to_home: { label: "Ship to home", icon: "📦" },
+  bring_to_event: { label: "Bring to event", icon: "🎈" },
+};
+
 const ProfilePage = () => {
   const { user, signOut } = useAuth();
   const { event, refetch } = useEvent();
   const navigate = useNavigate();
-  const [giftPref, setGiftPref] = useState(event?.gift_policy || "bring-gift");
+  const initialPrefs = (event as any)?.gift_preferences || { bring_gift: true, bring_to_event: true };
+  const [giftPrefs, setGiftPrefs] = useState<Record<string, boolean>>(initialPrefs);
   const [clearWrap, setClearWrap] = useState(event?.clear_wrapping || false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Notification toggles
+  const [emailNotif, setEmailNotif] = useState(true);
+  const [smsNotif, setSmsNotif] = useState(false);
+  const [pushNotif, setPushNotif] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase.from("profiles").select("email_notifications, sms_opt_in, push_notifications").eq("id", user.id).maybeSingle();
+      if (data) {
+        setEmailNotif(data.email_notifications ?? true);
+        setSmsNotif(data.sms_opt_in ?? false);
+        setPushNotif(data.push_notifications ?? false);
+      }
+    })();
+  }, [user]);
+
+  const updateNotif = async (field: "email_notifications" | "sms_opt_in" | "push_notifications", value: boolean) => {
+    if (!user) return;
+    await supabase.from("profiles").update({ [field]: value } as any).eq("id", user.id);
+  };
 
   // Editable fields
   const [honoreeName, setHonoreeName] = useState(event?.honoree_name || "");
@@ -85,14 +118,21 @@ const ProfilePage = () => {
     refetch();
   };
 
-  const saveGiftPrefs = async (newPolicy?: string, newClearWrap?: boolean) => {
+  const togglePref = async (key: string) => {
     if (!event) return;
-    const policy = newPolicy ?? giftPref;
-    const wrap = newClearWrap ?? clearWrap;
+    const next = { ...giftPrefs, [key]: !giftPrefs[key] };
+    setGiftPrefs(next);
     await supabase.from("events").update({
-      gift_policy: policy,
-      clear_wrapping: wrap,
+      gift_preferences: next as any,
+      clear_wrapping: !!next.clear_wrapping,
     }).eq("id", event.id);
+    refetch();
+  };
+
+  const saveGiftPrefs = async (_newPolicy?: string, newClearWrap?: boolean) => {
+    if (!event) return;
+    const wrap = newClearWrap ?? clearWrap;
+    await supabase.from("events").update({ clear_wrapping: wrap }).eq("id", event.id);
     refetch();
   };
 
@@ -228,29 +268,26 @@ const ProfilePage = () => {
                   <Gift className="h-4 w-4 text-primary" />
                   <h2 className="font-bold text-sm">Gifting Preferences</h2>
                 </div>
-                <RadioGroup value={giftPref} onValueChange={(v) => { setGiftPref(v); saveGiftPrefs(v); }} className="space-y-2.5">
-                  {[
-                    { value: "bring-gift", label: "Bring a gift", icon: "🎁" },
-                    { value: "no-gifts", label: "No gifts please", icon: "🚫" },
-                    { value: "bring-book", label: "Bring a book instead", icon: "📚" },
-                  ].map((opt) => (
-                    <div key={opt.value} className="flex items-center gap-3">
-                      <RadioGroupItem value={opt.value} id={opt.value} />
-                      <Label htmlFor={opt.value} className="text-sm flex items-center gap-2 cursor-pointer">
-                        <span>{opt.icon}</span>{opt.label}
-                      </Label>
-                    </div>
+                {/* Active prefs as badges */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {Object.entries(giftPrefs).filter(([, v]) => v).map(([k]) => PREF_LABELS[k] && (
+                    <Badge key={k} variant="secondary" className="text-[10px] gap-1">
+                      <span>{PREF_LABELS[k].icon}</span>{PREF_LABELS[k].label}
+                    </Badge>
                   ))}
-                </RadioGroup>
-                <div className="mt-4 pt-3 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <PackageOpen className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Request clear wrapping</span>
-                    </div>
-                    <Switch checked={clearWrap} onCheckedChange={(v) => { setClearWrap(v); saveGiftPrefs(undefined, v); }} />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1 ml-6">So we can play the gift guessing game!</p>
+                  {Object.values(giftPrefs).every((v) => !v) && (
+                    <span className="text-[10px] text-muted-foreground italic">No preferences set</span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(PREF_LABELS).map(([key, meta]) => (
+                    <label key={key} className="flex items-center gap-3 cursor-pointer">
+                      <Checkbox checked={!!giftPrefs[key]} onCheckedChange={() => togglePref(key)} />
+                      <span className="text-sm flex items-center gap-2">
+                        <span>{meta.icon}</span>{meta.label}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -261,9 +298,23 @@ const ProfilePage = () => {
         <div className="space-y-2">
           <Card className="border-none">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg"><Bell className="h-4 w-4 text-primary" /></div>
-              <div className="flex-1"><p className="text-sm font-medium">Notifications</p></div>
-              <Switch defaultChecked />
+              <div className="bg-primary/10 p-2 rounded-lg"><MailIcon className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">Email notifications</p><p className="text-[10px] text-muted-foreground">Invites, RSVPs, reminders</p></div>
+              <Switch checked={emailNotif} onCheckedChange={(v) => { setEmailNotif(v); updateNotif("email_notifications", v); }} />
+            </CardContent>
+          </Card>
+          <Card className="border-none">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg"><MessageSquare className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">SMS notifications</p><p className="text-[10px] text-muted-foreground">Requires explicit opt-in</p></div>
+              <Switch checked={smsNotif} onCheckedChange={(v) => { setSmsNotif(v); updateNotif("sms_opt_in", v); }} />
+            </CardContent>
+          </Card>
+          <Card className="border-none">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg"><Smartphone className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">Push notifications</p><p className="text-[10px] text-muted-foreground">Local events & community</p></div>
+              <Switch checked={pushNotif} onCheckedChange={(v) => { setPushNotif(v); updateNotif("push_notifications", v); }} />
             </CardContent>
           </Card>
           <Card className="border-none">

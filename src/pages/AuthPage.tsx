@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
@@ -20,6 +21,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const getSmartRedirect = async (userId: string): Promise<string> => {
@@ -68,6 +70,8 @@ const AuthPage = () => {
     if (error) {
       toast.error(error.message);
     } else if (data.session) {
+      // Persist SMS opt-in to profile (default false; only true if user explicitly checked)
+      try { await supabase.from("profiles").update({ sms_opt_in: smsOptIn }).eq("id", data.session.user.id); } catch { /* non-blocking */ }
       toast.success("Account created! Welcome to Bump City!");
       const dest = await getSmartRedirect(data.session.user.id);
       navigate(dest);
@@ -164,14 +168,28 @@ const AuthPage = () => {
                   Forgot password?
                 </button>
               )}
+              {isSignUp && (
+                <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                  <Checkbox checked={smsOptIn} onCheckedChange={(v) => setSmsOptIn(v === true)} className="mt-0.5" />
+                  <span>
+                    I agree to receive text message notifications about my events. Message & data rates may apply. See our{" "}
+                    <a href="/terms" target="_blank" className="text-primary underline">Terms of Service</a>.
+                  </span>
+                </label>
+              )}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
               </Button>
             </form>
-            <div className="mt-4 text-center">
-              <button type="button" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsSignUp(!isSignUp)}>
+            <div className="mt-4 text-center space-y-2">
+              <button type="button" className="text-sm text-muted-foreground hover:text-foreground block w-full" onClick={() => setIsSignUp(!isSignUp)}>
                 {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
               </button>
+              {!isSignUp && (
+                <button type="button" className="text-xs text-primary hover:underline" onClick={() => navigate("/get-started")}>
+                  New to Bump City? Get started →
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>

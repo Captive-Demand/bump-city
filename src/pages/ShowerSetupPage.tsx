@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Baby, CalendarIcon, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
@@ -19,17 +21,12 @@ import { toast } from "sonner";
 
 const TOTAL_STEPS = 3;
 
-const StepDots = ({ current, total }: { current: number; total: number }) => (
-  <div className="flex items-center gap-2 justify-center mb-8">
-    {Array.from({ length: total }).map((_, i) => (
-      <div
-        key={i}
-        className={cn(
-          "h-2 rounded-full transition-all",
-          i === current ? "w-8 bg-primary" : i < current ? "w-2 bg-primary/60" : "w-2 bg-muted"
-        )}
-      />
-    ))}
+const STEP_NAMES = ["Your Role", "Event Details", "Gifting Preferences"];
+
+const StepProgress = ({ current, total }: { current: number; total: number }) => (
+  <div className="mb-6">
+    <Progress value={((current + 1) / total) * 100} className="h-2" />
+    <p className="text-xs text-muted-foreground mt-2">Step {current + 1} of {total} — {STEP_NAMES[current]}</p>
   </div>
 );
 
@@ -62,6 +59,15 @@ const ShowerSetupPage = () => {
   const [city, setCity] = useState("");
   const [theme, setTheme] = useState("");
   const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
+  const [giftPrefs, setGiftPrefs] = useState<Record<string, boolean>>({
+    bring_gift: true,
+    bring_book: false,
+    no_gifts: false,
+    clear_wrapping: false,
+    ship_to_home: false,
+    bring_to_event: true,
+  });
+  const togglePref = (key: string) => setGiftPrefs((p) => ({ ...p, [key]: !p[key] }));
   const [clearWrapping, setClearWrapping] = useState(false);
   const [surpriseMode, setSurpriseMode] = useState(false);
   const [giftNote, setGiftNote] = useState("");
@@ -87,7 +93,8 @@ const ShowerSetupPage = () => {
       city: city.trim() || null,
       theme: theme.trim() || null,
       gift_policy: giftPolicy,
-      clear_wrapping: clearWrapping,
+      gift_preferences: giftPrefs as any,
+      clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
       gift_note: giftNote.trim() || null,
       surprise_mode: surpriseMode,
     }).select("id").single();
@@ -129,7 +136,7 @@ const ShowerSetupPage = () => {
           <Baby className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold text-primary">Shower Setup</span>
         </div>
-        <StepDots current={step} total={TOTAL_STEPS} />
+        <StepProgress current={step} total={TOTAL_STEPS} />
 
         <div className="flex-1">
           {step === 0 && (
@@ -194,22 +201,29 @@ const ShowerSetupPage = () => {
 
           {step === 2 && (
             <div className="space-y-5">
-              <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Set expectations for your guests.</p></div>
-              <RadioGroup value={giftPolicy} onValueChange={(v) => setGiftPolicy(v as typeof giftPolicy)} className="space-y-3">
+              <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Pick all that apply — you can change these later.</p></div>
+              <div className="space-y-2">
                 {[
-                  { value: "bring-gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared" },
-                  { value: "no-gifts", label: "No gifts please", desc: "Presence over presents" },
-                  { value: "bring-book", label: "Bring a book instead", desc: "Build baby's first library" },
+                  { key: "bring_gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared", icon: "🎁" },
+                  { key: "bring_book", label: "Bring a book instead", desc: "Build baby's first library", icon: "📚" },
+                  { key: "no_gifts", label: "No gifts please", desc: "Presence over presents", icon: "💖" },
+                  { key: "clear_wrapping", label: "Clear wrapping requested", desc: "For guessing games", icon: "🎀" },
+                  { key: "ship_to_home", label: "Ship to home", desc: "Send registry items to shipping address", icon: "📦" },
+                  { key: "bring_to_event", label: "Bring gifts to the event", desc: "Open them at the shower", icon: "🎈" },
                 ].map((opt) => (
-                  <Label key={opt.value} htmlFor={opt.value} className={cn("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all", giftPolicy === opt.value ? "border-primary bg-primary/5" : "border-border")}>
-                    <RadioGroupItem value={opt.value} id={opt.value} />
-                    <div><p className="font-semibold text-sm">{opt.label}</p><p className="text-xs text-muted-foreground">{opt.desc}</p></div>
+                  <Label key={opt.key} htmlFor={opt.key} className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all", giftPrefs[opt.key] ? "border-primary bg-primary/5" : "border-border")}>
+                    <Checkbox id={opt.key} checked={!!giftPrefs[opt.key]} onCheckedChange={() => {
+                      togglePref(opt.key);
+                      if (opt.key === "bring_gift") setGiftPolicy("bring-gift");
+                      if (opt.key === "bring_book") setGiftPolicy("bring-book");
+                      if (opt.key === "no_gifts") setGiftPolicy("no-gifts");
+                    }} className="mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm flex items-center gap-2"><span>{opt.icon}</span>{opt.label}</p>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </div>
                   </Label>
                 ))}
-              </RadioGroup>
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border">
-                <div><p className="font-semibold text-sm">Clear wrapping</p><p className="text-xs text-muted-foreground">Ask guests to use clear wrapping</p></div>
-                <Switch checked={clearWrapping} onCheckedChange={setClearWrapping} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="note">Custom note for guests (optional)</Label>

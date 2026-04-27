@@ -25,7 +25,7 @@ const AdminPage = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [vendorOpen, setVendorOpen] = useState(false);
   const [editVendor, setEditVendor] = useState<any>(null);
-  const [vName, setVName] = useState(""); const [vCategory, setVCategory] = useState(""); const [vDesc, setVDesc] = useState(""); const [vCity, setVCity] = useState("Nashville"); const [vPhone, setVPhone] = useState(""); const [vWebsite, setVWebsite] = useState("");
+  const [vName, setVName] = useState(""); const [vCategory, setVCategory] = useState(""); const [vDesc, setVDesc] = useState(""); const [vCity, setVCity] = useState("Nashville"); const [vPhone, setVPhone] = useState(""); const [vWebsite, setVWebsite] = useState(""); const [vReferral, setVReferral] = useState(""); const [vDiscount, setVDiscount] = useState("");
 
   // Community Events
   const [communityEvents, setCommunityEvents] = useState<any[]>([]);
@@ -99,12 +99,12 @@ const AdminPage = () => {
 
   // Vendor CRUD
   const openVendorForm = (v?: any) => {
-    if (v) { setEditVendor(v); setVName(v.name); setVCategory(v.category); setVDesc(v.description || ""); setVCity(v.city || "Nashville"); setVPhone(v.phone || ""); setVWebsite(v.website || ""); }
-    else { setEditVendor(null); setVName(""); setVCategory(""); setVDesc(""); setVCity("Nashville"); setVPhone(""); setVWebsite(""); }
+    if (v) { setEditVendor(v); setVName(v.name); setVCategory(v.category); setVDesc(v.description || ""); setVCity(v.city || "Nashville"); setVPhone(v.phone || ""); setVWebsite(v.website || ""); setVReferral(v.referral_code || ""); setVDiscount(v.discount_code || ""); }
+    else { setEditVendor(null); setVName(""); setVCategory(""); setVDesc(""); setVCity("Nashville"); setVPhone(""); setVWebsite(""); setVReferral(""); setVDiscount(""); }
     setVendorOpen(true);
   };
   const saveVendor = async () => {
-    const payload = { name: vName.trim(), category: vCategory.trim(), description: vDesc.trim() || null, city: vCity.trim() || null, phone: vPhone.trim() || null, website: vWebsite.trim() || null };
+    const payload = { name: vName.trim(), category: vCategory.trim(), description: vDesc.trim() || null, city: vCity.trim() || null, phone: vPhone.trim() || null, website: vWebsite.trim() || null, referral_code: vReferral.trim() || null, discount_code: vDiscount.trim() || null };
     if (!payload.name || !payload.category) { toast.error("Name and category required"); return; }
     if (editVendor) {
       const { error } = await supabase.from("vendors").update(payload).eq("id", editVendor.id);
@@ -298,6 +298,10 @@ const AdminPage = () => {
                     <div className="space-y-1"><Label>Phone</Label><Input value={vPhone} onChange={(e) => setVPhone(e.target.value)} /></div>
                   </div>
                   <div className="space-y-1"><Label>Website</Label><Input value={vWebsite} onChange={(e) => setVWebsite(e.target.value)} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1"><Label>Discount code (public)</Label><Input placeholder="BUMP10" value={vDiscount} onChange={(e) => setVDiscount(e.target.value)} /></div>
+                    <div className="space-y-1"><Label>Referral code (private)</Label><Input placeholder="BUMPCITY" value={vReferral} onChange={(e) => setVReferral(e.target.value)} /></div>
+                  </div>
                   <Button className="w-full" onClick={saveVendor}>Save</Button>
                 </div>
               </DialogContent>
