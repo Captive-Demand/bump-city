@@ -397,8 +397,37 @@ const HomePage = () => {
     );
   }
 
-  if (mode === "choose") return <Navigate to="/get-started?new=true" replace />;
+  if (mode === "choose") return <EmptyHome />;
   return <ShowerDashboard />;
+};
+
+const EmptyHome = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
+  return (
+    <MobileLayout>
+      <div className="px-6 pt-16 pb-8 flex flex-col items-center text-center">
+        <img src={bumpCityIcon} alt="Bump City" className="h-16 w-16 rounded-2xl mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Welcome, {displayName}!</h1>
+        <p className="text-sm text-muted-foreground mb-8 max-w-xs">
+          You don't have an event yet. Set one up now, or skip ahead and explore the app.
+        </p>
+        <div className="w-full max-w-sm space-y-3">
+          <Button className="w-full h-12 rounded-xl font-semibold" onClick={() => navigate("/get-started?new=true")}>
+            Set up my shower
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full h-12 rounded-xl font-semibold"
+            onClick={() => navigate("/profile")}
+          >
+            Go to profile
+          </Button>
+        </div>
+      </div>
+    </MobileLayout>
+  );
 };
 
 export default HomePage;
