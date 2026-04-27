@@ -1,11 +1,11 @@
-import { Home, Gift, Send, Sparkles, User } from "lucide-react";
+import { Home, Gift, PartyPopper, Sparkles, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { icon: Home, label: "Home", path: "/" },
+  { icon: PartyPopper, label: "Showers", path: "/showers" },
   { icon: Gift, label: "Registry", path: "/registry" },
-  { icon: Send, label: "Invites", path: "/invites" },
   { icon: Sparkles, label: "Predictions", path: "/predictions" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
@@ -21,7 +21,10 @@ export const BottomNav = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border flex items-center justify-around h-16 px-2 z-50 max-w-[430px] mx-auto">
       {tabs.map((tab) => {
-        const isActive = location.pathname === tab.path;
+        const isActive =
+          tab.path === "/"
+            ? location.pathname === "/"
+            : location.pathname === tab.path || location.pathname.startsWith(tab.path + "/");
         return (
           <button
             key={tab.path}

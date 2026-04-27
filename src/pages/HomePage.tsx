@@ -12,9 +12,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
-import ShareInviteButton from "@/components/ShareInviteButton";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { HowItWorks } from "@/components/home/HowItWorks";
+import { ShowerBlocksGrid } from "@/components/home/ShowerBlocksGrid";
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -360,25 +361,22 @@ const ShowerDashboard = () => {
 
         {/* Event Switcher */}
         <EventSwitcher />
-
-        {/* Event Card */}
-        <EventCard />
       </div>
 
       <div className="px-6 pb-8 space-y-6">
+        <HowItWorks
+          storageKey="bump_city_how_it_works_home_dismissed"
+          steps={[
+            { number: 1, emoji: "🎀", title: "Set up your shower", description: "Add the date, location, and theme." },
+            { number: 2, emoji: "💌", title: "Invite & build registry", description: "Send invitations and curate your gift list." },
+            { number: 3, emoji: "🎁", title: "Track RSVPs & gifts", description: "Stay on top of replies and thank-yous." },
+          ]}
+        />
         <SetupProgress />
         <QuickActions />
+        <ShowerBlocksGrid />
         <NextTasks />
         <CommunityCard />
-
-        <Button
-          variant="outline"
-          className="w-full h-12 rounded-xl border-dashed border-2 text-muted-foreground hover:text-foreground"
-          onClick={() => navigate("/get-started?new=true")}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Event
-        </Button>
       </div>
     </MobileLayout>
   );
