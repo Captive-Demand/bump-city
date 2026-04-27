@@ -29,7 +29,11 @@ export const ActivityFeedProvider = ({ children }: { children: React.ReactNode }
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(activities));
+    } catch {
+      // Storage can be unavailable in private modes; activity feed should not block the app.
+    }
   }, [activities]);
 
   const addActivity = useCallback((type: ActivityType, text: string) => {
