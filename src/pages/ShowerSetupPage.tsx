@@ -21,17 +21,12 @@ import { toast } from "sonner";
 
 const TOTAL_STEPS = 3;
 
-const StepDots = ({ current, total }: { current: number; total: number }) => (
-  <div className="flex items-center gap-2 justify-center mb-8">
-    {Array.from({ length: total }).map((_, i) => (
-      <div
-        key={i}
-        className={cn(
-          "h-2 rounded-full transition-all",
-          i === current ? "w-8 bg-primary" : i < current ? "w-2 bg-primary/60" : "w-2 bg-muted"
-        )}
-      />
-    ))}
+const STEP_NAMES = ["Your Role", "Event Details", "Gifting Preferences"];
+
+const StepProgress = ({ current, total }: { current: number; total: number }) => (
+  <div className="mb-6">
+    <Progress value={((current + 1) / total) * 100} className="h-2" />
+    <p className="text-xs text-muted-foreground mt-2">Step {current + 1} of {total} — {STEP_NAMES[current]}</p>
   </div>
 );
 
