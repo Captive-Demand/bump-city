@@ -32,7 +32,7 @@ interface ShopifyProduct {
   title: string;
   productType: string;
   availableForSale?: boolean;
-  totalInventory?: number | null;
+  
   featuredImage?: { url: string; altText?: string };
   priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
   onlineStoreUrl?: string;
