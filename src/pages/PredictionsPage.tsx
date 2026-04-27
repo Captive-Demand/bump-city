@@ -213,7 +213,7 @@ const PredictionsPage = () => {
               <CardContent className="p-4 space-y-4">
                 <div>
                   <h3 className="font-bold text-sm mb-1">Make Your Prediction</h3>
-                  <p className="text-xs text-muted-foreground">Guess the baby's arrival details!</p>
+                  <p className="text-xs text-muted-foreground">Win a prize in any category — date, gender, name, or weight! 🏆</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Your name *</Label>
