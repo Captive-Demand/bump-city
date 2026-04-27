@@ -25,6 +25,8 @@ interface Guest {
   plus_one: boolean;
   dietary_notes: string | null;
   email: string | null;
+  phone: string | null;
+  sms_opt_in: boolean | null;
   invite_sent: boolean | null;
 }
 
@@ -56,7 +58,7 @@ const GuestListPage = () => {
     if (!event) return;
     const { data } = await supabase
       .from("guests")
-      .select("id, name, status, plus_one, dietary_notes, email, invite_sent")
+      .select("id, name, status, plus_one, dietary_notes, email, phone, sms_opt_in, invite_sent")
       .eq("event_id", event.id)
       .order("created_at", { ascending: true });
     setGuests((data as Guest[]) || []);
