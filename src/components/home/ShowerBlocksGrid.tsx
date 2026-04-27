@@ -1,16 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Plus, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Plus, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useActiveEvent, EventData } from "@/contexts/ActiveEventContext";
 
 const formatDate = (date: string | null) =>
-  date ? new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : null;
+  date
+    ? new Date(date).toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
 
 const daysToGo = (date: string | null) => {
   if (!date) return null;
-  const d = Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  return d;
+  return Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 };
 
 const sortShowers = (events: EventData[]) => {
@@ -30,9 +37,14 @@ const sortShowers = (events: EventData[]) => {
 interface ShowerBlocksGridProps {
   title?: string;
   showCreateTile?: boolean;
+  showSeeAll?: boolean;
 }
 
-export const ShowerBlocksGrid = ({ title = "Your Showers", showCreateTile = true }: ShowerBlocksGridProps) => {
+export const ShowerBlocksGrid = ({
+  title = "Your Showers",
+  showCreateTile = true,
+  showSeeAll = true,
+}: ShowerBlocksGridProps) => {
   const navigate = useNavigate();
   const { allEvents, switchEvent } = useActiveEvent();
   const showers = sortShowers(allEvents);
@@ -46,14 +58,14 @@ export const ShowerBlocksGrid = ({ title = "Your Showers", showCreateTile = true
     <div>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-bold">{title}</h2>
-        {allEvents.length > 0 && (
+        {showSeeAll && allEvents.length > 0 && (
           <button className="text-sm font-semibold text-primary" onClick={() => navigate("/showers")}>
             See all
           </button>
         )}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {showers.map((evt) => {
           const days = daysToGo(evt.event_date);
           const isPast = days !== null && days < 0;
@@ -66,45 +78,52 @@ export const ShowerBlocksGrid = ({ title = "Your Showers", showCreateTile = true
               }`}
               onClick={() => open(evt.id)}
             >
-              <CardContent className="p-0 flex">
-                <div className="w-24 h-24 shrink-0 bg-gradient-to-br from-primary/20 to-lavender/20 relative">
+              <CardContent className="p-0">
+                <div className="relative">
                   {evt.event_image_url ? (
-                    <img src={evt.event_image_url} alt="" className="w-full h-full object-cover" />
+                    <img src={evt.event_image_url} alt="" className="w-full h-44 object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl">🎉</div>
+                    <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 h-44 flex items-center justify-center">
+                      <span className="text-5xl">🎉</span>
+                    </div>
+                  )}
+                  {days !== null && !isPast && (
+                    <Badge className="bg-mint text-mint-foreground text-[10px] font-bold absolute top-3 left-3">
+                      ⏰ {days === 0 ? "TODAY" : `${days} DAYS TO GO`}
+                    </Badge>
+                  )}
+                  {isPast && (
+                    <Badge variant="outline" className="bg-background/90 text-[10px] font-bold absolute top-3 left-3">
+                      PAST
+                    </Badge>
                   )}
                 </div>
-                <div className="flex-1 min-w-0 p-3 flex flex-col justify-center">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-bold text-sm leading-tight truncate">
-                      {evt.honoree_name ? `${evt.honoree_name}'s Shower` : "Baby Shower"}
-                    </p>
-                    {days !== null && !isPast && (
-                      <Badge className="bg-mint text-mint-foreground text-[9px] font-bold shrink-0">
-                        {days === 0 ? "TODAY" : `${days}d`}
-                      </Badge>
-                    )}
-                    {isPast && (
-                      <Badge variant="outline" className="text-[9px] font-bold shrink-0">
-                        PAST
-                      </Badge>
-                    )}
-                  </div>
+                <div className="p-5 pt-3">
+                  <h3 className="text-lg font-bold leading-tight">
+                    {evt.honoree_name ? `${evt.honoree_name}'s Baby Shower` : "Baby Shower"}
+                  </h3>
                   {dateLabel && (
-                    <div className="flex items-center gap-1 mt-1 text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span className="text-xs">{dateLabel}</span>
+                    <div className="flex items-center gap-1.5 mt-1.5 text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span className="text-sm">{dateLabel}</span>
                     </div>
                   )}
                   {evt.city && (
-                    <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span className="text-xs">{evt.city}</span>
+                    <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span className="text-sm">{evt.city}</span>
                     </div>
                   )}
-                </div>
-                <div className="flex items-center pr-3 text-muted-foreground">
-                  <ChevronRight className="h-4 w-4" />
+                  <Button
+                    className="w-full rounded-xl h-11 font-semibold mt-4"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      open(evt.id);
+                    }}
+                  >
+                    Open Shower
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -116,7 +135,7 @@ export const ShowerBlocksGrid = ({ title = "Your Showers", showCreateTile = true
             className="border-2 border-dashed border-primary/30 bg-transparent cursor-pointer hover:bg-primary/5 transition-colors"
             onClick={() => navigate("/get-started?new=true")}
           >
-            <CardContent className="p-4 flex items-center gap-3 justify-center text-primary">
+            <CardContent className="p-5 flex items-center gap-3 justify-center text-primary">
               <Plus className="h-4 w-4" />
               <span className="font-semibold text-sm">Create new shower</span>
             </CardContent>
