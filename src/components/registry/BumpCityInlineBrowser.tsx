@@ -83,6 +83,7 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           if (cancelled) return;
           const edges = data?.data?.products?.edges || [];
           setProducts(edges.map((e: any) => e.node));
+          setPage(0);
         } catch (err: any) {
           if (!cancelled) setError(err.message || "Failed to load products");
         } finally {
