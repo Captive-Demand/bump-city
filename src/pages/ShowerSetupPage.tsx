@@ -201,22 +201,29 @@ const ShowerSetupPage = () => {
 
           {step === 2 && (
             <div className="space-y-5">
-              <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Set expectations for your guests.</p></div>
-              <RadioGroup value={giftPolicy} onValueChange={(v) => setGiftPolicy(v as typeof giftPolicy)} className="space-y-3">
+              <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Pick all that apply — you can change these later.</p></div>
+              <div className="space-y-2">
                 {[
-                  { value: "bring-gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared" },
-                  { value: "no-gifts", label: "No gifts please", desc: "Presence over presents" },
-                  { value: "bring-book", label: "Bring a book instead", desc: "Build baby's first library" },
+                  { key: "bring_gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared", icon: "🎁" },
+                  { key: "bring_book", label: "Bring a book instead", desc: "Build baby's first library", icon: "📚" },
+                  { key: "no_gifts", label: "No gifts please", desc: "Presence over presents", icon: "💖" },
+                  { key: "clear_wrapping", label: "Clear wrapping requested", desc: "For guessing games", icon: "🎀" },
+                  { key: "ship_to_home", label: "Ship to home", desc: "Send registry items to shipping address", icon: "📦" },
+                  { key: "bring_to_event", label: "Bring gifts to the event", desc: "Open them at the shower", icon: "🎈" },
                 ].map((opt) => (
-                  <Label key={opt.value} htmlFor={opt.value} className={cn("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all", giftPolicy === opt.value ? "border-primary bg-primary/5" : "border-border")}>
-                    <RadioGroupItem value={opt.value} id={opt.value} />
-                    <div><p className="font-semibold text-sm">{opt.label}</p><p className="text-xs text-muted-foreground">{opt.desc}</p></div>
+                  <Label key={opt.key} htmlFor={opt.key} className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all", giftPrefs[opt.key] ? "border-primary bg-primary/5" : "border-border")}>
+                    <Checkbox id={opt.key} checked={!!giftPrefs[opt.key]} onCheckedChange={() => {
+                      togglePref(opt.key);
+                      if (opt.key === "bring_gift") setGiftPolicy("bring-gift");
+                      if (opt.key === "bring_book") setGiftPolicy("bring-book");
+                      if (opt.key === "no_gifts") setGiftPolicy("no-gifts");
+                    }} className="mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm flex items-center gap-2"><span>{opt.icon}</span>{opt.label}</p>
+                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                    </div>
                   </Label>
                 ))}
-              </RadioGroup>
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border">
-                <div><p className="font-semibold text-sm">Clear wrapping</p><p className="text-xs text-muted-foreground">Ask guests to use clear wrapping</p></div>
-                <Switch checked={clearWrapping} onCheckedChange={setClearWrapping} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="note">Custom note for guests (optional)</Label>
