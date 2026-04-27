@@ -81,12 +81,16 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
         setLoading(true);
         setError(null);
         try {
+          const composedQuery = ["available_for_sale:true", searchTerm].filter(Boolean).join(" ");
           const data = await storefrontApiRequest<{
             products: { edges: { node: ShopifyProduct }[] };
-          }>(PRODUCTS_QUERY, { first: 60, query: searchTerm || null });
+          }>(PRODUCTS_QUERY, { first: 100, query: composedQuery });
           if (cancelled) return;
           const edges = data?.data?.products?.edges || [];
-          setProducts(edges.map((e: any) => e.node));
+          const live = edges
+            .map((e: any) => e.node as ShopifyProduct)
+            .filter((p) => p.availableForSale !== false);
+          setProducts(live);
           setPage(0);
         } catch (err: any) {
           if (!cancelled) setError(err.message || "Failed to load products");
