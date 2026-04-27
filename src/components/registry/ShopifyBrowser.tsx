@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { storefrontApiRequest } from "@/lib/shopify";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,11 +65,10 @@ export const ShopifyBrowser = ({ eventId, userId, onAdded }: Props) => {
       setLoading(true);
       setError(null);
       try {
-        const { data, error: fnErr } = await supabase.functions.invoke("shopify-proxy", {
-          body: { query: PRODUCTS_QUERY, variables: { first: 24, query: searchTerm || null } },
-        });
-        if (fnErr) throw new Error(fnErr.message);
-        if (data?.error) throw new Error(data.error);
+        const data = await storefrontApiRequest<{ products: { edges: { node: ShopifyProduct }[] } }>(
+          PRODUCTS_QUERY,
+          { first: 24, query: searchTerm || null }
+        );
         if (cancelled) return;
         const edges = data?.data?.products?.edges || [];
         setProducts(edges.map((e: any) => e.node));
