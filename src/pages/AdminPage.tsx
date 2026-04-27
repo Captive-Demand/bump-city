@@ -298,6 +298,10 @@ const AdminPage = () => {
                     <div className="space-y-1"><Label>Phone</Label><Input value={vPhone} onChange={(e) => setVPhone(e.target.value)} /></div>
                   </div>
                   <div className="space-y-1"><Label>Website</Label><Input value={vWebsite} onChange={(e) => setVWebsite(e.target.value)} /></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1"><Label>Discount code (public)</Label><Input placeholder="BUMP10" value={vDiscount} onChange={(e) => setVDiscount(e.target.value)} /></div>
+                    <div className="space-y-1"><Label>Referral code (private)</Label><Input placeholder="BUMPCITY" value={vReferral} onChange={(e) => setVReferral(e.target.value)} /></div>
+                  </div>
                   <Button className="w-full" onClick={saveVendor}>Save</Button>
                 </div>
               </DialogContent>
