@@ -1,4 +1,4 @@
-import { Home, Gift, Send, Sparkles, User, Users, Mail, ClipboardList, MapPin, CalendarDays, Package, Shield } from "lucide-react";
+import { Home, Gift, Send, Sparkles, User, Users, Mail, ClipboardList, MapPin, CalendarDays, Package, Shield, PartyPopper } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -6,6 +6,7 @@ import appIcon from "@/assets/Bump-City-Icon.png";
 
 const primaryTabs = [
   { icon: Home, label: "Home", path: "/" },
+  { icon: PartyPopper, label: "Showers", path: "/showers" },
   { icon: Gift, label: "Registry", path: "/registry" },
   { icon: Send, label: "Invites", path: "/invites" },
   { icon: Sparkles, label: "Predict", path: "/predictions" },

@@ -13,6 +13,8 @@ import GuestListPage from "./pages/GuestListPage";
 import PredictionsPage from "./pages/PredictionsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShowerSetupPage from "./pages/ShowerSetupPage";
+import ShowersListPage from "./pages/ShowersListPage";
+import ShowerDetailPage from "./pages/ShowerDetailPage";
 
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -52,6 +54,8 @@ const App = () => (
                 <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
                 <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
+                <Route path="/showers" element={<ProtectedRoute><ShowersListPage /></ProtectedRoute>} />
+                <Route path="/showers/:eventId" element={<ProtectedRoute><ShowerDetailPage /></ProtectedRoute>} />
                 <Route path="/setup/registry" element={<Navigate to="/setup/shower" replace />} />
                 <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
                 <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
