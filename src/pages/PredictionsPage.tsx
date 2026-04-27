@@ -192,7 +192,6 @@ const PredictionsPage = () => {
                     {[
                       { value: "boy", label: "👦 Boy" },
                       { value: "girl", label: "👧 Girl" },
-                      { value: "surprise", label: "🎉 Surprise" },
                     ].map((opt) => (
                       <Label key={opt.value} htmlFor={`gender-${opt.value}`} className={cn("flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all flex-1 justify-center", predictedGender === opt.value ? "border-primary bg-primary/5" : "border-border")}>
                         <RadioGroupItem value={opt.value} id={`gender-${opt.value}`} className="sr-only" />
