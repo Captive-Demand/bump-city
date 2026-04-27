@@ -48,6 +48,9 @@ const AdminPage = () => {
   const [userEmails, setUserEmails] = useState<Record<string, string>>({});
   const [loadingEmail, setLoadingEmail] = useState<string | null>(null);
   const [sendingReset, setSendingReset] = useState<string | null>(null);
+  const [testSmsOpen, setTestSmsOpen] = useState(false);
+  const [testSmsTo, setTestSmsTo] = useState("");
+  const [testSmsSending, setTestSmsSending] = useState(false);
   const PAGE_SIZE = 20;
 
   useEffect(() => {
@@ -469,6 +472,9 @@ const AdminPage = () => {
                 <div className="flex gap-2">
                   <Button className="flex-1" onClick={saveSettings}>
                     {settingsEdits["twilio_account_sid"] && settingsEdits["twilio_auth_token"] && settingsEdits["twilio_phone_number"] ? "Update Connection" : "Connect Twilio"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setTestSmsOpen(true)} disabled={!settingsEdits["twilio_account_sid"]}>
+                    Test SMS
                   </Button>
                   {settingsEdits["twilio_account_sid"] && (
                     <Button variant="outline" className="text-destructive" onClick={() => {
