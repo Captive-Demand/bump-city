@@ -118,14 +118,21 @@ const ProfilePage = () => {
     refetch();
   };
 
-  const saveGiftPrefs = async (newPolicy?: string, newClearWrap?: boolean) => {
+  const togglePref = async (key: string) => {
     if (!event) return;
-    const policy = newPolicy ?? giftPref;
-    const wrap = newClearWrap ?? clearWrap;
+    const next = { ...giftPrefs, [key]: !giftPrefs[key] };
+    setGiftPrefs(next);
     await supabase.from("events").update({
-      gift_policy: policy,
-      clear_wrapping: wrap,
+      gift_preferences: next as any,
+      clear_wrapping: !!next.clear_wrapping,
     }).eq("id", event.id);
+    refetch();
+  };
+
+  const saveGiftPrefs = async (_newPolicy?: string, newClearWrap?: boolean) => {
+    if (!event) return;
+    const wrap = newClearWrap ?? clearWrap;
+    await supabase.from("events").update({ clear_wrapping: wrap }).eq("id", event.id);
     refetch();
   };
 
