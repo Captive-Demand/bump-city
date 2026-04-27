@@ -99,12 +99,12 @@ const AdminPage = () => {
 
   // Vendor CRUD
   const openVendorForm = (v?: any) => {
-    if (v) { setEditVendor(v); setVName(v.name); setVCategory(v.category); setVDesc(v.description || ""); setVCity(v.city || "Nashville"); setVPhone(v.phone || ""); setVWebsite(v.website || ""); }
-    else { setEditVendor(null); setVName(""); setVCategory(""); setVDesc(""); setVCity("Nashville"); setVPhone(""); setVWebsite(""); }
+    if (v) { setEditVendor(v); setVName(v.name); setVCategory(v.category); setVDesc(v.description || ""); setVCity(v.city || "Nashville"); setVPhone(v.phone || ""); setVWebsite(v.website || ""); setVReferral(v.referral_code || ""); setVDiscount(v.discount_code || ""); }
+    else { setEditVendor(null); setVName(""); setVCategory(""); setVDesc(""); setVCity("Nashville"); setVPhone(""); setVWebsite(""); setVReferral(""); setVDiscount(""); }
     setVendorOpen(true);
   };
   const saveVendor = async () => {
-    const payload = { name: vName.trim(), category: vCategory.trim(), description: vDesc.trim() || null, city: vCity.trim() || null, phone: vPhone.trim() || null, website: vWebsite.trim() || null };
+    const payload = { name: vName.trim(), category: vCategory.trim(), description: vDesc.trim() || null, city: vCity.trim() || null, phone: vPhone.trim() || null, website: vWebsite.trim() || null, referral_code: vReferral.trim() || null, discount_code: vDiscount.trim() || null };
     if (!payload.name || !payload.category) { toast.error("Name and category required"); return; }
     if (editVendor) {
       const { error } = await supabase.from("vendors").update(payload).eq("id", editVendor.id);
