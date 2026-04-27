@@ -1,43 +1,37 @@
 ## Goal
-Connect Tiffany's existing Bump City Shopify store to the registry using Lovable's native Shopify integration — abandoning the manual custom-app/Storefront-token approach.
+Make Tiffany's Bump City Boutique products browsable and addable from the Registry page, now that the native Shopify integration is connected.
 
-## Why switch
-The current `shopify-proxy` edge function + manual token approach works, but:
-- Requires Tiffany (or you) to navigate Shopify's complex Partner/custom-app UI
-- Manual token copying is error-prone
-- Doesn't handle token refresh or expanded features (cart, checkout, orders)
+## Root cause
+`RegistryPage.tsx` still gates the "Bump City Boutique" button behind a `shopifyConfigured` flag that checks two `app_settings` rows (`shopify_store_domain`, `shopify_storefront_token`). Those keys belonged to the **old** edge-function-proxy approach and were removed when we migrated to the native Lovable Shopify integration. So the flag is always `false` → button is permanently disabled → users can't open the product browser.
 
-The native integration handles auth via Shopify's official OAuth flow — one click, no tokens to copy.
+The browser itself (`ShopifyBrowser.tsx`) and `src/lib/shopify.ts` are already correctly wired to the native Storefront API — they just never get opened.
 
-## Steps
+## Changes
 
-### 1. Enable native Shopify integration (existing store)
-- Trigger Lovable's Shopify enable flow with `store_type: existing`
-- You'll be prompted to enter the Bump City Shopify admin URL (e.g. `bumpcitybaby.myshopify.com`)
-- Shopify OAuth handles the rest — Tiffany approves once and we're connected
+### 1. `src/pages/RegistryPage.tsx` — remove stale gate
+- Delete the `shopifyConfigured` state and its `useEffect` lookup against `app_settings`.
+- Keep the `registry_intro_blurb` lookup (unrelated, still needed).
+- Treat Shopify as **always available** (it is — the integration is connected at the project level):
+  - Remove `disabled={!shopifyConfigured}` on both Bump City buttons (mobile category card + desktop "Browse Bump City" CTA).
+  - Remove the `Tooltip` wrapper that says "Connect Shopify in Admin Settings".
+  - Simplify `handleShopifyClick` to just `setShopifyOpen(true)`.
 
-### 2. Migrate `ShopifyBrowser.tsx` to use the native client
-- Replace the `supabase.functions.invoke("shopify-proxy", ...)` call with the native Shopify client provided by the integration
-- Same product-listing GraphQL query, but via the supported SDK
-- Keep the existing UI/UX (search bar, product grid, add-to-registry dialog) unchanged
+### 2. `src/lib/shopify.ts` — light hardening (optional but recommended)
+- Current file hardcodes the domain and token. They're valid public Storefront values, so this works. No change strictly required, but I'll add a brief comment noting these come from the native integration so future-me doesn't try to "fix" them.
 
-### 3. Deprecate the manual `shopify-proxy` edge function and `app_settings` rows
-- Leave the function in place for now (in case we need a quick rollback)
-- Remove the "Shopify connection" config UI from `AdminPage.tsx` since it's no longer needed
+### 3. `src/pages/AdminPage.tsx` — sanity check
+- Confirm we're no longer rendering the old manual "Shopify domain/token" inputs (last migration removed these). If any leftover references to `shopify_store_domain`/`shopify_storefront_token` remain, delete them.
 
-### 4. Verify end-to-end
-- Open the registry page → confirm Bump City products load
-- Click a product → confirm "Add to Registry" still writes to `registry_items` with `source: "shopify"`
-- Test search filtering works
+### 4. Verification (no code, just checks)
+- Open `/registry` → click "Bump City Boutique" → sheet opens → products load (1,297 available).
+- Search "swaddle" → results filter.
+- Click a product → "Add to Registry" → row inserted into `registry_items` with `source: "shopify"`, `image_url`, `external_url`, price.
+- Item appears in the registry grid immediately (already wired via `onAdded={fetchItems}`).
 
-### 5. Cleanup (optional, after confirmed working)
-- Delete `shopify-proxy` edge function
-- Drop unused `shopify_store_domain` / `shopify_storefront_token` rows from `app_settings`
+## Out of scope
+- Cart / checkout flow (registry uses external_url to send guests to Shopify product pages — no cart needed).
+- Refactoring `shopify.ts` to fetch token dynamically from `shopify--get_storefront_token` at runtime (the hardcoded public token is fine and faster).
+- Any UI redesign of the browser sheet.
 
-## What you need to have ready
-- Tiffany's Shopify admin URL (the `.myshopify.com` permanent URL — find it in Shopify admin Settings → Domains)
-- Tiffany available for ~30 seconds to approve the OAuth permission prompt (or her login credentials if you're doing it for her)
-
-## What this does NOT change
-- The registry UI, the "Add to Registry" flow, the `registry_items` table, or guest-facing browsing — all stay identical
-- The existing manual setup (custom app you started in Shopify Partners) can simply be ignored or deleted from Shopify later
+## Risk
+Very low — purely removing a broken gate. Worst case: button opens a sheet that errors loading products, in which case the existing error state in `ShopifyBrowser` handles it gracefully.
