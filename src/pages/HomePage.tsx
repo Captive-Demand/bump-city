@@ -359,8 +359,6 @@ const ShowerDashboard = () => {
           </button>
         </div>
 
-        {/* Event Switcher */}
-        <EventSwitcher />
       </div>
 
       <div className="px-6 pb-8 space-y-6">
