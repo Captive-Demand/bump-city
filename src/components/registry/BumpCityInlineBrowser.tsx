@@ -170,84 +170,101 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           const safePage = Math.min(page, totalPages - 1);
           const visible = expanded
             ? products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
-            : products.slice(0, PREVIEW_SIZE);
+            : products;
+
+          const renderCard = (p: ShopifyProduct) => {
+            const isAdded = added.has(p.id);
+            const isAdding = adding === p.id;
+            const currentCat = overrides[p.id] || guessCategory(p.productType, categories);
+            return (
+              <Card key={p.id} className="border-none rounded-2xl overflow-hidden h-full">
+                <div className="aspect-square bg-muted">
+                  {p.featuredImage?.url ? (
+                    <img
+                      src={p.featuredImage.url}
+                      alt={p.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <CardContent className="p-3 space-y-2">
+                  {p.onlineStoreUrl ? (
+                    <a
+                      href={p.onlineStoreUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-sm line-clamp-2 leading-tight hover:text-primary hover:underline block"
+                    >
+                      {p.title}
+                    </a>
+                  ) : (
+                    <p className="font-semibold text-sm line-clamp-2 leading-tight">{p.title}</p>
+                  )}
+                  <p className="text-xs text-primary font-bold">
+                    ${parseFloat(p.priceRange.minVariantPrice.amount).toFixed(2)}
+                  </p>
+                  <Select
+                    value={currentCat}
+                    onValueChange={(v) => setOverrides((o) => ({ ...o, [p.id]: v }))}
+                  >
+                    <SelectTrigger className="h-8 text-xs rounded-lg">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cats.map((c) => (
+                        <SelectItem key={c} value={c} className="text-xs">
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    className="w-full rounded-full text-xs h-8 gap-1"
+                    variant={isAdded ? "outline" : "default"}
+                    onClick={() => addToRegistry(p)}
+                    disabled={isAdding || isAdded}
+                  >
+                    {isAdding ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : isAdded ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" /> Added
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-3.5 w-3.5" /> Add
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          };
+
           return (
             <>
-              <div className={expanded ? "grid grid-cols-2 md:grid-cols-3 gap-3" : "grid grid-cols-3 gap-3"}>
-                {visible.map((p) => {
-                  const isAdded = added.has(p.id);
-                  const isAdding = adding === p.id;
-                  const currentCat = overrides[p.id] || guessCategory(p.productType, categories);
-                  return (
-                    <Card key={p.id} className="border-none rounded-2xl overflow-hidden">
-                      <div className="aspect-square bg-muted">
-                        {p.featuredImage?.url ? (
-                          <img
-                            src={p.featuredImage.url}
-                            alt={p.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                      <CardContent className="p-3 space-y-2">
-                        {p.onlineStoreUrl ? (
-                          <a
-                            href={p.onlineStoreUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold text-sm line-clamp-2 leading-tight hover:text-primary hover:underline block"
-                          >
-                            {p.title}
-                          </a>
-                        ) : (
-                          <p className="font-semibold text-sm line-clamp-2 leading-tight">{p.title}</p>
-                        )}
-                        <p className="text-xs text-primary font-bold">
-                          ${parseFloat(p.priceRange.minVariantPrice.amount).toFixed(2)}
-                        </p>
-                        <Select
-                          value={currentCat}
-                          onValueChange={(v) => setOverrides((o) => ({ ...o, [p.id]: v }))}
-                        >
-                          <SelectTrigger className="h-8 text-xs rounded-lg">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {cats.map((c) => (
-                              <SelectItem key={c} value={c} className="text-xs">
-                                {c}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          size="sm"
-                          className="w-full rounded-full text-xs h-8 gap-1"
-                          variant={isAdded ? "outline" : "default"}
-                          onClick={() => addToRegistry(p)}
-                          disabled={isAdding || isAdded}
-                        >
-                          {isAdding ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : isAdded ? (
-                            <>
-                              <Check className="h-3.5 w-3.5" /> Added
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="h-3.5 w-3.5" /> Add
-                            </>
-                          )}
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              {expanded ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {visible.map(renderCard)}
+                </div>
+              ) : (
+                <Carousel opts={{ align: "start", loop: false }} className="px-1">
+                  <CarouselContent className="-ml-3">
+                    {visible.map((p) => (
+                      <CarouselItem key={p.id} className="pl-3 basis-1/3">
+                        {renderCard(p)}
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="-left-2 h-7 w-7" />
+                  <CarouselNext className="-right-2 h-7 w-7" />
+                </Carousel>
+              )}
               {!expanded && products.length > PREVIEW_SIZE && (
                 <div className="flex justify-center pt-1">
                   <Button
