@@ -78,6 +78,19 @@ const VendorDirectoryPage = () => {
                 <span className="text-xs text-muted-foreground">📍 {vendor.city}</span>
               </div>
               {vendor.description && <p className="text-xs text-muted-foreground mt-2">{vendor.description}</p>}
+              {vendor.discount_code && (
+                <button
+                  onClick={() => { navigator.clipboard.writeText(vendor.discount_code!); toast.success(`Copied "${vendor.discount_code}"`); }}
+                  className="mt-2 w-full flex items-center justify-between gap-2 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 px-3 py-2 hover:bg-primary/10 transition-colors"
+                >
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <Tag className="h-3 w-3 text-primary" />
+                    <span className="text-muted-foreground">Discount:</span>
+                    <span className="font-mono font-bold text-primary">{vendor.discount_code}</span>
+                  </span>
+                  <Copy className="h-3 w-3 text-muted-foreground" />
+                </button>
+              )}
               <div className="flex gap-2 mt-3">
                 {vendor.phone && <Button size="sm" variant="outline" className="rounded-full text-xs h-7 gap-1"><Phone className="h-3 w-3" /> Call</Button>}
                 {vendor.website && <Button size="sm" variant="outline" className="rounded-full text-xs h-7 gap-1" onClick={() => window.open(vendor.website!, "_blank")}><ExternalLink className="h-3 w-3" /> Website</Button>}
