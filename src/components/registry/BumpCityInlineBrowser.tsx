@@ -18,7 +18,6 @@ const PRODUCTS_QUERY = `query Products($first: Int!, $query: String) {
         productType
         descriptionHtml
         availableForSale
-        totalInventory
         featuredImage { url altText }
         priceRange { minVariantPrice { amount currencyCode } }
         onlineStoreUrl
