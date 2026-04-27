@@ -1,35 +1,34 @@
-I found the likely recurring cause: the project has a custom service worker registered in `index.html`. Even after improving `public/sw.js`, existing browsers can still be controlled by an older cached service worker that previously cached the app shell and dev/prod JS. That can leave customers with stale or missing app files and a blank screen. The app also has no top-level error boundary, so any startup crash becomes a white screen instead of a recoverable branded message.
+I found a concrete failure pattern: the page HTML loads, then the browser tries to load the app modules, but some Vite module requests are aborting/404ing after navigation. Because this happens while the JavaScript app is booting, React never gets far enough to show the existing error boundary, so customers only see a blank white page.
 
-Plan to fix this permanently:
+Plan to fix it for good:
 
-1. Disable the risky app-shell cache path
-   - Remove the direct service worker registration from `index.html` for now.
-   - Keep the web app manifest/icons so install branding remains intact.
-   - This prioritizes reliability over fragile offline caching.
+1. Add a no-JavaScript/boot fallback in `index.html`
+   - Put a branded Bump City loading/recovery screen inside `#root` before React starts.
+   - This means if the app bundle is slow, aborted, stale, or fails before React mounts, users will see a calm branded message instead of a blank white screen.
 
-2. Ship a service-worker cleanup file
-   - Update `/sw.js` into a safe cleanup worker that deletes all old `bumpcity-*` caches, claims clients, and unregisters itself.
-   - This gives already-affected customer browsers a path to recover automatically once they load the updated file.
+2. Harden app startup in `src/main.tsx`
+   - Check that the `#root` element exists before mounting.
+   - Wrap the initial import/render path with safer startup handling so boot failures surface as the branded recovery UI rather than an empty page.
+   - Keep the storage guard first, but make cache recovery non-blocking so it cannot interrupt initial rendering.
 
-3. Add a client-side cache recovery guard
-   - Add startup code that detects existing service workers/caches and clears the old Bump City caches on load.
-   - If a stale worker is controlling the page, force one clean reload after cleanup, avoiding an infinite reload loop.
+3. Fix the preview/navigation module race
+   - The white screen reproduced with failed requests for `src/App.tsx` and Vite’s `env.mjs` after navigating directly to `/setup/shower`.
+   - I’ll remove anything in our app that can trigger unnecessary reload/cache cleanup during startup in the dev preview path, and make cache cleanup only run when it is actually useful for published/stale-cache recovery.
 
-4. Add a branded app error boundary
-   - Wrap the root app in an error boundary so future runtime errors show a Bump City recovery screen instead of a white screen.
-   - Include a “Reload app” button that clears old caches/service workers before refreshing.
+4. Remove the PWA manifest failure from preview
+   - The console repeatedly shows `/manifest.json` returning 401 in the authenticated preview environment.
+   - I’ll gate or make the manifest registration safe so this does not spam errors or contribute to fragile startup behavior in preview, while preserving the published app’s PWA support.
 
-5. Make local startup storage safer
-   - Harden localStorage writes in startup contexts so unavailable/private storage cannot crash the whole app.
+5. Add a stronger user-facing recovery path
+   - If a true render crash happens, show the existing branded error boundary with a “Reload app” button.
+   - If the app never mounts, the HTML fallback will still be visible.
 
-6. Verify
-   - Run a production build.
-   - Re-check dev-server logs.
-   - Confirm the app no longer depends on cached JS/CSS and has a visible recovery path if anything fails.
+6. Verify after implementation
+   - Build the project.
+   - Test direct navigation to `/setup/shower` and `/` in the preview.
+   - Confirm the page no longer goes blank even if module/cache failures happen; at worst users see the branded recovery message, not a white screen.
 
-After this, customers should no longer get stuck on a permanent white screen from stale cached files; worst case, they’ll see a branded recovery screen with a reload action instead of a blank app.
-
-<lov-actions>
-  <lov-open-history>View History</lov-open-history>
-  <lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
-</lov-actions>
+Technical details:
+- Current `AppErrorBoundary` only catches React render errors after JavaScript has successfully loaded. It cannot catch failed module requests or startup crashes.
+- The screenshot shows the exact pre-React failure mode: white background, no app UI, no error boundary.
+- Browser network logs show failed module requests after navigating to `/setup/shower`, which explains why this keeps bypassing previous React-level fixes.
