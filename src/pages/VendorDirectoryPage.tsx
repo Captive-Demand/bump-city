@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Search, ExternalLink, Phone } from "lucide-react";
+import { MapPin, Search, ExternalLink, Phone, Copy, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Categories derived dynamically from data
 
@@ -17,6 +18,7 @@ interface Vendor {
   city: string;
   phone: string | null;
   website: string | null;
+  discount_code: string | null;
 }
 
 const VendorDirectoryPage = () => {
