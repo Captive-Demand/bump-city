@@ -59,6 +59,15 @@ const ShowerSetupPage = () => {
   const [city, setCity] = useState("");
   const [theme, setTheme] = useState("");
   const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
+  const [giftPrefs, setGiftPrefs] = useState<Record<string, boolean>>({
+    bring_gift: true,
+    bring_book: false,
+    no_gifts: false,
+    clear_wrapping: false,
+    ship_to_home: false,
+    bring_to_event: true,
+  });
+  const togglePref = (key: string) => setGiftPrefs((p) => ({ ...p, [key]: !p[key] }));
   const [clearWrapping, setClearWrapping] = useState(false);
   const [surpriseMode, setSurpriseMode] = useState(false);
   const [giftNote, setGiftNote] = useState("");
