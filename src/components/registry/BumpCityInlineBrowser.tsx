@@ -79,7 +79,7 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
         try {
           const data = await storefrontApiRequest<{
             products: { edges: { node: ShopifyProduct }[] };
-          }>(PRODUCTS_QUERY, { first: 24, query: searchTerm || null });
+          }>(PRODUCTS_QUERY, { first: 60, query: searchTerm || null });
           if (cancelled) return;
           const edges = data?.data?.products?.edges || [];
           setProducts(edges.map((e: any) => e.node));
