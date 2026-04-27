@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -66,7 +66,6 @@ const RegistryPage = () => {
   const [items, setItems] = useState<RegistryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [blurb, setBlurb] = useState<string>(DEFAULT_BLURB);
-  const [shopifyConfigured, setShopifyConfigured] = useState(false);
   const [shopifyOpen, setShopifyOpen] = useState(false);
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
@@ -180,17 +179,15 @@ const RegistryPage = () => {
     else setLoading(false);
   }, [event]);
 
-  // Load app settings (shopify config + blurb)
+  // Load registry intro blurb
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["shopify_store_domain", "shopify_storefront_token", "registry_intro_blurb"]);
-      const map: Record<string, string> = {};
-      (data || []).forEach((r: any) => { map[r.key] = r.value; });
-      setShopifyConfigured(!!(map.shopify_store_domain && map.shopify_storefront_token));
-      if (map.registry_intro_blurb) setBlurb(map.registry_intro_blurb);
+        .eq("key", "registry_intro_blurb");
+      const blurbValue = data?.[0]?.value;
+      if (blurbValue) setBlurb(blurbValue);
     })();
   }, []);
 
@@ -304,7 +301,6 @@ const RegistryPage = () => {
   ];
 
   const handleShopifyClick = () => {
-    if (!shopifyConfigured) return;
     setShopifyOpen(true);
   };
 
@@ -426,24 +422,12 @@ const RegistryPage = () => {
 
       {/* Browse Bump City CTA bar (full button) */}
       <div className="px-6 pt-3">
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="block w-full">
-                <Button
-                  className="w-full rounded-xl h-11 font-semibold gap-2"
-                  onClick={handleShopifyClick}
-                  disabled={!shopifyConfigured}
-                >
-                  <Store className="h-4 w-4" /> Browse Bump City Store
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {!shopifyConfigured && (
-              <TooltipContent>Connect Shopify in Admin Settings</TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        <Button
+          className="w-full rounded-xl h-11 font-semibold gap-2"
+          onClick={handleShopifyClick}
+        >
+          <Store className="h-4 w-4" /> Browse Bump City Store
+        </Button>
       </div>
 
       {/* Progress bar */}
@@ -503,7 +487,7 @@ const RegistryPage = () => {
                 Add items from Bump City Boutique, paste a URL from anywhere, or include a local service.
               </p>
               <div className="flex flex-col gap-2 max-w-xs mx-auto">
-                <Button className="rounded-xl h-11 font-semibold gap-2" onClick={handleShopifyClick} disabled={!shopifyConfigured}>
+                <Button className="rounded-xl h-11 font-semibold gap-2" onClick={handleShopifyClick}>
                   <Store className="h-4 w-4" /> Browse Bump City Store
                 </Button>
                 <Button variant="outline" className="rounded-xl h-11 font-semibold gap-2" onClick={() => setUrlOpen(true)}>
