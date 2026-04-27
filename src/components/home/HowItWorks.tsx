@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { X } from "lucide-react";
+import { X, type LucideIcon } from "lucide-react";
 
 export interface HowItWorksStep {
   number: number;
   title: string;
   description: string;
-  emoji: string;
+  icon: LucideIcon;
 }
 
 interface HowItWorksProps {
