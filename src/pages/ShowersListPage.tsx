@@ -1,7 +1,7 @@
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { ShowerBlocksGrid } from "@/components/home/ShowerBlocksGrid";
 import { HowItWorks } from "@/components/home/HowItWorks";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MousePointerClick, Settings, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const ShowersListPage = () => {
