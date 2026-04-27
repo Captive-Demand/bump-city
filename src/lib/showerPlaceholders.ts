@@ -1,14 +1,19 @@
-// Curated free Pexels images that read as "baby shower" — pastel, florals, gifts, balloons.
-// These are remote URLs (Pexels CDN) so no bundling needed.
+// Curated free Pexels images that read as "baby shower gifts" — wrapped presents,
+// gift boxes, ribbons, pastel packaging, gift tables.
 const PLACEHOLDERS = [
-  "https://images.pexels.com/photos/3933250/pexels-photo-3933250.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/3662824/pexels-photo-3662824.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/6849425/pexels-photo-6849425.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/6849426/pexels-photo-6849426.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/3933280/pexels-photo-3933280.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/8088495/pexels-photo-8088495.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/6849424/pexels-photo-6849424.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  "https://images.pexels.com/photos/3933257/pexels-photo-3933257.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  // Pastel wrapped gifts / ribbons
+  "https://images.pexels.com/photos/1666067/pexels-photo-1666067.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/1303081/pexels-photo-1303081.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/264771/pexels-photo-264771.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/1693650/pexels-photo-1693650.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/1666069/pexels-photo-1666069.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/3014853/pexels-photo-3014853.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/1303086/pexels-photo-1303086.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/6044266/pexels-photo-6044266.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/5874713/pexels-photo-5874713.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/3303692/pexels-photo-3303692.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/1666070/pexels-photo-1666070.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/6044226/pexels-photo-6044226.jpeg?auto=compress&cs=tinysrgb&w=1200",
 ];
 
 // Stable hash so the same shower always gets the same placeholder.
