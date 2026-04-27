@@ -407,8 +407,17 @@ const RegistryPage = () => {
         <p className="text-xs text-muted-foreground italic">{blurb}</p>
       </div>
 
-      {/* === GUIDED JOURNEY === */}
-      <div className="px-6 pt-4 space-y-3">
+      {/* === ADD TO REGISTRY SECTION === */}
+      <div className="px-6 pt-4 pb-1 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Add to Registry</h2>
+        <button
+          onClick={scrollToRegistry}
+          className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
+        >
+          Jump to Your Registry ↓
+        </button>
+      </div>
+      <div className="px-6 pt-2 space-y-3">
         {/* Step 1 — Bump City (always expanded) */}
         <Card className="border-2 border-primary/30 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-transparent">
           <CardContent className="p-4 space-y-3">
@@ -552,9 +561,13 @@ const RegistryPage = () => {
         </Card>
       </div>
 
-      {/* Your Registry section anchor */}
-      <div ref={yourRegistryRef} className="px-6 pt-6 pb-1">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Your Registry</h2>
+      {/* === YOUR REGISTRY SECTION === */}
+      <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
+        <div className="flex items-center gap-2 pt-4">
+          <Package className="h-4 w-4 text-primary" />
+          <h2 className="text-base font-bold">Your Registry</h2>
+          <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
+        </div>
       </div>
 
       {/* Progress bar */}
