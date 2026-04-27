@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, Send, Users, Gift } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import { ShowerHero } from "@/components/shower/ShowerHero";
@@ -68,9 +68,9 @@ const ShowerDetailPage = () => {
           title="Get this shower ready"
           storageKey={`bump_city_how_it_works_shower_${event.id}_dismissed`}
           steps={[
-            { number: 1, emoji: "💌", title: "Customize your invite", description: "Pick a template and add your details." },
-            { number: 2, emoji: "👥", title: "Add your guests", description: "Import contacts and send invitations." },
-            { number: 3, emoji: "🎁", title: "Build your registry", description: "Add gifts you'd love to receive." },
+            { number: 1, icon: Send, title: "Customize your invite", description: "Pick a template and add your details." },
+            { number: 2, icon: Users, title: "Add your guests", description: "Import contacts and send invitations." },
+            { number: 3, icon: Gift, title: "Build your registry", description: "Add gifts you'd love to receive." },
           ]}
         />
 

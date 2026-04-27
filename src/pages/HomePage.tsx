@@ -367,9 +367,9 @@ const ShowerDashboard = () => {
         <HowItWorks
           storageKey="bump_city_how_it_works_home_dismissed"
           steps={[
-            { number: 1, emoji: "🎀", title: "Set up your shower", description: "Add the date, location, and theme." },
-            { number: 2, emoji: "💌", title: "Invite & build registry", description: "Send invitations and curate your gift list." },
-            { number: 3, emoji: "🎁", title: "Track RSVPs & gifts", description: "Stay on top of replies and thank-yous." },
+            { number: 1, icon: Sparkles, title: "Set up your shower", description: "Add the date, location, and theme." },
+            { number: 2, icon: Send, title: "Invite & build registry", description: "Send invitations and curate your gift list." },
+            { number: 3, icon: Gift, title: "Track RSVPs & gifts", description: "Stay on top of replies and thank-yous." },
           ]}
         />
         <SetupProgress />
