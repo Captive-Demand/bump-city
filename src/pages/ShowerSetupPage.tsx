@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Baby, CalendarIcon, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
