@@ -298,9 +298,23 @@ const ProfilePage = () => {
         <div className="space-y-2">
           <Card className="border-none">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg"><Bell className="h-4 w-4 text-primary" /></div>
-              <div className="flex-1"><p className="text-sm font-medium">Notifications</p></div>
-              <Switch defaultChecked />
+              <div className="bg-primary/10 p-2 rounded-lg"><MailIcon className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">Email notifications</p><p className="text-[10px] text-muted-foreground">Invites, RSVPs, reminders</p></div>
+              <Switch checked={emailNotif} onCheckedChange={(v) => { setEmailNotif(v); updateNotif("email_notifications", v); }} />
+            </CardContent>
+          </Card>
+          <Card className="border-none">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg"><MessageSquare className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">SMS notifications</p><p className="text-[10px] text-muted-foreground">Requires explicit opt-in</p></div>
+              <Switch checked={smsNotif} onCheckedChange={(v) => { setSmsNotif(v); updateNotif("sms_opt_in", v); }} />
+            </CardContent>
+          </Card>
+          <Card className="border-none">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="bg-primary/10 p-2 rounded-lg"><Smartphone className="h-4 w-4 text-primary" /></div>
+              <div className="flex-1"><p className="text-sm font-medium">Push notifications</p><p className="text-[10px] text-muted-foreground">Local events & community</p></div>
+              <Switch checked={pushNotif} onCheckedChange={(v) => { setPushNotif(v); updateNotif("push_notifications", v); }} />
             </CardContent>
           </Card>
           <Card className="border-none">
