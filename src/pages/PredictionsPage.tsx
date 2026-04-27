@@ -151,7 +151,7 @@ const PredictionsPage = () => {
       <div className="px-6 pt-12 pb-6">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h1 className="text-2xl font-bold">Prediction Portal</h1>
+          <h1 className="text-2xl font-bold">Guess & Win</h1>
         </div>
         <p className="text-sm text-muted-foreground">{predictions.length} predictions submitted ✨</p>
       </div>
