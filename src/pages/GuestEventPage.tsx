@@ -318,6 +318,11 @@ const GuestEventPage = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        <footer className="mt-8 pb-6 flex flex-col items-center gap-1 opacity-70">
+          <img src={bumpCityLogo} alt="Bump City" className="h-5" />
+          <p className="text-[10px] text-muted-foreground">Powered by Bump City</p>
+        </footer>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2 } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2, MessageSquare } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -25,6 +25,8 @@ interface Guest {
   plus_one: boolean;
   dietary_notes: string | null;
   email: string | null;
+  phone: string | null;
+  sms_opt_in: boolean | null;
   invite_sent: boolean | null;
 }
 
@@ -44,6 +46,7 @@ const GuestListPage = () => {
   const [search, setSearch] = useState("");
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [bulkSending, setBulkSending] = useState(false);
+  const [smsReminderSending, setSmsReminderSending] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
 
@@ -56,7 +59,7 @@ const GuestListPage = () => {
     if (!event) return;
     const { data } = await supabase
       .from("guests")
-      .select("id, name, status, plus_one, dietary_notes, email, invite_sent")
+      .select("id, name, status, plus_one, dietary_notes, email, phone, sms_opt_in, invite_sent")
       .eq("event_id", event.id)
       .order("created_at", { ascending: true });
     setGuests((data as Guest[]) || []);
@@ -149,6 +152,21 @@ const GuestListPage = () => {
       if (error) throw error;
 
       await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
+
+      // Optionally send SMS if guest opted in and has a phone
+      if (guest.phone && guest.sms_opt_in) {
+        try {
+          await supabase.functions.invoke("send-sms", {
+            body: {
+              to: guest.phone,
+              message: `You're invited to ${honoreeName}'s baby shower! RSVP here: ${rsvpUrl}`,
+            },
+          });
+        } catch (smsErr) {
+          console.warn("SMS send failed (non-blocking):", smsErr);
+        }
+      }
+
       addActivity("invite-sent", `Invite sent to ${guest.name}`);
       return true;
     } catch (err) {
@@ -231,6 +249,39 @@ const GuestListPage = () => {
     setSelectedIds(new Set());
   };
 
+  const sendSmsReminders = async () => {
+    if (!event) return;
+    const recipients = guests.filter(
+      (g) => g.status === "attending" && g.phone && g.sms_opt_in
+    );
+    if (recipients.length === 0) {
+      toast.error("No attending guests with SMS opt-in and a phone number.");
+      return;
+    }
+    const honoreeName = event.honoree_name || setupData.honoreeName || "the parents-to-be";
+    const eventDateStr = event.event_date
+      ? new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+      : "soon";
+    const message = `Reminder: ${honoreeName}'s baby shower is ${eventDateStr}. Can't wait to see you!`;
+    setSmsReminderSending(true);
+    let sent = 0;
+    let failed = 0;
+    for (const g of recipients) {
+      try {
+        const { error } = await supabase.functions.invoke("send-sms", {
+          body: { to: g.phone, message },
+        });
+        if (error) failed++;
+        else sent++;
+      } catch {
+        failed++;
+      }
+    }
+    setSmsReminderSending(false);
+    if (failed === 0) toast.success(`SMS reminder sent to ${sent} guest${sent !== 1 ? "s" : ""}!`);
+    else toast.error(`${sent} sent, ${failed} failed.`);
+  };
+
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
   const eligibleForBulk = filtered.filter((g) => g.email);
   const attending = guests.filter((g) => g.status === "attending").length;
@@ -302,19 +353,33 @@ const GuestListPage = () => {
         </div>
 
         {/* Bulk send toolbar */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant={bulkMode ? "secondary" : "outline"}
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => {
-              setBulkMode(!bulkMode);
-              if (bulkMode) setSelectedIds(new Set());
-            }}
-          >
-            <SendHorizonal className="h-3.5 w-3.5" />
-            {bulkMode ? "Cancel" : "Bulk Send"}
-          </Button>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={bulkMode ? "secondary" : "outline"}
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => {
+                setBulkMode(!bulkMode);
+                if (bulkMode) setSelectedIds(new Set());
+              }}
+            >
+              <SendHorizonal className="h-3.5 w-3.5" />
+              {bulkMode ? "Cancel" : "Bulk Send"}
+            </Button>
+            {!bulkMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={sendSmsReminders}
+                disabled={smsReminderSending}
+              >
+                {smsReminderSending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageSquare className="h-3.5 w-3.5" />}
+                SMS Reminder
+              </Button>
+            )}
+          </div>
 
           {bulkMode && (
             <div className="flex items-center gap-2">
