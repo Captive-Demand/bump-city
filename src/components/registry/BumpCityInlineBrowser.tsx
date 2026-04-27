@@ -18,7 +18,6 @@ const PRODUCTS_QUERY = `query Products($first: Int!, $query: String) {
         productType
         descriptionHtml
         availableForSale
-        totalInventory
         featuredImage { url altText }
         priceRange { minVariantPrice { amount currencyCode } }
         onlineStoreUrl
@@ -33,7 +32,7 @@ interface ShopifyProduct {
   title: string;
   productType: string;
   availableForSale?: boolean;
-  totalInventory?: number | null;
+  
   featuredImage?: { url: string; altText?: string };
   priceRange: { minVariantPrice: { amount: string; currencyCode: string } };
   onlineStoreUrl?: string;
