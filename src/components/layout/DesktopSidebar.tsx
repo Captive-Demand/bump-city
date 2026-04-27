@@ -9,7 +9,7 @@ const primaryTabs = [
   { icon: PartyPopper, label: "Showers", path: "/showers" },
   { icon: Gift, label: "Registry", path: "/registry" },
   { icon: Send, label: "Invites", path: "/invites" },
-  { icon: Sparkles, label: "Predict", path: "/predictions" },
+  { icon: Sparkles, label: "Guess & Win", path: "/predictions" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
