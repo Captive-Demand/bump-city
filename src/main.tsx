@@ -1,3 +1,4 @@
+import "@/lib/browserStorageGuard";
 import { createRoot } from "react-dom/client";
 import { AppErrorBoundary } from "@/components/AppErrorBoundary";
 import { recoverFromStaleAppCache } from "@/lib/cacheRecovery";
