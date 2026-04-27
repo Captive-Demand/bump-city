@@ -268,29 +268,26 @@ const ProfilePage = () => {
                   <Gift className="h-4 w-4 text-primary" />
                   <h2 className="font-bold text-sm">Gifting Preferences</h2>
                 </div>
-                <RadioGroup value={giftPref} onValueChange={(v) => { setGiftPref(v); saveGiftPrefs(v); }} className="space-y-2.5">
-                  {[
-                    { value: "bring-gift", label: "Bring a gift", icon: "🎁" },
-                    { value: "no-gifts", label: "No gifts please", icon: "🚫" },
-                    { value: "bring-book", label: "Bring a book instead", icon: "📚" },
-                  ].map((opt) => (
-                    <div key={opt.value} className="flex items-center gap-3">
-                      <RadioGroupItem value={opt.value} id={opt.value} />
-                      <Label htmlFor={opt.value} className="text-sm flex items-center gap-2 cursor-pointer">
-                        <span>{opt.icon}</span>{opt.label}
-                      </Label>
-                    </div>
+                {/* Active prefs as badges */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {Object.entries(giftPrefs).filter(([, v]) => v).map(([k]) => PREF_LABELS[k] && (
+                    <Badge key={k} variant="secondary" className="text-[10px] gap-1">
+                      <span>{PREF_LABELS[k].icon}</span>{PREF_LABELS[k].label}
+                    </Badge>
                   ))}
-                </RadioGroup>
-                <div className="mt-4 pt-3 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <PackageOpen className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Request clear wrapping</span>
-                    </div>
-                    <Switch checked={clearWrap} onCheckedChange={(v) => { setClearWrap(v); saveGiftPrefs(undefined, v); }} />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground mt-1 ml-6">So we can play the gift guessing game!</p>
+                  {Object.values(giftPrefs).every((v) => !v) && (
+                    <span className="text-[10px] text-muted-foreground italic">No preferences set</span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {Object.entries(PREF_LABELS).map(([key, meta]) => (
+                    <label key={key} className="flex items-center gap-3 cursor-pointer">
+                      <Checkbox checked={!!giftPrefs[key]} onCheckedChange={() => togglePref(key)} />
+                      <span className="text-sm flex items-center gap-2">
+                        <span>{meta.icon}</span>{meta.label}
+                      </span>
+                    </label>
+                  ))}
                 </div>
               </CardContent>
             </Card>
