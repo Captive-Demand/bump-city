@@ -454,7 +454,13 @@ const RegistryPage = () => {
         {sources.map((s) => (
           <button
             key={s.id}
-            onClick={() => setActiveSource(s.id)}
+            onClick={() => {
+              setActiveSource(s.id);
+              if (s.id === "shopify") {
+                setShopifyOpen(true);
+                requestAnimationFrame(() => bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+              }
+            }}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeSource === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             <s.icon className="h-3 w-3" />
