@@ -167,10 +167,12 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
         {!loading && !error && products.length > 0 && (() => {
           const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
           const safePage = Math.min(page, totalPages - 1);
-          const visible = products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+          const visible = expanded
+            ? products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+            : products.slice(0, PREVIEW_SIZE);
           return (
             <>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className={expanded ? "grid grid-cols-2 md:grid-cols-3 gap-3" : "grid grid-cols-3 gap-3"}>
                 {visible.map((p) => {
                   const isAdded = added.has(p.id);
                   const isAdding = adding === p.id;
