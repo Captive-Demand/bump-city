@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { ChevronLeft, Trash2 } from "lucide-react";
+import { ChevronLeft, Trash2, Send, Users, Gift } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import { ShowerHero } from "@/components/shower/ShowerHero";
