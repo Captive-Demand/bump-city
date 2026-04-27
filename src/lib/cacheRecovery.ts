@@ -23,6 +23,9 @@ export const unregisterServiceWorkers = async () => {
 
 export const recoverFromStaleAppCache = async (forceReload = false) => {
   try {
+    const isPreviewHost = window.location.hostname.endsWith("lovableproject.com");
+    if (isPreviewHost && !forceReload) return;
+
     const hadServiceWorker = await unregisterServiceWorkers();
     await clearAppCaches();
 
