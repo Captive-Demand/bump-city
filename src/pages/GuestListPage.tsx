@@ -280,6 +280,7 @@ const GuestListPage = () => {
     setSmsReminderSending(false);
     if (failed === 0) toast.success(`SMS reminder sent to ${sent} guest${sent !== 1 ? "s" : ""}!`);
     else toast.error(`${sent} sent, ${failed} failed.`);
+  };
 
   const filtered = guests.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()));
   const eligibleForBulk = filtered.filter((g) => g.email);
