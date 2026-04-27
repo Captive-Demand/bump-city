@@ -25,7 +25,7 @@ const AdminPage = () => {
   const [vendors, setVendors] = useState<any[]>([]);
   const [vendorOpen, setVendorOpen] = useState(false);
   const [editVendor, setEditVendor] = useState<any>(null);
-  const [vName, setVName] = useState(""); const [vCategory, setVCategory] = useState(""); const [vDesc, setVDesc] = useState(""); const [vCity, setVCity] = useState("Nashville"); const [vPhone, setVPhone] = useState(""); const [vWebsite, setVWebsite] = useState("");
+  const [vName, setVName] = useState(""); const [vCategory, setVCategory] = useState(""); const [vDesc, setVDesc] = useState(""); const [vCity, setVCity] = useState("Nashville"); const [vPhone, setVPhone] = useState(""); const [vWebsite, setVWebsite] = useState(""); const [vReferral, setVReferral] = useState(""); const [vDiscount, setVDiscount] = useState("");
 
   // Community Events
   const [communityEvents, setCommunityEvents] = useState<any[]>([]);
