@@ -80,6 +80,7 @@ const App = () => (
               </Suspense>
             </ActivityFeedProvider>
           </AppModeProvider>
+          </RoleProvider>
         </ActiveEventProvider>
       </AuthProvider>
     </BrowserRouter>
