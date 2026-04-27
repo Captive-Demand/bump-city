@@ -71,7 +71,7 @@ export const template = {
   },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: "'Nunito', Arial, sans-serif" }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Jost', Arial, sans-serif" }
 const container = { padding: '20px 25px', maxWidth: '600px', margin: '0 auto' }
 const greeting = { fontSize: '16px', color: '#3d2b2b', margin: '0 0 8px' }
 const introText = { fontSize: '16px', color: '#3d2b2b', lineHeight: '1.5', margin: '0 0 20px' }

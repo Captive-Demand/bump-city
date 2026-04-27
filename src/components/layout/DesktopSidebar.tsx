@@ -1,56 +1,34 @@
-import { Home, Gift, Users, Sparkles, User, Mail, ClipboardList, MapPin, CalendarDays, Package, Shield } from "lucide-react";
+import { Home, Gift, Send, Sparkles, User, Users, Mail, ClipboardList, MapPin, CalendarDays, Package, Shield } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useAppMode } from "@/contexts/AppModeContext";
 import { useEventRole } from "@/hooks/useEventRole";
 import appIcon from "@/assets/Bump-City-Icon.png";
 
-const fullTabs = [
+const primaryTabs = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Gift, label: "Registry", path: "/registry" },
+  { icon: Send, label: "Invites", path: "/invites" },
+  { icon: Sparkles, label: "Predict", path: "/predictions" },
+  { icon: User, label: "Profile", path: "/profile" },
+];
+
+const secondaryTabs = [
   { icon: Users, label: "Guests", path: "/guests" },
-  { icon: Sparkles, label: "Predictions", path: "/predictions" },
-  { icon: Mail, label: "Invites", path: "/invites" },
   { icon: Package, label: "Gifts", path: "/gift-tracker" },
   { icon: ClipboardList, label: "Planning", path: "/planning" },
   { icon: MapPin, label: "Vendors", path: "/vendors" },
   { icon: CalendarDays, label: "Community", path: "/community" },
-  { icon: User, label: "Profile", path: "/profile" },
-];
-
-const registryTabs = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Gift, label: "Registry", path: "/registry" },
-  { icon: Package, label: "Gifts", path: "/gift-tracker" },
-  { icon: User, label: "Profile", path: "/profile" },
-];
-
-const honoreeTabs = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Gift, label: "Registry", path: "/registry" },
-  { icon: Package, label: "Gifts", path: "/gift-tracker" },
-  { icon: Sparkles, label: "Predictions", path: "/predictions" },
-  { icon: User, label: "Profile", path: "/profile" },
 ];
 
 export const DesktopSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { mode, modeLoading } = useAppMode();
-  const { eventRole, isAdmin, loading: roleLoading } = useEventRole();
+  const { isAdmin, loading: roleLoading } = useEventRole();
 
-  if (modeLoading || roleLoading || mode === "choose") return null;
+  if (roleLoading) return null;
 
-  let tabs = mode === "registry" ? registryTabs : fullTabs;
-
-  if (eventRole === "honoree") {
-    tabs = honoreeTabs;
-  }
-
-  // Add admin tab for admins/super_admins
-  if (isAdmin) {
-    tabs = [...tabs, { icon: Shield, label: "Admin", path: "/admin" }];
-  }
+  let tabs = [...primaryTabs, ...secondaryTabs];
+  if (isAdmin) tabs = [...tabs, { icon: Shield, label: "Admin", path: "/admin" }];
 
   return (
     <aside className="w-20 min-h-screen bg-card border-r border-border flex flex-col items-center py-8 gap-2 shrink-0">

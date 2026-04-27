@@ -2,8 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Gift, Users, Sparkles, Heart, PartyPopper, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight, CalendarDays } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
+import { Calendar, Gift, Users, Sparkles, ClipboardList, Bell, Send, MapPin, Pencil, ChevronRight, Plus, ArrowLeftRight, CalendarDays, CheckCircle2, Circle } from "lucide-react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
@@ -239,39 +240,65 @@ const CommunityCard = () => {
   );
 };
 
-const ModeChooser = () => {
+// ModeChooser removed — shower-first architecture redirects to /get-started instead.
+
+const SetupProgress = () => {
   const navigate = useNavigate();
+  const { event } = useEvent();
+  const [counts, setCounts] = useState({ guests: 0, registry: 0, sent: 0 });
+
+  useEffect(() => {
+    if (!event) return;
+    (async () => {
+      const [g, r, s] = await Promise.all([
+        supabase.from("guests").select("id", { count: "exact", head: true }).eq("event_id", event.id),
+        supabase.from("registry_items").select("id", { count: "exact", head: true }).eq("event_id", event.id),
+        supabase.from("guests").select("id", { count: "exact", head: true }).eq("event_id", event.id).eq("invite_sent", true),
+      ]);
+      setCounts({ guests: g.count || 0, registry: r.count || 0, sent: s.count || 0 });
+    })();
+  }, [event]);
+
+  if (!event) return null;
+
+  const milestones = [
+    { label: "Event details added", done: true, path: "/profile" },
+    { label: "Invite designed", done: !!(event as any).invite_image_url, path: "/invites" },
+    { label: "First guests added", done: counts.guests > 0, path: "/guests" },
+    { label: "Registry started", done: counts.registry > 0, path: "/registry" },
+    { label: "First invites sent", done: counts.sent > 0, path: "/guests" },
+  ];
+  const completed = milestones.filter((m) => m.done).length;
+  const pct = Math.round((completed / milestones.length) * 100);
 
   return (
-    <MobileLayout>
-      <div className="px-6 pt-16 pb-6 flex flex-col items-center text-center">
-        <img src={bumpCityIcon} alt="Bump City" className="h-20 w-20 rounded-2xl mb-3" />
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to <span className="text-primary">Bump City</span>
-        </h1>
-        <p className="text-muted-foreground mt-2 text-sm max-w-xs">What would you like to do today?</p>
-      </div>
-      <div className="px-6 space-y-4 pb-10">
-        <Card className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all" onClick={() => navigate("/setup/shower")}>
-          <CardContent className="p-5 flex items-start gap-4">
-            <div className="bg-lavender p-3 rounded-2xl shrink-0"><PartyPopper className="h-7 w-7 text-foreground/70" /></div>
-            <div>
-              <h2 className="font-bold text-base">I'm planning a baby shower</h2>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Manage invites, registry, games, vendors & everything in one place.</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer border-2 border-transparent hover:border-primary/40 transition-all" onClick={() => navigate("/setup/registry")}>
-          <CardContent className="p-5 flex items-start gap-4">
-            <div className="bg-peach p-3 rounded-2xl shrink-0"><ClipboardList className="h-7 w-7 text-foreground/70" /></div>
-            <div>
-              <h2 className="font-bold text-base">I'm building a registry</h2>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">Create & share your gift registry — no shower planning needed.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </MobileLayout>
+    <Card className="border-none">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-bold">Setup Progress</h2>
+          <span className="text-xs font-semibold text-primary">{pct}%</span>
+        </div>
+        <Progress value={pct} className="h-2 mb-3" />
+        <div className="space-y-1.5">
+          {milestones.map((m) => (
+            <button
+              key={m.label}
+              onClick={() => navigate(m.path)}
+              className="flex items-center gap-2 w-full text-left hover:bg-muted/50 rounded-lg px-1.5 py-1 transition-colors"
+            >
+              {m.done ? (
+                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+              ) : (
+                <Circle className="h-4 w-4 text-muted-foreground shrink-0" />
+              )}
+              <span className={`text-xs ${m.done ? "text-muted-foreground line-through" : "text-foreground font-medium"}`}>
+                {m.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -339,6 +366,7 @@ const ShowerDashboard = () => {
       </div>
 
       <div className="px-6 pb-8 space-y-6">
+        <SetupProgress />
         <QuickActions />
         <NextTasks />
         <CommunityCard />
@@ -369,7 +397,7 @@ const HomePage = () => {
     );
   }
 
-  if (mode === "choose") return <ModeChooser />;
+  if (mode === "choose") return <Navigate to="/get-started?new=true" replace />;
   return <ShowerDashboard />;
 };
 

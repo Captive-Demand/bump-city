@@ -20,10 +20,13 @@ interface GiftReceived {
   created_at: string;
 }
 
+interface ClaimedItem { name: string; price: number | null; claimed_by: string | null; }
+
 const GiftTrackerPage = () => {
   const { user } = useAuth();
   const { event } = useEvent();
   const [gifts, setGifts] = useState<GiftReceived[]>([]);
+  const [claimed, setClaimed] = useState<ClaimedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
@@ -33,8 +36,12 @@ const GiftTrackerPage = () => {
 
   const fetchGifts = async () => {
     if (!event) return;
-    const { data } = await supabase.from("gifts_received").select("*").eq("event_id", event.id).order("created_at", { ascending: false });
-    setGifts((data as GiftReceived[]) || []);
+    const [{ data: g }, { data: c }] = await Promise.all([
+      supabase.from("gifts_received").select("*").eq("event_id", event.id).order("created_at", { ascending: false }),
+      supabase.from("registry_items").select("name, price, claimed_by").eq("event_id", event.id).eq("claimed", true),
+    ]);
+    setGifts((g as GiftReceived[]) || []);
+    setClaimed((c as ClaimedItem[]) || []);
     setLoading(false);
   };
 
@@ -60,6 +67,9 @@ const GiftTrackerPage = () => {
   });
 
   const pendingCount = gifts.filter((g) => !g.thank_you_sent).length;
+  const sentCount = gifts.filter((g) => g.thank_you_sent).length;
+  const totalValue = claimed.reduce((sum, c) => sum + (Number(c.price) || 0), 0);
+
 
   if (loading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
 
@@ -81,6 +91,21 @@ const GiftTrackerPage = () => {
           </Dialog>
         </div>
         <p className="text-sm text-muted-foreground">{gifts.length} gifts · {pendingCount} thank-you notes pending</p>
+      </div>
+
+      {/* Stats row */}
+      <div className="px-6 grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+        {[
+          { label: "Items Claimed", value: claimed.length, bg: "bg-primary/10" },
+          { label: "Est. Value", value: `$${totalValue.toFixed(0)}`, bg: "bg-mint/40" },
+          { label: "Thanks Pending", value: pendingCount, bg: "bg-warm/50" },
+          { label: "Thanks Sent", value: sentCount, bg: "bg-lavender/50" },
+        ].map((s) => (
+          <div key={s.label} className={`${s.bg} rounded-2xl p-3 text-center`}>
+            <p className="text-lg font-bold">{s.value}</p>
+            <p className="text-[10px] text-muted-foreground font-medium">{s.label}</p>
+          </div>
+        ))}
       </div>
 
       <div className="px-6 flex gap-2 mb-4">

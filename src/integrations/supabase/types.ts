@@ -239,6 +239,7 @@ export type Database = {
           event_type: string
           gift_note: string | null
           gift_policy: string | null
+          gift_preferences: Json | null
           honoree_name: string | null
           id: string
           invite_image_url: string | null
@@ -263,6 +264,7 @@ export type Database = {
           event_type?: string
           gift_note?: string | null
           gift_policy?: string | null
+          gift_preferences?: Json | null
           honoree_name?: string | null
           id?: string
           invite_image_url?: string | null
@@ -287,6 +289,7 @@ export type Database = {
           event_type?: string
           gift_note?: string | null
           gift_policy?: string | null
+          gift_preferences?: Json | null
           honoree_name?: string | null
           id?: string
           invite_image_url?: string | null
@@ -529,9 +532,11 @@ export type Database = {
           city: string | null
           created_at: string
           display_name: string | null
+          email_notifications: boolean
           id: string
           push_notifications: boolean
           role: string | null
+          sms_opt_in: boolean
           updated_at: string
         }
         Insert: {
@@ -539,9 +544,11 @@ export type Database = {
           city?: string | null
           created_at?: string
           display_name?: string | null
+          email_notifications?: boolean
           id: string
           push_notifications?: boolean
           role?: string | null
+          sms_opt_in?: boolean
           updated_at?: string
         }
         Update: {
@@ -549,9 +556,11 @@ export type Database = {
           city?: string | null
           created_at?: string
           display_name?: string | null
+          email_notifications?: boolean
           id?: string
           push_notifications?: boolean
           role?: string | null
+          sms_opt_in?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -663,10 +672,12 @@ export type Database = {
           city: string | null
           created_at: string
           description: string | null
+          discount_code: string | null
           id: string
           image_url: string | null
           name: string
           phone: string | null
+          referral_code: string | null
           website: string | null
         }
         Insert: {
@@ -674,10 +685,12 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
+          discount_code?: string | null
           id?: string
           image_url?: string | null
           name: string
           phone?: string | null
+          referral_code?: string | null
           website?: string | null
         }
         Update: {
@@ -685,10 +698,12 @@ export type Database = {
           city?: string | null
           created_at?: string
           description?: string | null
+          discount_code?: string | null
           id?: string
           image_url?: string | null
           name?: string
           phone?: string | null
+          referral_code?: string | null
           website?: string | null
         }
         Relationships: []

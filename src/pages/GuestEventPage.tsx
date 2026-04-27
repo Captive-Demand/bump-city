@@ -69,11 +69,26 @@ const GuestEventPage = () => {
   const claimItem = async (itemId: string) => {
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "A guest";
+    const item = registryItems.find((i) => i.id === itemId);
     const { error } = await supabase
       .from("registry_items")
       .update({ claimed: true, claimed_by: displayName })
       .eq("id", itemId);
     if (error) { toast.error("Failed to claim item"); return; }
+    // Auto-log into gifts_received for the host's gift tracker (best-effort)
+    if (item && event) {
+      try {
+        const { data: ev } = await supabase.from("events").select("user_id").eq("id", event.id).maybeSingle();
+        if (ev?.user_id) {
+          await supabase.from("gifts_received").insert({
+            event_id: event.id,
+            user_id: ev.user_id,
+            donor_name: displayName,
+            item_description: item.name,
+          });
+        }
+      } catch { /* non-blocking */ }
+    }
     toast.success("Item claimed! 🎁");
     setRegistryItems((prev) => prev.map((i) => i.id === itemId ? { ...i, claimed: true, claimed_by: displayName } : i));
   };

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+
 
 @tailwind base;
 @tailwind components;
@@ -103,10 +103,10 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Jost', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Jost', system-ui, sans-serif;
   }
 }
