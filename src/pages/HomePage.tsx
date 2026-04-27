@@ -362,6 +362,8 @@ const ShowerDashboard = () => {
       </div>
 
       <div className="px-6 pb-8 space-y-6">
+        <ShowerBlocksGrid />
+        <SetupProgress />
         <HowItWorks
           storageKey="bump_city_how_it_works_home_dismissed"
           steps={[
@@ -370,9 +372,7 @@ const ShowerDashboard = () => {
             { number: 3, icon: Gift, title: "Track RSVPs & gifts", description: "Stay on top of replies and thank-yous." },
           ]}
         />
-        <SetupProgress />
         <QuickActions />
-        <ShowerBlocksGrid />
         <NextTasks />
         <CommunityCard />
       </div>
