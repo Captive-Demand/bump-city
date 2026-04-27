@@ -9,6 +9,7 @@ import { Sparkles, Trophy, Send, PartyPopper } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useEventRole } from "@/hooks/useEventRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { toast } from "sonner";
@@ -33,6 +34,8 @@ interface Prediction {
 const PredictionsPage = () => {
   const { user } = useAuth();
   const { event } = useEvent();
+  const { isHost, isAdmin } = useEventRole();
+  const canHost = isHost || isAdmin;
   const { addActivity } = useActivityFeed();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -329,12 +332,12 @@ const PredictionsPage = () => {
                   </Card>
                 ))}
               </div>
-            ) : (
+            ) : canHost ? (
               <Card className="border-none">
                 <CardContent className="p-4 space-y-4">
                   <div>
-                    <h3 className="font-bold text-sm mb-1">Enter Actual Results</h3>
-                    <p className="text-xs text-muted-foreground">Fill in the real details and reveal the winner!</p>
+                    <h3 className="font-bold text-sm mb-1">Host Controls — Enter Actual Results</h3>
+                    <p className="text-xs text-muted-foreground">Fill in the real details and reveal the winners!</p>
                   </div>
                   <div className="space-y-1.5">
                     <Label>Actual birth date</Label>
@@ -372,6 +375,14 @@ const PredictionsPage = () => {
                     <PartyPopper className="h-4 w-4" /> {revealing ? "Calculating..." : "Reveal Winners! 🎉"}
                   </Button>
                   {predictions.length === 0 && <p className="text-xs text-muted-foreground text-center">No predictions to judge yet.</p>}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-none">
+                <CardContent className="p-6 text-center space-y-2">
+                  <Sparkles className="h-8 w-8 text-primary mx-auto" />
+                  <h3 className="font-bold text-sm">Results Coming Soon</h3>
+                  <p className="text-xs text-muted-foreground">The host will reveal the winners once the baby arrives!</p>
                 </CardContent>
               </Card>
             )}

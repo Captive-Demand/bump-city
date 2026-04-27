@@ -29,6 +29,7 @@ import GuestEventPage from "./pages/GuestEventPage";
 import GetStartedPage from "./pages/GetStartedPage";
 import UnsubscribePage from "./pages/UnsubscribePage";
 import NotFound from "./pages/NotFound";
+import { HostOnly } from "./components/auth/HostOnly";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -58,11 +59,11 @@ const App = () => (
                 <Route path="/showers/:eventId" element={<ProtectedRoute><ShowerDetailPage /></ProtectedRoute>} />
                 <Route path="/setup/registry" element={<Navigate to="/setup/shower" replace />} />
                 <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
-                <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
+                <Route path="/guests" element={<ProtectedRoute><HostOnly><GuestListPage /></HostOnly></ProtectedRoute>} />
                 <Route path="/predictions" element={<ProtectedRoute><PredictionsPage /></ProtectedRoute>} />
-                <Route path="/invites" element={<ProtectedRoute><InviteBuilderPage /></ProtectedRoute>} />
-                <Route path="/gift-tracker" element={<ProtectedRoute><GiftTrackerPage /></ProtectedRoute>} />
-                <Route path="/planning" element={<ProtectedRoute><PlanningPage /></ProtectedRoute>} />
+                <Route path="/invites" element={<ProtectedRoute><HostOnly><InviteBuilderPage /></HostOnly></ProtectedRoute>} />
+                <Route path="/gift-tracker" element={<ProtectedRoute><HostOnly><GiftTrackerPage /></HostOnly></ProtectedRoute>} />
+                <Route path="/planning" element={<ProtectedRoute><HostOnly><PlanningPage /></HostOnly></ProtectedRoute>} />
                 <Route path="/vendors" element={<ProtectedRoute><VendorDirectoryPage /></ProtectedRoute>} />
                 <Route path="/community" element={<ProtectedRoute><CommunityEventsPage /></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
