@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link as LinkIcon } from "lucide-react";
-import ShopifyBrowser from "@/components/registry/ShopifyBrowser";
+import BumpCityInlineBrowser from "@/components/registry/BumpCityInlineBrowser";
 
 const categories = ["All", "Essentials", "Nursery", "Clothing", "Toys", "Feeding", "Services"];
 const sources = [
@@ -67,6 +67,7 @@ const RegistryPage = () => {
   const [loading, setLoading] = useState(true);
   const [blurb, setBlurb] = useState<string>(DEFAULT_BLURB);
   const [shopifyOpen, setShopifyOpen] = useState(false);
+  const bumpCityRef = useRef<HTMLDivElement | null>(null);
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
@@ -302,6 +303,10 @@ const RegistryPage = () => {
 
   const handleShopifyClick = () => {
     setShopifyOpen(true);
+    setActiveSource("shopify");
+    requestAnimationFrame(() => {
+      bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   return (
@@ -449,7 +454,13 @@ const RegistryPage = () => {
         {sources.map((s) => (
           <button
             key={s.id}
-            onClick={() => setActiveSource(s.id)}
+            onClick={() => {
+              setActiveSource(s.id);
+              if (s.id === "shopify") {
+                setShopifyOpen(true);
+                requestAnimationFrame(() => bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+              }
+            }}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeSource === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             <s.icon className="h-3 w-3" />
@@ -577,22 +588,16 @@ const RegistryPage = () => {
         </div>
       )}
 
-      {/* Shopify Browser Sheet */}
-      <Sheet open={shopifyOpen} onOpenChange={setShopifyOpen}>
-        <SheetContent side="bottom" className="h-[92vh] overflow-y-auto rounded-t-3xl">
-          <SheetHeader className="text-left">
-            <SheetTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5 text-primary" /> Bump City Boutique
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 pb-8">
-            {event && user && (
-              <ShopifyBrowser eventId={event.id} userId={user.id} onAdded={fetchItems} />
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-
+      {/* Inline Bump City Browser */}
+      {(shopifyOpen || activeSource === "shopify") && event && user && (
+        <BumpCityInlineBrowser
+          ref={bumpCityRef}
+          eventId={event.id}
+          userId={user.id}
+          categories={categories}
+          onAdded={fetchItems}
+        />
+      )}
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
