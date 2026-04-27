@@ -127,6 +127,17 @@ const GetStartedPage = () => {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
 
+          {isNew && user && (
+            <Button
+              variant="ghost"
+              className="w-full h-11 rounded-xl text-sm text-muted-foreground"
+              onClick={handleSkip}
+              disabled={skipping}
+            >
+              {skipping ? "Skipping..." : "Skip for now — I'll set this up later"}
+            </Button>
+          )}
+
           <p className="text-center text-xs text-muted-foreground pt-2">
             Already have an account?{" "}
             <button
