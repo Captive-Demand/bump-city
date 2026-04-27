@@ -693,16 +693,6 @@ const RegistryPage = () => {
         </div>
       )}
 
-      {/* Inline Bump City Browser */}
-      {(shopifyOpen || activeSource === "shopify") && event && user && (
-        <BumpCityInlineBrowser
-          ref={bumpCityRef}
-          eventId={event.id}
-          userId={user.id}
-          categories={categories}
-          onAdded={fetchItems}
-        />
-      )}
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
