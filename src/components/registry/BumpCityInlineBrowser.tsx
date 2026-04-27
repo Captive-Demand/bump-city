@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Loader2, Plus, ShoppingBag, Check, Store } from "lucide-react";
+import { Search, Loader2, Plus, ShoppingBag, Check, Store, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 const PRODUCTS_QUERY = `query Products($first: Int!, $query: String) {
