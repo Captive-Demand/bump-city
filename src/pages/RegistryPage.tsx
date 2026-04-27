@@ -297,18 +297,19 @@ const RegistryPage = () => {
     );
   }
 
-  const hero = [
-    { icon: Store, title: "Bump City Boutique", desc: "Curated from our local store", className: "bg-primary/10 text-primary" },
-    { icon: Heart, title: "Local Services", desc: "Night nurses, doulas, massage", className: "bg-mint text-mint-foreground" },
-    { icon: Globe, title: "Anywhere on the Web", desc: "Paste any product URL", className: "bg-lavender text-lavender-foreground" },
-  ];
+  const shopifyAddedCount = items.filter((i) => (i.source || "").toLowerCase() === "shopify").length;
 
-  const handleShopifyClick = () => {
-    setShopifyOpen(true);
-    setActiveSource("shopify");
+  const expandStep = (step: "local" | "web") => {
+    setExpandedStep(step);
+    if (step === "local" && newCategory === "Essentials") setNewCategory("Services");
     requestAnimationFrame(() => {
-      bumpCityRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const target = step === "local" ? step2Ref.current : step3Ref.current;
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+  };
+
+  const scrollToRegistry = () => {
+    yourRegistryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
