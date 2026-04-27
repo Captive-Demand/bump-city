@@ -8,6 +8,7 @@ import { AppModeProvider } from "@/contexts/AppModeContext";
 import { ActiveEventProvider } from "@/contexts/ActiveEventContext";
 import { ActivityFeedProvider } from "@/contexts/ActivityFeedContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { RoleProvider } from "@/contexts/RoleContext";
 import { HostOnly } from "./components/auth/HostOnly";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -48,9 +49,10 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <ActiveEventProvider>
-          <AppModeProvider>
-            <ActivityFeedProvider>
-              <Suspense fallback={<LoadingScreen />}>
+          <RoleProvider>
+            <AppModeProvider>
+              <ActivityFeedProvider>
+                <Suspense fallback={<LoadingScreen />}>
                 <Routes>
                   <Route path="/get-started" element={<GetStartedPage />} />
                   <Route path="/auth" element={<AuthPage />} />
