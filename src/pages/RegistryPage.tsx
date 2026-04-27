@@ -582,22 +582,16 @@ const RegistryPage = () => {
         </div>
       )}
 
-      {/* Shopify Browser Sheet */}
-      <Sheet open={shopifyOpen} onOpenChange={setShopifyOpen}>
-        <SheetContent side="bottom" className="h-[92vh] overflow-y-auto rounded-t-3xl">
-          <SheetHeader className="text-left">
-            <SheetTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5 text-primary" /> Bump City Boutique
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 pb-8">
-            {event && user && (
-              <ShopifyBrowser eventId={event.id} userId={user.id} onAdded={fetchItems} />
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-
+      {/* Inline Bump City Browser */}
+      {(shopifyOpen || activeSource === "shopify") && event && user && (
+        <BumpCityInlineBrowser
+          ref={bumpCityRef}
+          eventId={event.id}
+          userId={user.id}
+          categories={categories}
+          onAdded={fetchItems}
+        />
+      )}
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
