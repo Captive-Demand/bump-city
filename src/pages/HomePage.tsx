@@ -366,6 +366,7 @@ const ShowerDashboard = () => {
       </div>
 
       <div className="px-6 pb-8 space-y-6">
+        <SetupProgress />
         <QuickActions />
         <NextTasks />
         <CommunityCard />
@@ -396,7 +397,7 @@ const HomePage = () => {
     );
   }
 
-  if (mode === "choose") return <ModeChooser />;
+  if (mode === "choose") return <Navigate to="/get-started?new=true" replace />;
   return <ShowerDashboard />;
 };
 
