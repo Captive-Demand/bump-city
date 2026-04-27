@@ -24,9 +24,7 @@ const tabsConfig: Tab[] = [
 export const DesktopSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isHost, isAdmin, loading: roleLoading } = useEventRole();
-
-  if (roleLoading) return null;
+  const { isHost, isAdmin } = useEventRole();
 
   const canHost = isHost || isAdmin;
   let tabs = tabsConfig.filter((t) => !t.hostOnly || canHost);

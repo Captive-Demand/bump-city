@@ -1,34 +1,50 @@
-I found a concrete failure pattern: the page HTML loads, then the browser tries to load the app modules, but some Vite module requests are aborting/404ing after navigation. Because this happens while the JavaScript app is booting, React never gets far enough to show the existing error boundary, so customers only see a blank white page.
+I found two likely causes of the slow/flashy load:
 
-Plan to fix it for good:
+1. The route-level lazy loading currently replaces the whole page while a new page module loads. Since each page owns its own `MobileLayout`, the desktop sidebar can disappear during route changes.
+2. The sidebar and bottom nav call role-loading logic directly and return `null` while roles are being fetched, so navigation temporarily vanishes even after the app shell has mounted.
 
-1. Add a no-JavaScript/boot fallback in `index.html`
-   - Put a branded Bump City loading/recovery screen inside `#root` before React starts.
-   - This means if the app bundle is slow, aborted, stale, or fails before React mounts, users will see a calm branded message instead of a blank white screen.
+Performance data from the preview also shows a dev-preview overhead: about 93 resources, FCP around 3.6s, full load around 4.6s, and slow module requests for `RegistryPage.tsx`, `ActiveEventContext.tsx`, Vite refresh scripts, and shared libraries. Published builds should be faster than preview, but we can still fix the app-level flashing and extra calls.
 
-2. Harden app startup in `src/main.tsx`
-   - Check that the `#root` element exists before mounting.
-   - Wrap the initial import/render path with safer startup handling so boot failures surface as the branded recovery UI rather than an empty page.
-   - Keep the storage guard first, but make cache recovery non-blocking so it cannot interrupt initial rendering.
+## Plan
 
-3. Fix the preview/navigation module race
-   - The white screen reproduced with failed requests for `src/App.tsx` and Vite’s `env.mjs` after navigating directly to `/setup/shower`.
-   - I’ll remove anything in our app that can trigger unnecessary reload/cache cleanup during startup in the dev preview path, and make cache cleanup only run when it is actually useful for published/stale-cache recovery.
+1. Keep the app shell visible during page transitions
+   - Add a lightweight route fallback that renders the normal `MobileLayout` structure without a branded loading screen or spinner.
+   - Use this fallback for lazy route loading so the sidebar/bottom nav do not disappear while page chunks load.
+   - Keep the emergency boot recovery screen only for true app boot failure, not normal navigation.
 
-4. Remove the PWA manifest failure from preview
-   - The console repeatedly shows `/manifest.json` returning 401 in the authenticated preview environment.
-   - I’ll gate or make the manifest registration safe so this does not spam errors or contribute to fragile startup behavior in preview, while preserving the published app’s PWA support.
+2. Stop sidebar/nav from disappearing during role checks
+   - Update `DesktopSidebar` and `BottomNav` so they do not return `null` while role data loads.
+   - Show the stable baseline nav immediately, then reveal host/admin-only items once role data is ready.
+   - This prevents the visible sidebar reload/flicker.
 
-5. Add a stronger user-facing recovery path
-   - If a true render crash happens, show the existing branded error boundary with a “Reload app” button.
-   - If the app never mounts, the HTML fallback will still be visible.
+3. Centralize and cache role loading
+   - Replace repeated `useEventRole()` fetches with a shared role context/cache so the app does not refetch roles separately for the sidebar, bottom nav, host-only guards, and pages.
+   - Ensure role checks update when the active event changes.
 
-6. Verify after implementation
-   - Build the project.
-   - Test direct navigation to `/setup/shower` and `/` in the preview.
-   - Confirm the page no longer goes blank even if module/cache failures happen; at worst users see the branded recovery message, not a white screen.
+4. Reduce registry route load weight
+   - Lazy-load heavy registry subcomponents like the inline browser/dialog content only when needed.
+   - Keep the main registry page interactive sooner.
 
-Technical details:
-- Current `AppErrorBoundary` only catches React render errors after JavaScript has successfully loaded. It cannot catch failed module requests or startup crashes.
-- The screenshot shows the exact pre-React failure mode: white background, no app UI, no error boundary.
-- Browser network logs show failed module requests after navigating to `/setup/shower`, which explains why this keeps bypassing previous React-level fixes.
+5. Reduce duplicate startup queries
+   - Tighten active-event loading to avoid unnecessary sequential waits where safe.
+   - Avoid repeated count/role fetches triggered by multiple mounted components where possible.
+
+6. Replace full-page spinners with stable content placeholders
+   - For pages currently showing centered spinners, use quiet skeleton/empty placeholders inside the existing layout instead.
+   - This makes loading feel faster and avoids the “everything disappeared and came back” effect.
+
+7. Verify
+   - Run a production build.
+   - Test direct navigation to `/registry` and route switching between Home, Registry, Predictions, and Profile.
+   - Confirm the sidebar stays visible during navigation and no “Bump City is loading” screen appears during normal use.
+
+## Technical notes
+
+- Main files likely involved: `src/App.tsx`, `src/components/layout/MobileLayout.tsx`, `src/components/layout/DesktopSidebar.tsx`, `src/components/layout/BottomNav.tsx`, `src/hooks/useEventRole.ts`, and `src/pages/RegistryPage.tsx`.
+- This is primarily a frontend shell/loading architecture fix; no database migration should be needed.
+- The preview environment itself is slower because Vite serves many development modules individually, but these changes will reduce app-level flicker and make both preview and published app feel faster.
+
+<lov-actions>
+<lov-open-history>View History</lov-open-history>
+<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
+</lov-actions>

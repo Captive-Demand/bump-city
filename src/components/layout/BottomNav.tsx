@@ -29,11 +29,10 @@ const HIDDEN_PATHS = ["/auth", "/get-started", "/setup/shower", "/setup/registry
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isHost, isAdmin, loading } = useEventRole();
+  const { isHost, isAdmin } = useEventRole();
   const [moreOpen, setMoreOpen] = useState(false);
 
   if (HIDDEN_PATHS.some((p) => location.pathname.startsWith(p))) return null;
-  if (loading) return null;
 
   const canHost = isHost || isAdmin;
   const filterByRole = (items: NavItem[]) => items.filter((t) => !t.hostOnly || canHost);

@@ -3,13 +3,10 @@ import { useEventRole } from "@/hooks/useEventRole";
 
 export const HostOnly = ({ children }: { children: React.ReactNode }) => {
   const { isHost, isAdmin, loading } = useEventRole();
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
-  }
+  // While roles load, render children optimistically — page-level guards (and
+  // sidebar visibility) handle the unauthorized case. This avoids a full-screen
+  // spinner that flashes on every navigation.
+  if (loading) return <>{children}</>;
   if (!isHost && !isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
