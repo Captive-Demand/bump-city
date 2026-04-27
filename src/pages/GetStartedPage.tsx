@@ -6,6 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Heart, Users, ArrowRight } from "lucide-react";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
+import { toast } from "sonner";
 
 type UserRole = "expectant-parent" | "planner";
 
@@ -14,6 +18,9 @@ const GetStartedPage = () => {
   const [searchParams] = useSearchParams();
   const isNew = searchParams.get("new") === "true";
   const [role, setRole] = useState<UserRole | null>(null);
+  const { user } = useAuth();
+  const { refetch } = useActiveEvent();
+  const [skipping, setSkipping] = useState(false);
 
   const handleContinue = () => {
     if (!role) return;
@@ -24,6 +31,34 @@ const GetStartedPage = () => {
     } else {
       const params = new URLSearchParams({ redirect, eventType: "shower", role });
       navigate(`/auth?${params.toString()}`);
+    }
+  };
+
+  const handleSkip = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setSkipping(true);
+    try {
+      const { data: existing } = await supabase
+        .from("events")
+        .select("id")
+        .eq("user_id", user.id)
+        .limit(1);
+      if (!existing || existing.length === 0) {
+        const { error } = await supabase.from("events").insert({
+          user_id: user.id,
+          event_type: "shower",
+          honoree_name: "My Shower",
+        });
+        if (error) throw error;
+      }
+      await refetch();
+      navigate("/", { replace: true });
+    } catch (e: any) {
+      toast.error(e?.message || "Couldn't skip onboarding");
+      setSkipping(false);
     }
   };
 
