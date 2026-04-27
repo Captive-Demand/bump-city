@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventData } from "@/contexts/ActiveEventContext";
+import { getShowerImage } from "@/lib/showerPlaceholders";
 
 export const ShowerHero = ({ event }: { event: EventData }) => {
   const navigate = useNavigate();
@@ -19,13 +20,7 @@ export const ShowerHero = ({ event }: { event: EventData }) => {
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
         <div className="relative">
-          {event.event_image_url ? (
-            <img src={event.event_image_url} alt="" className="w-full h-44 object-cover" />
-          ) : (
-            <div className="bg-gradient-to-br from-primary/30 via-primary/15 to-peach/20 h-44 flex items-center justify-center">
-              <span className="text-5xl">🎉</span>
-            </div>
-          )}
+          <img src={getShowerImage(event)} alt="" className="w-full h-44 object-cover" />
           {days !== null && days >= 0 && (
             <Badge className="bg-mint text-mint-foreground text-[10px] font-bold absolute top-3 left-3">
               ⏰ {days === 0 ? "TODAY" : `${days} DAYS TO GO`}
