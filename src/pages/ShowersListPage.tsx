@@ -24,9 +24,9 @@ const ShowersListPage = () => {
           title="Managing showers"
           storageKey="bump_city_how_it_works_showers_dismissed"
           steps={[
-            { number: 1, emoji: "🎀", title: "Pick a shower", description: "Tap a card to open its dashboard." },
-            { number: 2, emoji: "⚙️", title: "Adjust settings", description: "Toggle surprise mode, gift policy, and more." },
-            { number: 3, emoji: "💌", title: "Send invitations", description: "Design an invite and share it with guests." },
+            { number: 1, icon: MousePointerClick, title: "Pick a shower", description: "Tap a card to open its dashboard." },
+            { number: 2, icon: Settings, title: "Adjust settings", description: "Toggle surprise mode, gift policy, and more." },
+            { number: 3, icon: Send, title: "Send invitations", description: "Design an invite and share it with guests." },
           ]}
         />
         <ShowerBlocksGrid title="All Showers" />
