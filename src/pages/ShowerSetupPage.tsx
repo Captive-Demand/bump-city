@@ -135,7 +135,7 @@ const ShowerSetupPage = () => {
           <Baby className="h-5 w-5 text-primary" />
           <span className="text-sm font-semibold text-primary">Shower Setup</span>
         </div>
-        <StepDots current={step} total={TOTAL_STEPS} />
+        <StepProgress current={step} total={TOTAL_STEPS} />
 
         <div className="flex-1">
           {step === 0 && (
