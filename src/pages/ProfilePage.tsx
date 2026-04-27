@@ -58,7 +58,7 @@ const ProfilePage = () => {
 
   const updateNotif = async (field: "email_notifications" | "sms_opt_in" | "push_notifications", value: boolean) => {
     if (!user) return;
-    await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+    await supabase.from("profiles").update({ [field]: value } as any).eq("id", user.id);
   };
 
   // Editable fields
