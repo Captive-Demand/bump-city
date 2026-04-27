@@ -132,9 +132,18 @@ const ShowerSetupPage = () => {
   return (
     <MobileLayout hideNav>
       <div className="px-6 pt-10 pb-8 min-h-screen flex flex-col max-w-[500px] mx-auto w-full">
-        <div className="flex items-center gap-2 mb-2">
-          <Baby className="h-5 w-5 text-primary" />
-          <span className="text-sm font-semibold text-primary">Shower Setup</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Baby className="h-5 w-5 text-primary" />
+            <span className="text-sm font-semibold text-primary">Shower Setup</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/", { replace: true })}
+            className="text-xs font-medium text-muted-foreground hover:text-foreground underline"
+          >
+            Skip for now
+          </button>
         </div>
         <StepProgress current={step} total={TOTAL_STEPS} />
 
