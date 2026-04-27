@@ -65,7 +65,9 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
     const [added, setAdded] = useState<Set<string>>(new Set());
     const [overrides, setOverrides] = useState<Record<string, string>>({});
     const [page, setPage] = useState(0);
+    const [expanded, setExpanded] = useState(false);
     const PAGE_SIZE = 9;
+    const PREVIEW_SIZE = 3;
 
     const cats = categories.filter((c) => c !== "All");
 
