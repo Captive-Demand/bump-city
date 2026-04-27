@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2 } from "lucide-react";
+import { Users, Plus, Search, Mail, Send, Loader2, CheckSquare, Square, SendHorizonal, Trash2, MessageSquare } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
@@ -46,6 +46,7 @@ const GuestListPage = () => {
   const [search, setSearch] = useState("");
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [bulkSending, setBulkSending] = useState(false);
+  const [smsReminderSending, setSmsReminderSending] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
 
@@ -319,19 +320,33 @@ const GuestListPage = () => {
         </div>
 
         {/* Bulk send toolbar */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant={bulkMode ? "secondary" : "outline"}
-            size="sm"
-            className="h-8 gap-1.5 text-xs"
-            onClick={() => {
-              setBulkMode(!bulkMode);
-              if (bulkMode) setSelectedIds(new Set());
-            }}
-          >
-            <SendHorizonal className="h-3.5 w-3.5" />
-            {bulkMode ? "Cancel" : "Bulk Send"}
-          </Button>
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Button
+              variant={bulkMode ? "secondary" : "outline"}
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => {
+                setBulkMode(!bulkMode);
+                if (bulkMode) setSelectedIds(new Set());
+              }}
+            >
+              <SendHorizonal className="h-3.5 w-3.5" />
+              {bulkMode ? "Cancel" : "Bulk Send"}
+            </Button>
+            {!bulkMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5 text-xs"
+                onClick={sendSmsReminders}
+                disabled={smsReminderSending}
+              >
+                {smsReminderSending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <MessageSquare className="h-3.5 w-3.5" />}
+                SMS Reminder
+              </Button>
+            )}
+          </div>
 
           {bulkMode && (
             <div className="flex items-center gap-2">
