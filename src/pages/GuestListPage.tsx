@@ -151,6 +151,21 @@ const GuestListPage = () => {
       if (error) throw error;
 
       await supabase.from("guests").update({ invite_sent: true, invite_sent_at: new Date().toISOString() }).eq("id", guest.id);
+
+      // Optionally send SMS if guest opted in and has a phone
+      if (guest.phone && guest.sms_opt_in) {
+        try {
+          await supabase.functions.invoke("send-sms", {
+            body: {
+              to: guest.phone,
+              message: `You're invited to ${honoreeName}'s baby shower! RSVP here: ${rsvpUrl}`,
+            },
+          });
+        } catch (smsErr) {
+          console.warn("SMS send failed (non-blocking):", smsErr);
+        }
+      }
+
       addActivity("invite-sent", `Invite sent to ${guest.name}`);
       return true;
     } catch (err) {
