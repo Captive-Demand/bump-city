@@ -1,50 +1,32 @@
-I found two likely causes of the slow/flashy load:
+The flashing is still happening because each page still renders its own `MobileLayout`, and the app still has one global `Suspense` fallback that swaps the whole route area to a blank loading screen while a page chunk loads. So on clicks, React briefly removes the current page/layout and shows `<main aria-label="Loading">`, which matches the session replay.
 
-1. The route-level lazy loading currently replaces the whole page while a new page module loads. Since each page owns its own `MobileLayout`, the desktop sidebar can disappear during route changes.
-2. The sidebar and bottom nav call role-loading logic directly and return `null` while roles are being fetched, so navigation temporarily vanishes even after the app shell has mounted.
+Plan to fix it properly:
 
-Performance data from the preview also shows a dev-preview overhead: about 93 resources, FCP around 3.6s, full load around 4.6s, and slow module requests for `RegistryPage.tsx`, `ActiveEventContext.tsx`, Vite refresh scripts, and shared libraries. Published builds should be faster than preview, but we can still fix the app-level flashing and extra calls.
+1. Make the app shell persistent for logged-in pages
+   - Move `MobileLayout` up into `App.tsx` around the protected route group instead of having every protected page own its own layout.
+   - Keep the sidebar/bottom nav mounted while only the inner page content changes.
+   - Keep auth/onboarding pages (`/auth`, `/get-started`, `/setup/shower`, reset password, unsubscribe, public/guest routes if needed) using `hideNav` or standalone layout behavior.
 
-## Plan
+2. Remove duplicate page-level layout wrappers
+   - Update protected pages like Home, Showers, Registry, Predictions, Guests, Invites, Gift Tracker, Planning, Vendors, Community, Profile, Admin, and Shower detail so they return page content only.
+   - This prevents the entire shell from unmounting/remounting during navigation.
 
-1. Keep the app shell visible during page transitions
-   - Add a lightweight route fallback that renders the normal `MobileLayout` structure without a branded loading screen or spinner.
-   - Use this fallback for lazy route loading so the sidebar/bottom nav do not disappear while page chunks load.
-   - Keep the emergency boot recovery screen only for true app boot failure, not normal navigation.
+3. Replace full-screen route loading with an in-content fallback
+   - Change the lazy-route `Suspense` fallback from a full-screen blank `<main>` to a small skeleton/content placeholder that appears inside the existing layout.
+   - This means clicking a nav item no longer blanks the whole screen or makes the sidebar disappear.
 
-2. Stop sidebar/nav from disappearing during role checks
-   - Update `DesktopSidebar` and `BottomNav` so they do not return `null` while role data loads.
-   - Show the stable baseline nav immediately, then reveal host/admin-only items once role data is ready.
-   - This prevents the visible sidebar reload/flicker.
+4. Clean up page loading states that re-wrap layout
+   - Replace page loading spinners like Gift Tracker, Planning, Vendors, Admin, etc. with compact skeletons inside the stable page area.
+   - Avoid nested `MobileLayout` in loading branches.
 
-3. Centralize and cache role loading
-   - Replace repeated `useEventRole()` fetches with a shared role context/cache so the app does not refetch roles separately for the sidebar, bottom nav, host-only guards, and pages.
-   - Ensure role checks update when the active event changes.
+5. Preload common route chunks on navigation interaction
+   - Add lightweight preloading for primary nav/more menu routes on hover/focus/touch so the next page bundle is already requested before click finishes.
+   - This improves perceived speed and reduces the chance of seeing any fallback at all.
 
-4. Reduce registry route load weight
-   - Lazy-load heavy registry subcomponents like the inline browser/dialog content only when needed.
-   - Keep the main registry page interactive sooner.
-
-5. Reduce duplicate startup queries
-   - Tighten active-event loading to avoid unnecessary sequential waits where safe.
-   - Avoid repeated count/role fetches triggered by multiple mounted components where possible.
-
-6. Replace full-page spinners with stable content placeholders
-   - For pages currently showing centered spinners, use quiet skeleton/empty placeholders inside the existing layout instead.
-   - This makes loading feel faster and avoids the “everything disappeared and came back” effect.
-
-7. Verify
+6. Verify behavior
    - Run a production build.
-   - Test direct navigation to `/registry` and route switching between Home, Registry, Predictions, and Profile.
-   - Confirm the sidebar stays visible during navigation and no “Bump City is loading” screen appears during normal use.
+   - Check the routes that were flashing, especially `/gift-tracker`, `/planning`, `/invites`, `/registry`, `/showers`, and desktop sidebar navigation.
 
-## Technical notes
-
-- Main files likely involved: `src/App.tsx`, `src/components/layout/MobileLayout.tsx`, `src/components/layout/DesktopSidebar.tsx`, `src/components/layout/BottomNav.tsx`, `src/hooks/useEventRole.ts`, and `src/pages/RegistryPage.tsx`.
-- This is primarily a frontend shell/loading architecture fix; no database migration should be needed.
-- The preview environment itself is slower because Vite serves many development modules individually, but these changes will reduce app-level flicker and make both preview and published app feel faster.
-
-<lov-actions>
-<lov-open-history>View History</lov-open-history>
-<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
-</lov-actions>
+Technical details:
+- This will mainly touch `src/App.tsx`, `src/components/layout/MobileLayout.tsx`, `BottomNav.tsx`, `DesktopSidebar.tsx`, and the page files that currently wrap themselves in `MobileLayout`.
+- The expected result is: sidebar/nav stays visible, content transitions without a white/blank flash, and loading states are confined to the page content area.
