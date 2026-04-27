@@ -187,7 +187,18 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
                         )}
                       </div>
                       <CardContent className="p-3 space-y-2">
-                        <p className="font-semibold text-sm line-clamp-2 leading-tight">{p.title}</p>
+                        {p.onlineStoreUrl ? (
+                          <a
+                            href={p.onlineStoreUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-sm line-clamp-2 leading-tight hover:text-primary hover:underline block"
+                          >
+                            {p.title}
+                          </a>
+                        ) : (
+                          <p className="font-semibold text-sm line-clamp-2 leading-tight">{p.title}</p>
+                        )}
                         <p className="text-xs text-primary font-bold">
                           ${parseFloat(p.priceRange.minVariantPrice.amount).toFixed(2)}
                         </p>
