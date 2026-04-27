@@ -139,27 +139,37 @@ const ProfilePage = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
-        {/* User Profile Section */}
-        <div className="flex items-center gap-4 mb-6">
-          <ImageUpload
-            currentUrl={avatarUrl}
-            folder="avatars"
-            onUploaded={handleAvatarUploaded}
-            className="w-16 h-16 rounded-full shrink-0"
-          >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-full object-cover" />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
-                <span className="text-2xl font-bold text-primary-foreground">{initial}</span>
-              </div>
-            )}
-          </ImageUpload>
-          <div>
-            <h1 className="text-xl font-bold">{displayName}</h1>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
-          </div>
-        </div>
+        {/* Account Card */}
+        <Card className="border-none mb-6 rounded-2xl">
+          <CardContent className="p-4 flex items-center gap-4">
+            <ImageUpload
+              currentUrl={avatarUrl}
+              folder="avatars"
+              onUploaded={handleAvatarUploaded}
+              className="w-16 h-16 rounded-full shrink-0"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-16 h-16 rounded-full object-cover" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary-foreground">{initial}</span>
+                </div>
+              )}
+            </ImageUpload>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold truncate">{displayName}</h1>
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5"
+              onClick={handleSignOut}
+            >
+              <LogOut className="h-3.5 w-3.5" /> Sign Out
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Event Settings Section */}
         {event && (
