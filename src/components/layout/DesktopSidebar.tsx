@@ -31,7 +31,7 @@ export const DesktopSidebar = () => {
   if (isAdmin) tabs = [...tabs, { icon: Shield, label: "Admin", path: "/admin" }];
 
   return (
-    <aside className="w-20 min-h-screen bg-card border-r border-border flex flex-col items-center py-8 gap-2 shrink-0">
+    <aside className="w-20 h-screen sticky top-0 bg-card border-r border-border flex flex-col items-center py-8 gap-2 shrink-0 overflow-y-auto">
       <div className="mb-6">
         <img src={appIcon} alt="Bump City" className="h-10 w-10" />
       </div>
