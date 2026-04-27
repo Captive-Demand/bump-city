@@ -592,6 +592,41 @@ const AdminPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Test SMS Dialog */}
+      <Dialog open={testSmsOpen} onOpenChange={setTestSmsOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Send Test SMS</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <Label>Phone number (E.164)</Label>
+              <Input placeholder="+15558675310" value={testSmsTo} onChange={(e) => setTestSmsTo(e.target.value)} />
+            </div>
+            <Button
+              className="w-full"
+              disabled={!testSmsTo.trim() || testSmsSending}
+              onClick={async () => {
+                setTestSmsSending(true);
+                try {
+                  const { error } = await supabase.functions.invoke("send-sms", {
+                    body: { to: testSmsTo.trim(), message: "This is a test from Bump City." },
+                  });
+                  if (error) throw error;
+                  toast.success("Test SMS sent!");
+                  setTestSmsOpen(false);
+                  setTestSmsTo("");
+                } catch (err: any) {
+                  toast.error(err?.message || "Failed to send test SMS");
+                } finally {
+                  setTestSmsSending(false);
+                }
+              }}
+            >
+              {testSmsSending ? "Sending..." : "Send Test"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </MobileLayout>
   );
 };
