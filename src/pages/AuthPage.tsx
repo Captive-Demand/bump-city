@@ -21,6 +21,7 @@ const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const getSmartRedirect = async (userId: string): Promise<string> => {
