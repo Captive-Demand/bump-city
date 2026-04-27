@@ -1,58 +1,35 @@
-# Role-Based Access Audit
+I found the likely recurring cause: the project has a custom service worker registered in `index.html`. Even after improving `public/sw.js`, existing browsers can still be controlled by an older cached service worker that previously cached the app shell and dev/prod JS. That can leave customers with stale or missing app files and a blank screen. The app also has no top-level error boundary, so any startup crash becomes a white screen instead of a recoverable branded message.
 
-## Current State
+Plan to fix this permanently:
 
-**Infrastructure exists, but is barely used in the UI.**
+1. Disable the risky app-shell cache path
+   - Remove the direct service worker registration from `index.html` for now.
+   - Keep the web app manifest/icons so install branding remains intact.
+   - This prioritizes reliability over fragile offline caching.
 
-- `useEventRole()` hook works and returns `isHost`, `isHonoree`, `isGuest`, `isAdmin`.
-- Database RLS is solid (hosts manage events/guests/registry; members can view; predictions are open for guest submission).
-- Two distinct guest experiences already exist:
-  - **`/event/:eventId`** (`GuestEventPage`) — clean public-style guest view with Registry / Predict / Details tabs. This is what guests get from an invite link.
-  - **`/`, `/showers`, `/registry`, `/guests`, `/planning`, `/gift-tracker`, `/predictions`, `/invites`** — the full host app.
+2. Ship a service-worker cleanup file
+   - Update `/sw.js` into a safe cleanup worker that deletes all old `bumpcity-*` caches, claims clients, and unregisters itself.
+   - This gives already-affected customer browsers a path to recover automatically once they load the updated file.
 
-**The actual problem:** `useEventRole` is only consumed in **2 files** (`AdminPage`, `DesktopSidebar` — and only for the admin badge). Every host-only screen is reachable by any logged-in user, and the nav shows the same links to everyone.
+3. Add a client-side cache recovery guard
+   - Add startup code that detects existing service workers/caches and clears the old Bump City caches on load.
+   - If a stale worker is controlling the page, force one clean reload after cleanup, avoiding an infinite reload loop.
 
-## What Needs Setup
+4. Add a branded app error boundary
+   - Wrap the root app in an error boundary so future runtime errors show a Bump City recovery screen instead of a white screen.
+   - Include a “Reload app” button that clears old caches/service workers before refreshing.
 
-### 1. Navigation gating (Sidebar + BottomNav)
-Currently both navs show the same 5–11 tabs to everyone.
-- **Hosts/Co-hosts** should see: Home, Showers, Registry, Invites, Guests, Planning, Gifts, Guess & Win, Vendors, Profile.
-- **Guests/Honorees** should see a slimmed view: Home, Registry, Guess & Win, Profile (no Invites, Guests, Planning, Gift Tracker).
-- **Admin** tab continues to be admin-only (already works).
+5. Make local startup storage safer
+   - Harden localStorage writes in startup contexts so unavailable/private storage cannot crash the whole app.
 
-### 2. Page-level guards
-For host-only pages, redirect non-hosts to `/` (or to their guest event view). Add a small `<HostOnly>` wrapper that uses `useEventRole`:
-- `/guests` (GuestListPage) — host-only
-- `/invites` (InviteBuilderPage) — host-only
-- `/gift-tracker` (GiftTrackerPage) — host-only
-- `/planning` (PlanningPage) — host-only
+6. Verify
+   - Run a production build.
+   - Re-check dev-server logs.
+   - Confirm the app no longer depends on cached JS/CSS and has a visible recovery path if anything fails.
 
-### 3. In-page control gating
-- **PredictionsPage** — hide the "Reveal Winners" host controls (date, gender, name, weight inputs + Reveal button) behind `isHost`. Guests still see the leaderboard / their own prediction form.
-- **RegistryPage** — hide "Add item", "Edit", "Delete" controls for guests; keep Claim available.
-- **ShowerDetailPage** — hide edit/delete event actions for non-hosts.
+After this, customers should no longer get stuck on a permanent white screen from stale cached files; worst case, they’ll see a branded recovery screen with a reload action instead of a blank app.
 
-### 4. Honoree special case (Surprise Mode)
-Already handled by `surprise-mode` feature for the honoree's own view. Leave as-is, but ensure honorees use the same gated nav as guests (no Guest List, no Invites).
-
-## Technical Implementation
-
-**New files:**
-- `src/components/auth/HostOnly.tsx` — wrapper that returns `<Navigate to="/" />` if `!isHost && !isAdmin` (waits for `loading`).
-
-**Edits:**
-- `src/components/layout/BottomNav.tsx` — filter `tabs` based on `useEventRole`.
-- `src/components/layout/DesktopSidebar.tsx` — split `secondaryTabs` into host-only vs everyone, filter by role.
-- `src/App.tsx` — wrap `/guests`, `/invites`, `/gift-tracker`, `/planning` routes with `<HostOnly>`.
-- `src/pages/PredictionsPage.tsx` — wrap "Reveal Winners" card in `{isHost && (...)}`.
-- `src/pages/RegistryPage.tsx` — gate add/edit/delete buttons behind `isHost`.
-- `src/pages/ShowerDetailPage.tsx` — gate management actions behind `isHost`.
-
-**No DB changes needed** — RLS is already correct.
-
-## What This Won't Do
-- Won't change the `/event/:eventId` invited-guest experience (it's already correct).
-- Won't restructure the data model or roles.
-- Won't add a role-management UI for hosts to promote co-hosts (separate feature if you want it).
-
-Approve and I'll implement in this order: HostOnly wrapper → nav filtering → route guards → in-page control gating.
+<lov-actions>
+  <lov-open-history>View History</lov-open-history>
+  <lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
+</lov-actions>
