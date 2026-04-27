@@ -70,6 +70,8 @@ const AuthPage = () => {
     if (error) {
       toast.error(error.message);
     } else if (data.session) {
+      // Persist SMS opt-in to profile (default false; only true if user explicitly checked)
+      try { await supabase.from("profiles").update({ sms_opt_in: smsOptIn }).eq("id", data.session.user.id); } catch { /* non-blocking */ }
       toast.success("Account created! Welcome to Bump City!");
       const dest = await getSmartRedirect(data.session.user.id);
       navigate(dest);
