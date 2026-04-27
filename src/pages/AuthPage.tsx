@@ -168,14 +168,28 @@ const AuthPage = () => {
                   Forgot password?
                 </button>
               )}
+              {isSignUp && (
+                <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                  <Checkbox checked={smsOptIn} onCheckedChange={(v) => setSmsOptIn(v === true)} className="mt-0.5" />
+                  <span>
+                    I agree to receive text message notifications about my events. Message & data rates may apply. See our{" "}
+                    <a href="/terms" target="_blank" className="text-primary underline">Terms of Service</a>.
+                  </span>
+                </label>
+              )}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
               </Button>
             </form>
-            <div className="mt-4 text-center">
-              <button type="button" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setIsSignUp(!isSignUp)}>
+            <div className="mt-4 text-center space-y-2">
+              <button type="button" className="text-sm text-muted-foreground hover:text-foreground block w-full" onClick={() => setIsSignUp(!isSignUp)}>
                 {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
               </button>
+              {!isSignUp && (
+                <button type="button" className="text-xs text-primary hover:underline" onClick={() => navigate("/get-started")}>
+                  New to Bump City? Get started →
+                </button>
+              )}
             </div>
           </CardContent>
         </Card>
