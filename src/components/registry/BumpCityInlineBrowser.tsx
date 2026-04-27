@@ -247,8 +247,20 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
                   );
                 })}
               </div>
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2">
+              {!expanded && products.length > PREVIEW_SIZE && (
+                <div className="flex justify-center pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full h-8 text-xs"
+                    onClick={() => setExpanded(true)}
+                  >
+                    Show more ({products.length} items)
+                  </Button>
+                </div>
+              )}
+              {expanded && (
+                <div className="flex items-center justify-between pt-2 gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -261,14 +273,28 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
                   <p className="text-xs text-muted-foreground">
                     Page {safePage + 1} of {totalPages}
                   </p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full h-8 gap-1 text-xs"
+                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={safePage >= totalPages - 1}
+                    >
+                      Next <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {expanded && (
+                <div className="flex justify-center pt-1">
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="rounded-full h-8 gap-1 text-xs"
-                    onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                    disabled={safePage >= totalPages - 1}
+                    variant="ghost"
+                    className="rounded-full h-7 text-[11px] text-muted-foreground"
+                    onClick={() => { setExpanded(false); setPage(0); }}
                   >
-                    Next <ChevronRight className="h-3.5 w-3.5" />
+                    Show less
                   </Button>
                 </div>
               )}
