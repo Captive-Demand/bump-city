@@ -13,7 +13,7 @@ import GuestListPage from "./pages/GuestListPage";
 import PredictionsPage from "./pages/PredictionsPage";
 import ProfilePage from "./pages/ProfilePage";
 import ShowerSetupPage from "./pages/ShowerSetupPage";
-import RegistrySetupPage from "./pages/RegistrySetupPage";
+
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import InviteBuilderPage from "./pages/InviteBuilderPage";
@@ -52,7 +52,7 @@ const App = () => (
                 <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
                 <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
                 <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
-                <Route path="/setup/registry" element={<ProtectedRoute><RegistrySetupPage /></ProtectedRoute>} />
+                <Route path="/setup/registry" element={<Navigate to="/setup/shower" replace />} />
                 <Route path="/registry" element={<ProtectedRoute><RegistryPage /></ProtectedRoute>} />
                 <Route path="/guests" element={<ProtectedRoute><GuestListPage /></ProtectedRoute>} />
                 <Route path="/predictions" element={<ProtectedRoute><PredictionsPage /></ProtectedRoute>} />
