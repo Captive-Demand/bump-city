@@ -32,26 +32,7 @@ const GetStartedPage = lazy(() => import("./pages/GetStartedPage"));
 const UnsubscribePage = lazy(() => import("./pages/UnsubscribePage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const LoadingScreen = () => (
-  <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center text-foreground">
-    <section className="w-full max-w-[430px] space-y-4">
-      <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold">Bump City is loading</h1>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          If this takes more than a moment, reload once to reconnect safely.
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={() => window.location.reload()}
-        className="rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
-      >
-        Reload app
-      </button>
-    </section>
-  </main>
-);
+const LoadingScreen = () => <main className="min-h-screen bg-background" aria-busy="true" aria-label="Loading" />;
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
