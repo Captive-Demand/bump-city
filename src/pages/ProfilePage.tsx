@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Bell, Palette, Share2, LogOut, ChevronRight, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check, MessageSquare, Smartphone, Mail as MailIcon } from "lucide-react";
+import { User, Bell, Palette, Share2, LogOut, ChevronRight, ChevronLeft, Baby, Gift, PackageOpen, CalendarIcon, Pencil, Check, MessageSquare, Smartphone, Mail as MailIcon } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -139,6 +139,14 @@ const ProfilePage = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 -ml-2 mb-2 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </Button>
         {/* Account Card */}
         <Card className="border-none mb-6 rounded-2xl">
           <CardContent className="p-4 flex items-center gap-4">
