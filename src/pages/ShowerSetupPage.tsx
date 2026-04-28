@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { Baby, CalendarIcon, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
+import type { Json } from "@/integrations/supabase/types";
 
 const TOTAL_STEPS = 3;
 
@@ -166,7 +167,7 @@ const ShowerSetupPage = () => {
           city: city.trim() || null,
           theme: theme.trim() || null,
           gift_policy: giftPolicy,
-          gift_preferences: giftPrefs as any,
+          gift_preferences: giftPrefs as Json,
           clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
           gift_note: giftNote.trim() || null,
           surprise_mode: surpriseMode,
@@ -197,7 +198,7 @@ const ShowerSetupPage = () => {
       city: city.trim() || null,
       theme: theme.trim() || null,
       gift_policy: giftPolicy,
-      gift_preferences: giftPrefs as any,
+      gift_preferences: giftPrefs as Json,
       clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
       gift_note: giftNote.trim() || null,
       surprise_mode: surpriseMode,
