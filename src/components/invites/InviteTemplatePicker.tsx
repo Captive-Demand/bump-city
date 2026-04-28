@@ -16,9 +16,7 @@ const sampleData = {
   message: "Join us to celebrate!",
 };
 
-const THUMB_WIDTH = 132;
 const TEMPLATE_WIDTH = 380;
-const PREVIEW_SCALE = THUMB_WIDTH / TEMPLATE_WIDTH;
 
 const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null);
