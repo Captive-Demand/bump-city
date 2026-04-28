@@ -110,7 +110,7 @@ const ShowerDetailPage = () => {
         >
           <ChevronLeft className="h-4 w-4" /> Showers
         </button>
-        <ShowerHero event={event} />
+        <ShowerHero event={event} isHost={isHost} />
       </div>
 
       <div className="px-6 pb-8 space-y-6">
