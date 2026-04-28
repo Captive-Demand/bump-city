@@ -8,9 +8,10 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, Plus, Check, Search } from "lucide-react";
+import { Gift, Plus, Check, Search, ChevronLeft, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface GiftReceived {
   id: string;
@@ -20,11 +21,12 @@ interface GiftReceived {
   created_at: string;
 }
 
-interface ClaimedItem { name: string; price: number | null; claimed_by: string | null; }
+interface ClaimedItem { id: string; name: string; price: number | null; claimed_by: string | null; image_url: string | null; }
 
 const GiftTrackerPage = () => {
   const { user } = useAuth();
   const { event } = useEvent();
+  const navigate = useNavigate();
   const [gifts, setGifts] = useState<GiftReceived[]>([]);
   const [claimed, setClaimed] = useState<ClaimedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ const GiftTrackerPage = () => {
     if (!event) return;
     const [{ data: g }, { data: c }] = await Promise.all([
       supabase.from("gifts_received").select("*").eq("event_id", event.id).order("created_at", { ascending: false }),
-      supabase.from("registry_items").select("name, price, claimed_by").eq("event_id", event.id).eq("claimed", true),
+      supabase.from("registry_items").select("id, name, price, claimed_by, image_url").eq("event_id", event.id).eq("claimed", true),
     ]);
     setGifts((g as GiftReceived[]) || []);
     setClaimed((c as ClaimedItem[]) || []);
@@ -60,11 +62,32 @@ const GiftTrackerPage = () => {
     fetchGifts();
   };
 
+  const logClaimedItem = async (item: ClaimedItem) => {
+    if (!event || !user) return;
+    const { error } = await supabase.from("gifts_received").insert({
+      event_id: event.id,
+      user_id: user.id,
+      donor_name: item.claimed_by || "Registry guest",
+      item_description: item.name,
+    });
+    if (error) { toast.error("Failed to log gift"); return; }
+    toast.success("Gift logged");
+    fetchGifts();
+  };
+
   const filtered = gifts.filter((g) => {
     if (filter === "pending" && g.thank_you_sent) return false;
     if (filter === "sent" && !g.thank_you_sent) return false;
     return g.donor_name.toLowerCase().includes(search.toLowerCase()) || g.item_description.toLowerCase().includes(search.toLowerCase());
   });
+
+  // Claimed registry items not yet logged as a received gift (matched on item description + donor name)
+  const loggedKeys = new Set(
+    gifts.map((g) => `${g.item_description.toLowerCase()}::${g.donor_name.toLowerCase()}`)
+  );
+  const unloggedClaimed = claimed.filter(
+    (c) => !loggedKeys.has(`${c.name.toLowerCase()}::${(c.claimed_by || "registry guest").toLowerCase()}`)
+  );
 
   const pendingCount = gifts.filter((g) => !g.thank_you_sent).length;
   const sentCount = gifts.filter((g) => g.thank_you_sent).length;
@@ -75,7 +98,13 @@ const GiftTrackerPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-4">
+      <div className="px-6 pt-8 pb-4">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2"><Gift className="h-5 w-5 text-primary" /><h1 className="text-2xl font-bold">Gift Tracker</h1></div>
           <Dialog open={addOpen} onOpenChange={setAddOpen}>
@@ -121,22 +150,54 @@ const GiftTrackerPage = () => {
         </div>
       </div>
 
-      <div className="px-6 pb-6 space-y-2">
-        {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No gifts logged yet</p>}
-        {filtered.map((gift) => (
-          <Card key={gift.id} className="border-none">
-            <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-peach flex items-center justify-center text-lg">🎁</div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">{gift.item_description}</p>
-                <p className="text-xs text-muted-foreground">From {gift.donor_name}</p>
-              </div>
-              <Button size="sm" variant={gift.thank_you_sent ? "secondary" : "default"} className="rounded-full text-xs h-8 gap-1" onClick={() => toggleThankYou(gift.id, gift.thank_you_sent)}>
-                <Check className="h-3 w-3" /> {gift.thank_you_sent ? "Sent" : "Thank"}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="px-6 pb-6 space-y-4">
+        {unloggedClaimed.length > 0 && filter !== "sent" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <ShoppingBag className="h-3.5 w-3.5" />
+              From the Registry
+            </div>
+            {unloggedClaimed.map((item) => (
+              <Card key={item.id} className="border-dashed border border-primary/30 bg-primary/5">
+                <CardContent className="p-3 flex items-center gap-3">
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-lg">🎁</div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Claimed by {item.claimed_by || "a guest"}
+                      {item.price ? ` · $${Number(item.price).toFixed(0)}` : ""}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" className="rounded-full text-xs h-8 gap-1" onClick={() => logClaimedItem(item)}>
+                    <Plus className="h-3 w-3" /> Log
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          {filtered.length === 0 && unloggedClaimed.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No gifts logged yet</p>}
+          {filtered.map((gift) => (
+            <Card key={gift.id} className="border-none">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-peach flex items-center justify-center text-lg">🎁</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{gift.item_description}</p>
+                  <p className="text-xs text-muted-foreground">From {gift.donor_name}</p>
+                </div>
+                <Button size="sm" variant={gift.thank_you_sent ? "secondary" : "default"} className="rounded-full text-xs h-8 gap-1" onClick={() => toggleThankYou(gift.id, gift.thank_you_sent)}>
+                  <Check className="h-3 w-3" /> {gift.thank_you_sent ? "Sent" : "Thank"}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </MobileLayout>
   );
