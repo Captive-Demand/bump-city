@@ -269,6 +269,42 @@ const AdminPage = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Preview as role */}
+            <Card className="border-none mt-4">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Eye className="h-4 w-4 text-primary" />
+                  <h3 className="font-bold text-sm">Preview the app as…</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  See exactly what each role sees. A banner appears at the top while previewing — tap "Exit" to return to admin.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { role: "host", label: "Host" },
+                    { role: "co-host", label: "Co-Host" },
+                    { role: "honoree", label: "Honoree" },
+                    { role: "guest", label: "Guest" },
+                  ] as { role: ImpersonatedRole; label: string }[]).map((r) => (
+                    <Button
+                      key={r.role}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full justify-start gap-2"
+                      onClick={() => {
+                        setImpersonatedRole(r.role);
+                        toast.success(`Previewing as ${r.label}`);
+                        navigate("/home");
+                      }}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      {r.label}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Vendors */}
