@@ -40,7 +40,7 @@ const GiftTrackerPage = () => {
     if (!event) return;
     const [{ data: g }, { data: c }] = await Promise.all([
       supabase.from("gifts_received").select("*").eq("event_id", event.id).order("created_at", { ascending: false }),
-      supabase.from("registry_items").select("name, price, claimed_by").eq("event_id", event.id).eq("claimed", true),
+      supabase.from("registry_items").select("id, name, price, claimed_by, image_url").eq("event_id", event.id).eq("claimed", true),
     ]);
     setGifts((g as GiftReceived[]) || []);
     setClaimed((c as ClaimedItem[]) || []);
