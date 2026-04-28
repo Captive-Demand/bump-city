@@ -45,8 +45,7 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
 /**
  * Persistent app shell mounted once for all protected routes. Sidebar and
  * bottom nav stay mounted across navigations; only the inner content area
- * swaps when a route changes (and lazy chunks suspend in-place rather than
- * blanking the whole screen).
+ * swaps when a route changes without blanking the whole screen.
  */
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const isMobile = useIsMobile();

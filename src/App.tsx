@@ -42,7 +42,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
-// Wraps a protected route's element in the persistent shell + page-level Suspense.
+// Wraps a protected route's element in the persistent shell.
 const Shell = ({ children }: { children: ReactNode }) => (
   <ProtectedRoute>
     <AppShell>{children}</AppShell>
