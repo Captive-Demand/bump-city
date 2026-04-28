@@ -316,7 +316,13 @@ const RegistryPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-2">
+      <div className="px-6 pt-10 pb-2">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center gap-2 mb-1">
           <ShoppingBag className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Gift Registry</h1>
