@@ -23,6 +23,7 @@ import { renderInviteToBlob } from "@/components/invites/renderInviteToBlob";
 const InviteBuilderPage = () => {
   const { event } = useEvent();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [title, setTitle] = useState(event?.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower");
   const [eventDate, setEventDate] = useState<Date | undefined>(event?.event_date ? new Date(event.event_date) : undefined);
