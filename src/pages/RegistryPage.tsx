@@ -62,6 +62,7 @@ const sourceBadge = (source: string | null) => {
 };
 
 const RegistryPage = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeSource, setActiveSource] = useState<string>("all");
   const [showMine, setShowMine] = useState(false);
@@ -69,6 +70,7 @@ const RegistryPage = () => {
   const [loading, setLoading] = useState(true);
   const [blurb, setBlurb] = useState<string>(DEFAULT_BLURB);
   const [expandedStep, setExpandedStep] = useState<"local" | "web" | null>(null);
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
   const step2Ref = useRef<HTMLDivElement | null>(null);
   const step3Ref = useRef<HTMLDivElement | null>(null);
   const yourRegistryRef = useRef<HTMLDivElement | null>(null);
