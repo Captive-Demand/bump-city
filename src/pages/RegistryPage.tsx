@@ -329,7 +329,9 @@ const RegistryPage = () => {
           <ShoppingBag className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Gift Registry</h1>
         </div>
-        <p className="text-xs text-muted-foreground italic">{blurb}</p>
+        <p className="text-xs text-muted-foreground italic">
+          {isHost ? blurb : "Tap any gift below to claim it for the parents-to-be."}
+        </p>
       </div>
 
       {/* Shared Add/URL dialogs */}
@@ -567,8 +569,8 @@ const RegistryPage = () => {
       </>)}
 
       {/* === YOUR REGISTRY SECTION === */}
-      <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
-        <div className="flex items-center gap-2 pt-4">
+      <div ref={yourRegistryRef} className="px-6 pt-3 pb-1 mt-2 border-t border-border/60">
+        <div className="flex items-center gap-2 pt-2">
           <Package className="h-4 w-4 text-primary" />
           <h2 className="text-base font-bold">Your Registry</h2>
           <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
