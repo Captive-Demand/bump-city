@@ -65,7 +65,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
 
   if (!isMobile) {
     return (
-      <div className="flex min-h-screen bg-muted/50">
+      <div className="flex h-screen bg-muted/50">
         <DesktopSidebar />
         <main ref={mainRef} className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
@@ -78,8 +78,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <div className="flex justify-center min-h-screen bg-muted/50">
-      <div className="w-full max-w-[430px] md:max-w-none min-h-screen bg-background relative flex flex-col shadow-2xl md:shadow-none">
+    <div className="flex justify-center h-screen bg-muted/50">
+      <div className="w-full max-w-[430px] md:max-w-none h-screen bg-background relative flex flex-col shadow-2xl md:shadow-none">
         <main ref={mainRef} className="flex-1 overflow-y-auto pb-20">
           <BrandHeader />
           {children}
