@@ -585,7 +585,7 @@ const RegistryPage = () => {
       </div>
 
       {/* Source filter */}
-      <div className="px-6 pt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="px-6 pt-5 flex flex-wrap gap-2 pb-1">
         {sources.map((s) => (
           <button
             key={s.id}
@@ -606,7 +606,7 @@ const RegistryPage = () => {
       </div>
 
       {/* Category filter */}
-      <div className="px-6 pt-2 flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="px-6 pt-2 flex flex-wrap gap-2 pb-4">
         {categories.map((cat) => (
           <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${activeCategory === cat ? "bg-foreground text-background" : "bg-transparent text-muted-foreground hover:text-foreground"}`}>
             {cat}
