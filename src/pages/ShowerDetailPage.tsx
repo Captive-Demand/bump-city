@@ -22,6 +22,7 @@ const ShowerDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { allEvents, activeEvent, switchEvent, loading, refetch } = useActiveEvent();
+  const { isHost } = useEventRole();
 
   useEffect(() => {
     if (eventId && eventId !== activeEvent?.id) {
