@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useEventRole } from "@/hooks/useEventRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -75,6 +76,7 @@ const RegistryPage = () => {
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
+  const { isHost } = useEventRole();
   const displayName = user?.user_metadata?.display_name || user?.email || "You";
 
   // Add item form
@@ -407,6 +409,8 @@ const RegistryPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* === ADD TO REGISTRY SECTION (host only) === */}
+      {isHost && (<>
       {/* === ADD TO REGISTRY SECTION === */}
       <div className="px-6 pt-4 pb-1 flex items-center justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Add to Registry</h2>
@@ -560,6 +564,7 @@ const RegistryPage = () => {
           )}
         </Card>
       </div>
+      </>)}
 
       {/* === YOUR REGISTRY SECTION === */}
       <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
@@ -568,14 +573,16 @@ const RegistryPage = () => {
           <h2 className="text-base font-bold">Your Registry</h2>
           <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
         </div>
-        <div className="flex gap-2 pt-3">
-          <Button size="sm" variant="outline" className="rounded-full h-8 gap-1" onClick={() => setUrlOpen(true)}>
-            <LinkIcon className="h-3.5 w-3.5" /> URL
-          </Button>
-          <Button size="sm" className="rounded-full h-8 gap-1" onClick={() => setAddOpen(true)}>
-            <Plus className="h-3.5 w-3.5" /> Add
-          </Button>
-        </div>
+        {isHost && (
+          <div className="flex gap-2 pt-3">
+            <Button size="sm" variant="outline" className="rounded-full h-8 gap-1" onClick={() => setUrlOpen(true)}>
+              <LinkIcon className="h-3.5 w-3.5" /> URL
+            </Button>
+            <Button size="sm" className="rounded-full h-8 gap-1" onClick={() => setAddOpen(true)}>
+              <Plus className="h-3.5 w-3.5" /> Add
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Progress bar */}
@@ -707,12 +714,16 @@ const RegistryPage = () => {
                       ) : (
                         <Button size="sm" className="rounded-full text-[10px] h-7 px-3" onClick={() => handleClaim(item.id)}>Claim</Button>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {isHost && (
+                        <>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -769,12 +780,16 @@ const RegistryPage = () => {
                       ) : (
                         <Button size="sm" className="rounded-full text-[10px] h-7 flex-1 px-2" onClick={() => handleClaim(item.id)}>Claim</Button>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {isHost && (
+                        <>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </div>
