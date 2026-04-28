@@ -44,13 +44,34 @@ const ShowerDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { allEvents, activeEvent, switchEvent, loading, refetch } = useActiveEvent();
-  const { isHost } = useEventRole();
+  const { user } = useAuth();
+  const [memberRole, setMemberRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventId && eventId !== activeEvent?.id) {
       switchEvent(eventId);
     }
   }, [eventId, activeEvent?.id, switchEvent]);
+
+  // Per-event role lookup so host UI doesn't depend on global activeEvent
+  // matching the URL or on stale impersonation state.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || !eventId) {
+      setMemberRole(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("event_members")
+        .select("role")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cancelled) setMemberRole((data?.role as string) || null);
+    })();
+    return () => { cancelled = true; };
+  }, [user, eventId]);
 
   if (loading) {
     return (
