@@ -315,97 +315,89 @@ const RegistryPage = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-bold">Gift Registry</h1>
-          </div>
-          <div className="flex gap-2">
-            <Dialog open={urlOpen} onOpenChange={setUrlOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="rounded-full h-8 gap-1"><LinkIcon className="h-3.5 w-3.5" /> URL</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Add from URL</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label>Product URL</Label>
-                    <div className="flex gap-2">
-                      <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
-                      <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
-                    </div>
-                  </div>
-                  {scrapedData && (
-                    <>
-                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
-                      <div className="space-y-1.5">
-                        <Label>Item name</Label>
-                        <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label>Price ($)</Label>
-                          <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label>Category</Label>
-                          <Select value={newCategory} onValueChange={setNewCategory}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <Button className="w-full rounded-xl" onClick={handleAddFromUrl} disabled={!newName.trim()}>Add to Registry</Button>
-                    </>
-                  )}
+        <div className="flex items-center gap-2 mb-1">
+          <ShoppingBag className="h-5 w-5 text-primary" />
+          <h1 className="text-2xl font-bold">Gift Registry</h1>
+        </div>
+        <p className="text-xs text-muted-foreground italic">{blurb}</p>
+      </div>
+
+      {/* Shared Add/URL dialogs */}
+      <Dialog open={urlOpen} onOpenChange={setUrlOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Add from URL</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Product URL</Label>
+              <div className="flex gap-2">
+                <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
+                <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
+              </div>
+            </div>
+            {scrapedData && (
+              <>
+                {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
+                <div className="space-y-1.5">
+                  <Label>Item name</Label>
+                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
                 </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Add</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Add Registry Item</DialogTitle></DialogHeader>
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label>Item name</Label>
-                    <Input placeholder="e.g. Baby Stroller" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                    <Label>Price ($)</Label>
+                    <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Category</Label>
                     <Select value={newCategory} onValueChange={setNewCategory}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
+                      <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label>Image (optional)</Label>
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />
-                    )}
-                    <div className="flex gap-2">
-                      <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
-                      <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                        <Upload className="h-3.5 w-3.5" />
-                      </label>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Price ($)</Label>
-                    <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-                  </div>
-                  <Button className="w-full rounded-xl" onClick={handleAdd} disabled={!newName.trim()}>Add Item</Button>
                 </div>
-              </DialogContent>
-            </Dialog>
+                <Button className="w-full rounded-xl" onClick={handleAddFromUrl} disabled={!newName.trim()}>Add to Registry</Button>
+              </>
+            )}
           </div>
-        </div>
-        <p className="text-xs text-muted-foreground italic">{blurb}</p>
-      </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Add Registry Item</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Item name</Label>
+              <Input placeholder="e.g. Baby Stroller" value={newName} onChange={(e) => setNewName(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Category</Label>
+              <Select value={newCategory} onValueChange={setNewCategory}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Image (optional)</Label>
+              {imagePreview && (
+                <img src={imagePreview} alt="Preview" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />
+              )}
+              <div className="flex gap-2">
+                <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
+                <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                  <Upload className="h-3.5 w-3.5" />
+                </label>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Price ($)</Label>
+              <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+            </div>
+            <Button className="w-full rounded-xl" onClick={handleAdd} disabled={!newName.trim()}>Add Item</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* === ADD TO REGISTRY SECTION === */}
       <div className="px-6 pt-4 pb-1 flex items-center justify-between">
@@ -563,10 +555,20 @@ const RegistryPage = () => {
 
       {/* === YOUR REGISTRY SECTION === */}
       <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
-        <div className="flex items-center gap-2 pt-4">
-          <Package className="h-4 w-4 text-primary" />
-          <h2 className="text-base font-bold">Your Registry</h2>
-          <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
+        <div className="flex items-center justify-between gap-2 pt-4">
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-bold">Your Registry</h2>
+            <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" className="rounded-full h-8 gap-1" onClick={() => setUrlOpen(true)}>
+              <LinkIcon className="h-3.5 w-3.5" /> URL
+            </Button>
+            <Button size="sm" className="rounded-full h-8 gap-1" onClick={() => setAddOpen(true)}>
+              <Plus className="h-3.5 w-3.5" /> Add
+            </Button>
+          </div>
         </div>
       </div>
 
