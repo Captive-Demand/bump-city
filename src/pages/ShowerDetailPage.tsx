@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { ChevronLeft, Trash2, Send, Users, Gift, Calendar, MapPin, Sparkles, CalendarPlus, Navigation } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
-import { useEventRole } from "@/hooks/useEventRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { ShowerHero } from "@/components/shower/ShowerHero";
 import { QuickSettingsCard } from "@/components/shower/QuickSettingsCard";
 import { InvitationOptionsCard } from "@/components/shower/InvitationOptionsCard";
