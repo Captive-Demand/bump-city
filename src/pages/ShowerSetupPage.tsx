@@ -277,10 +277,10 @@ const ShowerSetupPage = () => {
             {editingEventId ? "Cancel" : "Skip for now"}
           </button>
         </div>
-        <StepProgress current={step} total={TOTAL_STEPS} />
+        {!editingEventId && <StepProgress current={step} total={TOTAL_STEPS} />}
 
         <div className="flex-1">
-          {step === 0 && (
+          {(editingEventId || step === 0) && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold">What's your role?</h2>
