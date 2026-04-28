@@ -8,9 +8,10 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, Plus, Check, Search } from "lucide-react";
+import { Gift, Plus, Check, Search, ChevronLeft, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 interface GiftReceived {
   id: string;
