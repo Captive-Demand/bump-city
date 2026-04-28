@@ -58,6 +58,7 @@ const PredictionsPage = () => {
   const [revealed, setRevealed] = useState(false);
   const [revealing, setRevealing] = useState(false);
   const [confetti, setConfetti] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
 
   const fetchPredictions = async () => {
     if (!event) return;
