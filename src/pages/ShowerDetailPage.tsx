@@ -86,6 +86,10 @@ const ShowerDetailPage = () => {
   const event = allEvents.find((e) => e.id === eventId);
   if (!event) return <Navigate to="/showers" replace />;
 
+  // Per-event host derivation: owner is always host; otherwise check member role.
+  const isOwner = !!user && event.user_id === user.id;
+  const isHost = isOwner || memberRole === "host" || memberRole === "co-host";
+
   const handleDelete = async () => {
     const { error } = await supabase.from("events").delete().eq("id", event.id);
     if (error) {
