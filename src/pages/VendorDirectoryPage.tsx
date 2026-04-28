@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Search, ExternalLink, Phone, Copy, Tag, ChevronLeft } from "lucide-react";
+import { MapPin, Search, ExternalLink, Phone, Copy, Tag, ChevronLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +27,7 @@ const VendorDirectoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [showAllCategories, setShowAllCategories] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,9 +62,18 @@ const VendorDirectoryPage = () => {
       </div>
 
       <div className="px-6 flex flex-wrap gap-2 pb-3">
-        {vendorCategories.map((cat) => (
+        {(showAllCategories ? vendorCategories : vendorCategories.slice(0, 5)).map((cat) => (
           <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{cat}</button>
         ))}
+        {vendorCategories.length > 5 && (
+          <button
+            onClick={() => setShowAllCategories((v) => !v)}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground flex items-center gap-1 transition-all"
+          >
+            {showAllCategories ? "Less" : `More +${vendorCategories.length - 5}`}
+            <ChevronDown className={`h-3 w-3 transition-transform ${showAllCategories ? "rotate-180" : ""}`} />
+          </button>
+        )}
       </div>
 
       <div className="px-6 mb-4">
