@@ -173,43 +173,49 @@ const GuestEventPage = () => {
           </div>
         )}
 
-        <h1 className="text-2xl font-bold">
-          {event.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower"}
-        </h1>
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-          {event.event_date && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
-              {new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-            </p>
-          )}
-          {event.invite_time_range && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
-              {event.invite_time_range}
-            </p>
-          )}
-          {event.city && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              {event.city}
-            </p>
-          )}
-          {event.theme && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-              <Palette className="h-3.5 w-3.5" />
-              {event.theme}
-            </p>
-          )}
-        </div>
-
-        {daysUntil !== null && (
-          <div className="mt-4 bg-primary/10 rounded-xl p-3 text-center">
-            <p className="text-2xl font-bold text-primary">{daysUntil}</p>
-            <p className="text-xs text-muted-foreground">days until baby arrives</p>
-          </div>
-        )}
+        <Card className="border-none overflow-hidden shadow-sm">
+          <CardContent className="p-0">
+            <div className="relative">
+              <img src={getShowerImage(event)} alt="" className="w-full h-44 object-cover" />
+              {daysUntil !== null && (
+                <Badge className="bg-mint text-mint-foreground text-[10px] font-bold absolute top-3 left-3">
+                  ⏰ {daysUntil === 0 ? "TODAY" : `${daysUntil} DAYS TO GO`}
+                </Badge>
+              )}
+            </div>
+            <div className="p-5 pt-3">
+              <h1 className="text-xl font-bold">
+                {event.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower"}
+              </h1>
+              {event.event_date && (
+                <div className="flex items-center gap-1.5 mt-1.5 text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span className="text-sm">
+                    {new Date(event.event_date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                </div>
+              )}
+              {event.invite_time_range && (
+                <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span className="text-sm">{event.invite_time_range}</span>
+                </div>
+              )}
+              {event.city && (
+                <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span className="text-sm">{event.city}</span>
+                </div>
+              )}
+              {event.theme && (
+                <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
+                  <Palette className="h-3.5 w-3.5" />
+                  <span className="text-sm">{event.theme}</span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
