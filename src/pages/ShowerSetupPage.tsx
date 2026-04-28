@@ -7,6 +7,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Baby, CalendarIcon, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
 
 const TOTAL_STEPS = 3;
 
@@ -34,13 +36,17 @@ const ShowerSetupPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setMode, updateSetupData } = useAppMode();
+  const { refetch } = useActiveEvent();
   const { user } = useAuth();
+  const editingEventId = searchParams.get("eventId");
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [loadingEvent, setLoadingEvent] = useState(false);
+  const [canEditEvent, setCanEditEvent] = useState(!editingEventId);
   const isNewEvent = searchParams.get("new") === "true";
 
   useEffect(() => {
-    if (!user || isNewEvent) return;
+    if (!user || isNewEvent || editingEventId) return;
     const checkExisting = async () => {
       const { data } = await supabase
         .from("events")
@@ -50,7 +56,7 @@ const ShowerSetupPage = () => {
       if (data && data.length > 0) navigate("/", { replace: true });
     };
     checkExisting();
-  }, [user, isNewEvent, navigate]);
+  }, [user, isNewEvent, editingEventId, navigate]);
 
   const [role, setRole] = useState<"planner" | "expectant-parent">("expectant-parent");
   const [honoreeName, setHonoreeName] = useState("");
