@@ -352,6 +352,32 @@ const GuestEventPage = () => {
           <p className="text-[10px] text-muted-foreground">Powered by Bump City</p>
         </footer>
       </div>
+
+      <Dialog open={!!signupPrompt} onOpenChange={(open) => !open && setSignupPrompt(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-2">
+              <UserPlus className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center">
+              {signupPrompt === "claim" ? "Sign up to claim this gift" : "Sign up to play Guess & Win"}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {signupPrompt === "claim"
+                ? "Create a free Bump City account so the parents-to-be know who's bringing what."
+                : "Create a free Bump City account to lock in your predictions and find out if you win."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button className="w-full" onClick={() => navigate(`/auth?redirect=/event/${eventId}`)}>
+              Create Free Account
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setSignupPrompt(null)}>
+              Maybe Later
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
