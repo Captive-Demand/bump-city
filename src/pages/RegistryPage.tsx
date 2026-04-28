@@ -76,6 +76,7 @@ const RegistryPage = () => {
   const { addActivity } = useActivityFeed();
   const { user } = useAuth();
   const { event } = useEvent();
+  const { isHost } = useEventRole();
   const displayName = user?.user_metadata?.display_name || user?.email || "You";
 
   // Add item form
