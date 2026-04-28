@@ -67,42 +67,95 @@ const ShowerDetailPage = () => {
       </div>
 
       <div className="px-6 pb-8 space-y-6">
-        <HowItWorks
-          title="Get this shower ready"
-          storageKey={`bump_city_how_it_works_shower_${event.id}_dismissed`}
-          steps={[
-            { number: 1, icon: Send, title: "Customize your invite", description: "Pick a template and add your details." },
-            { number: 2, icon: Users, title: "Add your guests", description: "Import contacts and send invitations." },
-            { number: 3, icon: Gift, title: "Build your registry", description: "Add gifts you'd love to receive." },
-          ]}
-        />
+        {isHost ? (
+          <>
+            <HowItWorks
+              title="Get this shower ready"
+              storageKey={`bump_city_how_it_works_shower_${event.id}_dismissed`}
+              steps={[
+                { number: 1, icon: Send, title: "Customize your invite", description: "Pick a template and add your details." },
+                { number: 2, icon: Users, title: "Add your guests", description: "Import contacts and send invitations." },
+                { number: 3, icon: Gift, title: "Build your registry", description: "Add gifts you'd love to receive." },
+              ]}
+            />
 
-        <InvitationOptionsCard event={event} />
-        <QuickSettingsCard event={event} />
-        <ManageTilesGrid eventId={event.id} city={event.city} />
+            <InvitationOptionsCard event={event} />
+            <QuickSettingsCard event={event} />
+            <ManageTilesGrid eventId={event.id} city={event.city} />
 
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" className="w-full h-11 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete this shower
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete this shower?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently remove the shower and all its associated guests, registry items, and invites. This cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full h-11 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/5">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete this shower
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this shower?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently remove the shower and all its associated guests, registry items, and invites. This cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        ) : (
+          <>
+            {/* Guest view: read-only essentials + quick links */}
+            <Card className="border-none">
+              <CardContent className="p-4 space-y-3">
+                <h2 className="text-sm font-bold">Event Details</h2>
+                {event.event_date && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary shrink-0" />
+                    <span>{new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                )}
+                {event.invite_time_range && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-primary shrink-0" />
+                    <span>{event.invite_time_range}</span>
+                  </div>
+                )}
+                {event.city && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className="h-4 w-4 text-primary shrink-0" />
+                    <span>{event.city}</span>
+                  </div>
+                )}
+                {event.theme && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Sparkles className="h-4 w-4 text-primary shrink-0" />
+                    <span>Theme: {event.theme}</span>
+                  </div>
+                )}
+                {event.invite_message && (
+                  <p className="text-sm text-muted-foreground italic pt-2 border-t border-border/50">
+                    "{event.invite_message}"
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Button variant="outline" className="h-14 rounded-xl flex-col gap-1" onClick={() => navigate("/registry")}>
+                <Gift className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold">View Registry</span>
+              </Button>
+              <Button variant="outline" className="h-14 rounded-xl flex-col gap-1" onClick={() => navigate("/predictions")}>
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold">Guess & Win</span>
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </MobileLayout>
   );
