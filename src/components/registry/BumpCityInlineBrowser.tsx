@@ -170,7 +170,7 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           const safePage = Math.min(page, totalPages - 1);
           const visible = expanded
             ? products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
-            : products;
+            : products.slice(0, PREVIEW_SIZE);
 
           const renderCard = (p: ShopifyProduct, layout: "grid" | "row" = "grid") => {
             const isAdded = added.has(p.id);
