@@ -61,6 +61,12 @@ const AdminPage = () => {
     if (!roleLoading && isAdmin) fetchAll();
   }, [roleLoading, isAdmin]);
 
+  // Auto-exit any active "preview as" impersonation when entering Admin so
+  // settings reflect the real admin/host role.
+  useEffect(() => {
+    setImpersonatedRole(null);
+  }, []);
+
   useEffect(() => {
     if (isAdmin) fetchUsers();
   }, [isAdmin, userPage, userSearch]);
