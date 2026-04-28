@@ -341,7 +341,7 @@ const ShowerSetupPage = () => {
           )}
 
           {(editingEventId || step === 2) && (
-            <div className="space-y-5">
+            <div className={cn("space-y-5", editingEventId && "pt-6")}>
               <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Pick all that apply — you can change these later.</p></div>
               <div className="space-y-2">
                 {[
