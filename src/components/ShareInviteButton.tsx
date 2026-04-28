@@ -48,7 +48,7 @@ const ShareInviteButton = () => {
       return;
     }
 
-    setInviteUrl(`${window.location.origin}/join?code=${code}`);
+    setInviteUrl(`${INVITE_BASE_URL}/join?code=${code}`);
     setLoading(false);
   };
 
