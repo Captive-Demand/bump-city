@@ -172,10 +172,64 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
             ? products.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
             : products;
 
-          const renderCard = (p: ShopifyProduct) => {
+          const renderCard = (p: ShopifyProduct, layout: "grid" | "row" = "grid") => {
             const isAdded = added.has(p.id);
             const isAdding = adding === p.id;
             const currentCat = overrides[p.id] || guessCategory(p.productType, categories);
+            if (layout === "row") {
+              return (
+                <Card key={p.id} className="border-none rounded-2xl overflow-hidden">
+                  <div className="flex items-center gap-3 p-2">
+                    <div className="h-20 w-20 shrink-0 rounded-xl bg-muted overflow-hidden">
+                      {p.featuredImage?.url ? (
+                        <img src={p.featuredImage.url} alt={p.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      {p.onlineStoreUrl ? (
+                        <a href={p.onlineStoreUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-sm line-clamp-2 leading-tight hover:text-primary hover:underline block">
+                          {p.title}
+                        </a>
+                      ) : (
+                        <p className="font-semibold text-sm line-clamp-2 leading-tight">{p.title}</p>
+                      )}
+                      <p className="text-xs text-primary font-bold">
+                        ${parseFloat(p.priceRange.minVariantPrice.amount).toFixed(2)}
+                      </p>
+                      <Select value={currentCat} onValueChange={(v) => setOverrides((o) => ({ ...o, [p.id]: v }))}>
+                        <SelectTrigger className="h-7 text-[11px] rounded-lg">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cats.map((c) => (
+                            <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="rounded-full text-xs h-8 gap-1 shrink-0"
+                      variant={isAdded ? "outline" : "default"}
+                      onClick={() => addToRegistry(p)}
+                      disabled={isAdding || isAdded}
+                    >
+                      {isAdding ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : isAdded ? (
+                        <><Check className="h-3.5 w-3.5" /> Added</>
+                      ) : (
+                        <><Plus className="h-3.5 w-3.5" /> Add</>
+                      )}
+                    </Button>
+                  </div>
+                </Card>
+              );
+            }
             return (
               <Card key={p.id} className="border-none rounded-2xl overflow-hidden h-full">
                 <div className="aspect-square bg-muted">
@@ -249,15 +303,15 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           return (
             <>
               {expanded ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {visible.map(renderCard)}
+                <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
+                  {visible.map((p) => renderCard(p, "row"))}
                 </div>
               ) : (
                 <Carousel opts={{ align: "start", loop: false }} className="px-1">
                   <CarouselContent className="-ml-3">
                     {visible.map((p) => (
                       <CarouselItem key={p.id} className="pl-3 basis-1/3">
-                        {renderCard(p)}
+                        {renderCard(p, "grid")}
                       </CarouselItem>
                     ))}
                   </CarouselContent>

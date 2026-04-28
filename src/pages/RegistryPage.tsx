@@ -631,75 +631,145 @@ const RegistryPage = () => {
         </div>
       )}
 
-      {/* Item grid */}
+      {/* Item list */}
       {items.length > 0 && (
-        <div className="px-6 pb-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="px-6 pb-6 space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
           {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center col-span-full py-8">No items match this filter.</p>
+            <p className="text-sm text-muted-foreground text-center md:col-span-full py-8">No items match this filter.</p>
           )}
           {filtered.map((item) => {
             const badge = sourceBadge(item.source);
             const claimedByMe = item.claimed && item.claimed_by === displayName;
             return (
-              <Card key={item.id} className={`border-none rounded-2xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md transition-all ${item.claimed ? "opacity-90" : ""}`}>
-                <div className="relative aspect-square bg-white">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-2" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <Package className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  <Badge className={`absolute top-1.5 right-1.5 text-[8px] font-bold tracking-wide border-none px-1.5 py-0.5 ${badge.className}`}>
-                    {badge.label}
-                  </Badge>
-                  {item.external_url && (
-                    <a
-                      href={item.external_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur rounded-full p-1 hover:bg-background transition-colors"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-                <CardContent className="p-2 space-y-1.5">
-                  <div>
-                    <p className={`font-semibold text-xs leading-tight line-clamp-2 ${item.claimed ? "line-through text-muted-foreground" : ""}`}>{item.name}</p>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[11px] font-semibold text-foreground">${item.price}</span>
-                      <span className="text-[9px] text-muted-foreground">{item.category}</span>
-                    </div>
-                  </div>
-
-                  {item.claimed && item.claimed_by && (
-                    <div className="flex items-center gap-1 bg-mint/30 rounded-md px-1.5 py-0.5">
-                      <div className="h-4 w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold shrink-0">
-                        {item.claimed_by.charAt(0).toUpperCase()}
-                      </div>
-                      <p className="text-[9px] truncate">
-                        <span className="font-semibold">{claimedByMe ? "you" : item.claimed_by}</span>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-0.5">
-                    {item.claimed ? (
-                      <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 gap-1 flex-1 px-2" onClick={() => handleUnclaim(item.id)} disabled={!claimedByMe && item.claimed_by !== displayName}>
-                        <Check className="h-3 w-3" /> Claimed
-                      </Button>
+              <Card key={item.id} className={`border-none rounded-2xl overflow-hidden hover:shadow-md transition-all ${item.claimed ? "opacity-90" : ""}`}>
+                {/* Mobile: horizontal row layout */}
+                <div className="flex items-center gap-3 p-2 md:hidden">
+                  <div className="relative h-20 w-20 shrink-0 rounded-xl bg-white overflow-hidden">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
                     ) : (
-                      <Button size="sm" className="rounded-full text-[10px] h-7 flex-1 px-2" onClick={() => handleClaim(item.id)}>Claim</Button>
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <Package className="h-6 w-6 text-muted-foreground" />
+                      </div>
                     )}
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    {item.external_url && (
+                      <a
+                        href={item.external_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute top-0.5 left-0.5 bg-background/80 backdrop-blur rounded-full p-0.5 hover:bg-background transition-colors"
+                      >
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
                   </div>
-                </CardContent>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold text-sm leading-tight line-clamp-2 ${item.claimed ? "line-through text-muted-foreground" : ""}`}>{item.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      <span>{item.category}</span>
+                      <span className="mx-1">•</span>
+                      <span className="font-semibold">${item.price}</span>
+                    </p>
+                    {item.claimed && item.claimed_by && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <div className="h-3.5 w-3.5 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold shrink-0">
+                          {item.claimed_by.charAt(0).toUpperCase()}
+                        </div>
+                        <p className="text-[10px] truncate text-muted-foreground">
+                          <span className="font-semibold">{claimedByMe ? "you" : item.claimed_by}</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    {item.claimed ? (
+                      <Badge className="bg-mint/40 text-mint-foreground border-none text-[9px] font-bold tracking-wide px-2 py-1 rounded-full uppercase">
+                        Purchased
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-primary/15 text-primary border-none text-[9px] font-bold tracking-wide px-2 py-1 rounded-full uppercase">
+                        Needed
+                      </Badge>
+                    )}
+                    <div className="flex items-center gap-0.5">
+                      {item.claimed ? (
+                        <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={() => handleUnclaim(item.id)} disabled={!claimedByMe && item.claimed_by !== displayName}>
+                          <Check className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <Button size="sm" className="rounded-full text-[10px] h-7 px-3" onClick={() => handleClaim(item.id)}>Claim</Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop/tablet: original grid card */}
+                <div className="hidden md:block">
+                  <div className="relative aspect-square bg-white">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-2" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <Package className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <Badge className={`absolute top-1.5 right-1.5 text-[8px] font-bold tracking-wide border-none px-1.5 py-0.5 ${badge.className}`}>
+                      {badge.label}
+                    </Badge>
+                    {item.external_url && (
+                      <a
+                        href={item.external_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur rounded-full p-1 hover:bg-background transition-colors"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                  <CardContent className="p-2 space-y-1.5">
+                    <div>
+                      <p className={`font-semibold text-xs leading-tight line-clamp-2 ${item.claimed ? "line-through text-muted-foreground" : ""}`}>{item.name}</p>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-[11px] font-semibold text-foreground">${item.price}</span>
+                        <span className="text-[9px] text-muted-foreground">{item.category}</span>
+                      </div>
+                    </div>
+
+                    {item.claimed && item.claimed_by && (
+                      <div className="flex items-center gap-1 bg-mint/30 rounded-md px-1.5 py-0.5">
+                        <div className="h-4 w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold shrink-0">
+                          {item.claimed_by.charAt(0).toUpperCase()}
+                        </div>
+                        <p className="text-[9px] truncate">
+                          <span className="font-semibold">{claimedByMe ? "you" : item.claimed_by}</span>
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-0.5">
+                      {item.claimed ? (
+                        <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 gap-1 flex-1 px-2" onClick={() => handleUnclaim(item.id)} disabled={!claimedByMe && item.claimed_by !== displayName}>
+                          <Check className="h-3 w-3" /> Claimed
+                        </Button>
+                      ) : (
+                        <Button size="sm" className="rounded-full text-[10px] h-7 flex-1 px-2" onClick={() => handleClaim(item.id)}>Claim</Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </div>
               </Card>
             );
           })}
