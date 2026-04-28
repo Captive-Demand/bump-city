@@ -130,7 +130,13 @@ const InviteBuilderPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-4 pt-8 pb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center gap-2 mb-1">
           <Mail className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Invite Builder</h1>
@@ -138,7 +144,7 @@ const InviteBuilderPage = () => {
         <p className="text-sm text-muted-foreground">Design and send your shower invitations</p>
       </div>
 
-      <div className="px-6 pb-6 space-y-4">
+      <div className="px-4 pb-6 space-y-4">
         {showPreview ? (
           <>
             <div className="flex w-full justify-center">
