@@ -565,6 +565,7 @@ const RegistryPage = () => {
           )}
         </Card>
       </div>
+      </>)}
 
       {/* === YOUR REGISTRY SECTION === */}
       <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
@@ -573,14 +574,16 @@ const RegistryPage = () => {
           <h2 className="text-base font-bold">Your Registry</h2>
           <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
         </div>
-        <div className="flex gap-2 pt-3">
-          <Button size="sm" variant="outline" className="rounded-full h-8 gap-1" onClick={() => setUrlOpen(true)}>
-            <LinkIcon className="h-3.5 w-3.5" /> URL
-          </Button>
-          <Button size="sm" className="rounded-full h-8 gap-1" onClick={() => setAddOpen(true)}>
-            <Plus className="h-3.5 w-3.5" /> Add
-          </Button>
-        </div>
+        {isHost && (
+          <div className="flex gap-2 pt-3">
+            <Button size="sm" variant="outline" className="rounded-full h-8 gap-1" onClick={() => setUrlOpen(true)}>
+              <LinkIcon className="h-3.5 w-3.5" /> URL
+            </Button>
+            <Button size="sm" className="rounded-full h-8 gap-1" onClick={() => setAddOpen(true)}>
+              <Plus className="h-3.5 w-3.5" /> Add
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Progress bar */}
