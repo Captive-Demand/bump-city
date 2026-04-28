@@ -61,6 +61,7 @@ const sourceBadge = (source: string | null) => {
 };
 
 const RegistryPage = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeSource, setActiveSource] = useState<string>("all");
   const [showMine, setShowMine] = useState(false);
