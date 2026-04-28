@@ -139,8 +139,8 @@ const GuestEventPage = () => {
     );
   }
 
-  const daysUntil = event.due_date
-    ? Math.max(0, Math.ceil((new Date(event.due_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  const daysUntil = event.event_date
+    ? Math.max(0, Math.ceil((new Date(event.event_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : null;
 
   return (
