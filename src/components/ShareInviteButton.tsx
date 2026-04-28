@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
+const INVITE_BASE_URL = "https://bumpcity.testyour.app";
+
 const ShareInviteButton = () => {
   const { user } = useAuth();
   const { event } = useEvent();
@@ -48,7 +50,7 @@ const ShareInviteButton = () => {
       return;
     }
 
-    setInviteUrl(`${window.location.origin}/join?code=${code}`);
+    setInviteUrl(`${INVITE_BASE_URL}/join?code=${code}`);
     setLoading(false);
   };
 
