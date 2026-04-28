@@ -340,7 +340,7 @@ const PlanningPage = () => {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full justify-center gap-2 px-6 bg-transparent border-b border-border rounded-none h-auto p-0">
+        <TabsList className="w-full justify-center gap-5 px-6 py-2 bg-transparent border-b border-border rounded-none h-auto">
           {[
             { id: "checklist", label: "Checklist" },
             { id: "budget", label: "Budget" },
@@ -350,7 +350,7 @@ const PlanningPage = () => {
             <TabsTrigger
               key={t.id}
               value={t.id}
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 py-2 text-sm font-semibold text-muted-foreground"
+              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-2 py-3 text-sm font-semibold text-muted-foreground"
             >
               {t.label}
             </TabsTrigger>
