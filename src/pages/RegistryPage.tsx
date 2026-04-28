@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart, ChevronDown } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart, ChevronDown, ChevronLeft } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useNavigate } from "react-router-dom";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
