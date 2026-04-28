@@ -318,22 +318,318 @@ const RegistryPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-2">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-bold">Gift Registry</h1>
-          </div>
-          <div className="flex gap-2">
-            <Dialog open={urlOpen} onOpenChange={setUrlOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="rounded-full h-8 gap-1"><LinkIcon className="h-3.5 w-3.5" /> URL</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Add from URL</DialogTitle></DialogHeader>
-                <div className="space-y-4">
+      {/* === HEADER === */}
+      <div className="px-5 pt-6 pb-3 flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            onClick={() => navigate(-1)}
+            className="h-9 w-9 flex items-center justify-center -ml-2 rounded-full hover:bg-muted/60 transition-colors"
+            aria-label="Back"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <h1 className="text-2xl font-bold tracking-tight truncate">Registry Hub</h1>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({ title: "Our Registry", url: window.location.href }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Link copied");
+              }
+            }}
+            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
+            aria-label="Share"
+          >
+            <Share2 className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => navigate("/shower")}
+            className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-muted/60 transition-colors"
+            aria-label="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      <div className="border-b border-border/60 mx-5" />
+
+      {/* === HERO: Add from anywhere === */}
+      <div className="px-5 pt-5">
+        <Card className="border-none rounded-3xl shadow-sm overflow-hidden bg-card">
+          <CardContent className="p-5">
+            <div className="flex items-stretch gap-4">
+              <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                <div>
+                  <h2 className="text-xl font-bold leading-tight mb-2">Add from anywhere</h2>
+                  <p className="text-sm text-primary/80 leading-snug">
+                    Spot something you love? Paste a link to add items from any store.
+                  </p>
+                </div>
+                <Dialog open={urlOpen} onOpenChange={setUrlOpen}>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="mt-4 self-start rounded-full bg-primary/15 hover:bg-primary/25 text-primary font-semibold gap-2 h-10 px-4 shadow-none border-none"
+                    >
+                      <Link2 className="h-4 w-4" />
+                      Add from Link
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader><DialogTitle>Add from URL</DialogTitle></DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <Label>Product URL</Label>
+                        <div className="flex gap-2">
+                          <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
+                          <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
+                        </div>
+                      </div>
+                      {scrapedData && (
+                        <>
+                          {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
+                          <div className="space-y-1.5">
+                            <Label>Item name</Label>
+                            <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1.5">
+                              <Label>Price ($)</Label>
+                              <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+                            </div>
+                            <div className="space-y-1.5">
+                              <Label>Category</Label>
+                              <Select value={newCategory} onValueChange={setNewCategory}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <Button className="w-full rounded-xl" onClick={handleAddFromUrl} disabled={!newName.trim()}>Add to Registry</Button>
+                        </>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <div className="w-32 h-32 sm:w-36 sm:h-36 shrink-0 rounded-2xl overflow-hidden">
+                <img
+                  src={registryBagHero}
+                  alt="Shopping bag"
+                  className="w-full h-full object-cover"
+                  width={768}
+                  height={768}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* === CATEGORY PILLS === */}
+      <div className="px-5 pt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-1">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all shrink-0 ${
+              activeCategory === cat
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "bg-card text-foreground border border-border/60"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* === ITEM LIST === */}
+      <div className="px-5 pt-4 pb-32 space-y-3">
+        {items.length === 0 && (
+          <Card className="border-none rounded-2xl mt-2">
+            <CardContent className="p-8 text-center">
+              <div className="bg-primary/10 h-16 w-16 rounded-2xl mx-auto mb-3 flex items-center justify-center">
+                <ShoppingBag className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="font-bold text-base mb-1">Your registry is just getting started</h3>
+              <p className="text-xs text-muted-foreground">
+                Tap the gift button below to add your first item
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {items.length > 0 && filtered.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">No items match this filter.</p>
+        )}
+
+        {filtered.map((item) => {
+          const claimedByMe = item.claimed && item.claimed_by === displayName;
+          return (
+            <div
+              key={item.id}
+              className="flex items-center gap-4 py-1"
+            >
+              <div className="w-20 h-20 shrink-0 rounded-2xl bg-card overflow-hidden flex items-center justify-center shadow-sm">
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  <Package className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <button
+                onClick={() => openEdit(item)}
+                className="flex-1 min-w-0 text-left"
+              >
+                <p className={`font-bold text-base leading-tight truncate ${item.claimed ? "line-through text-muted-foreground" : ""}`}>
+                  {item.name}
+                </p>
+                <p className="text-sm text-primary/80 mt-0.5">
+                  {item.category} • ${item.price}
+                </p>
+              </button>
+              <div className="shrink-0">
+                {item.claimed ? (
+                  <button
+                    onClick={() => handleUnclaim(item.id)}
+                    disabled={!claimedByMe && item.claimed_by !== displayName}
+                    className="px-3.5 py-1.5 rounded-full bg-mint/40 text-mint-foreground text-[11px] font-bold tracking-wider uppercase"
+                  >
+                    Purchased
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleClaim(item.id)}
+                    className="px-3.5 py-1.5 rounded-full bg-primary/15 text-primary text-[11px] font-bold tracking-wider uppercase"
+                  >
+                    Needed
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* === FLOATING ACTION BUTTON === */}
+      <button
+        onClick={() => setAddMenuOpen(true)}
+        className="fixed bottom-24 right-5 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        aria-label="Add gift"
+      >
+        <Gift className="h-6 w-6" />
+      </button>
+
+      {/* === ADD MENU SHEET === */}
+      <Sheet open={addMenuOpen} onOpenChange={setAddMenuOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl p-0 max-h-[90vh] overflow-y-auto">
+          <SheetHeader className="px-6 pt-6 pb-2">
+            <SheetTitle>Add to Registry</SheetTitle>
+          </SheetHeader>
+          <div className="px-6 pb-8 space-y-3 pt-4">
+            {/* Bump City */}
+            <Card className="border-2 border-primary/30 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-transparent">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">
+                    <Store className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-base leading-tight">Bump City picks</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Tiffany's curated picks — added in one tap</p>
+                    {shopifyAddedCount > 0 && (
+                      <p className="text-[11px] font-semibold text-primary mt-1">✓ {shopifyAddedCount} added</p>
+                    )}
+                  </div>
+                </div>
+                {event && user && (
+                  <BumpCityInlineBrowser
+                    eventId={event.id}
+                    userId={user.id}
+                    categories={categories}
+                    onAdded={fetchItems}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Local */}
+            <Card className="border border-border rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setExpandedStep(expandedStep === "local" ? null : "local")}
+                className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
+              >
+                <div className="h-8 w-8 rounded-full bg-mint text-mint-foreground flex items-center justify-center shrink-0">
+                  <Heart className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base leading-tight">Local service or shop</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Doulas, night nurses, neighborhood boutiques</p>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 mt-1 transition-transform ${expandedStep === "local" ? "rotate-180" : ""}`} />
+              </button>
+              {expandedStep === "local" && (
+                <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
                   <div className="space-y-1.5">
-                    <Label>Product URL</Label>
+                    <Label className="text-xs">Item name</Label>
+                    <Input placeholder="e.g. Postpartum doula package" value={newName} onChange={(e) => setNewName(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Category</Label>
+                      <Select value={newCategory} onValueChange={setNewCategory}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Price ($)</Label>
+                      <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Image (optional)</Label>
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Preview" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />
+                    )}
+                    <div className="flex gap-2">
+                      <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
+                      <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent transition-colors">
+                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        <Upload className="h-3.5 w-3.5" />
+                      </label>
+                    </div>
+                  </div>
+                  <Button className="w-full rounded-xl" onClick={async () => { await handleAdd(); setAddMenuOpen(false); }} disabled={!newName.trim() || uploading}>
+                    Add to Registry
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {/* Web */}
+            <Card className="border border-border rounded-2xl overflow-hidden">
+              <button
+                onClick={() => setExpandedStep(expandedStep === "web" ? null : "web")}
+                className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
+              >
+                <div className="h-8 w-8 rounded-full bg-lavender text-lavender-foreground flex items-center justify-center shrink-0">
+                  <Globe className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-base leading-tight">Paste any product link</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Amazon, Target, anywhere — we'll grab the photo and price</p>
+                </div>
+                <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 mt-1 transition-transform ${expandedStep === "web" ? "rotate-180" : ""}`} />
+              </button>
+              {expandedStep === "web" && (
+                <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Product URL</Label>
                     <div className="flex gap-2">
                       <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
                       <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
@@ -341,374 +637,33 @@ const RegistryPage = () => {
                   </div>
                   {scrapedData && (
                     <>
-                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />}
+                      {scrapedData.image && <img src={scrapedData.image} alt="" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />}
                       <div className="space-y-1.5">
-                        <Label>Item name</Label>
+                        <Label className="text-xs">Item name</Label>
                         <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <Label>Price ($)</Label>
+                          <Label className="text-xs">Price ($)</Label>
                           <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
                         </div>
                         <div className="space-y-1.5">
-                          <Label>Category</Label>
+                          <Label className="text-xs">Category</Label>
                           <Select value={newCategory} onValueChange={setNewCategory}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                           </Select>
                         </div>
                       </div>
-                      <Button className="w-full rounded-xl" onClick={handleAddFromUrl} disabled={!newName.trim()}>Add to Registry</Button>
+                      <Button className="w-full rounded-xl" onClick={async () => { await handleAddFromUrl(); setAddMenuOpen(false); }} disabled={!newName.trim()}>Add to Registry</Button>
                     </>
                   )}
                 </div>
-              </DialogContent>
-            </Dialog>
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="rounded-full h-8 gap-1"><Plus className="h-3.5 w-3.5" /> Add</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Add Registry Item</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label>Item name</Label>
-                    <Input placeholder="e.g. Baby Stroller" value={newName} onChange={(e) => setNewName(e.target.value)} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Category</Label>
-                    <Select value={newCategory} onValueChange={setNewCategory}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Image (optional)</Label>
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Preview" className="w-32 h-32 object-contain rounded-lg mx-auto bg-muted" />
-                    )}
-                    <div className="flex gap-2">
-                      <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
-                      <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent hover:text-accent-foreground transition-colors">
-                        <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                        <Upload className="h-3.5 w-3.5" />
-                      </label>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Price ($)</Label>
-                    <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-                  </div>
-                  <Button className="w-full rounded-xl" onClick={handleAdd} disabled={!newName.trim()}>Add Item</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground italic">{blurb}</p>
-      </div>
-
-      {/* === ADD TO REGISTRY SECTION === */}
-      <div className="px-6 pt-4 pb-1 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Add to Registry</h2>
-        <button
-          onClick={scrollToRegistry}
-          className="text-[11px] font-semibold text-primary hover:underline flex items-center gap-1"
-        >
-          Jump to Your Registry ↓
-        </button>
-      </div>
-      <div className="px-6 pt-2 space-y-3">
-        {/* Step 1 — Bump City (always expanded) */}
-        <Card className="border-2 border-primary/30 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/5 to-transparent">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">1</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <Store className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-base leading-tight">Start with Bump City</h2>
-                </div>
-                <p className="text-xs text-muted-foreground mt-0.5">Tiffany's curated picks — added to your registry in one tap</p>
-                {shopifyAddedCount > 0 && (
-                  <p className="text-[11px] font-semibold text-primary mt-1">✓ {shopifyAddedCount} added from Bump City</p>
-                )}
-              </div>
-            </div>
-            {event && user && (
-              <BumpCityInlineBrowser
-                eventId={event.id}
-                userId={user.id}
-                categories={categories}
-                onAdded={fetchItems}
-              />
-            )}
-            <button
-              onClick={() => expandStep("local")}
-              className="w-full text-xs font-semibold text-primary hover:underline pt-1"
-            >
-              Continue → Add local favorites
-            </button>
-          </CardContent>
-        </Card>
-
-        {/* Step 2 — Local */}
-        <Card ref={step2Ref} className="border border-border rounded-2xl overflow-hidden">
-          <button
-            onClick={() => setExpandedStep(expandedStep === "local" ? null : "local")}
-            className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
-          >
-            <div className="h-8 w-8 rounded-full bg-mint text-mint-foreground flex items-center justify-center font-bold text-sm shrink-0">2</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <Heart className="h-4 w-4" />
-                <h2 className="font-bold text-base leading-tight">Add a local service or shop</h2>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Doulas, night nurses, neighborhood boutiques</p>
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${expandedStep === "local" ? "rotate-180" : ""}`} />
-          </button>
-          {expandedStep === "local" && (
-            <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Item name</Label>
-                <Input placeholder="e.g. Postpartum doula package" value={newName} onChange={(e) => setNewName(e.target.value)} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Category</Label>
-                  <Select value={newCategory} onValueChange={setNewCategory}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Price ($)</Label>
-                  <Input type="number" placeholder="0" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Image (optional)</Label>
-                {imagePreview && (
-                  <img src={imagePreview} alt="Preview" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />
-                )}
-                <div className="flex gap-2">
-                  <Input placeholder="https://..." value={newImageUrl} onChange={(e) => { setNewImageUrl(e.target.value); setImagePreview(e.target.value); }} className="flex-1" />
-                  <label className="cursor-pointer inline-flex items-center justify-center rounded-md border border-input bg-background h-9 w-9 hover:bg-accent transition-colors">
-                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                    <Upload className="h-3.5 w-3.5" />
-                  </label>
-                </div>
-              </div>
-              <Button className="w-full rounded-xl" onClick={async () => { await handleAdd(); scrollToRegistry(); }} disabled={!newName.trim() || uploading}>
-                Add to Registry
-              </Button>
-            </div>
-          )}
-        </Card>
-
-        {/* Step 3 — Web */}
-        <Card ref={step3Ref} className="border border-border rounded-2xl overflow-hidden">
-          <button
-            onClick={() => setExpandedStep(expandedStep === "web" ? null : "web")}
-            className="w-full flex items-start gap-3 p-4 text-left hover:bg-muted/30 transition-colors"
-          >
-            <div className="h-8 w-8 rounded-full bg-lavender text-lavender-foreground flex items-center justify-center font-bold text-sm shrink-0">3</div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <h2 className="font-bold text-base leading-tight">Paste any product link</h2>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">Amazon, Target, anywhere — we'll grab the photo and price</p>
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground shrink-0 transition-transform ${expandedStep === "web" ? "rotate-180" : ""}`} />
-          </button>
-          {expandedStep === "web" && (
-            <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Product URL</Label>
-                <div className="flex gap-2">
-                  <Input placeholder="https://..." value={importUrl} onChange={(e) => setImportUrl(e.target.value)} />
-                  <Button onClick={handleScrape} disabled={!importUrl.trim() || scraping} size="sm">{scraping ? "..." : "Fetch"}</Button>
-                </div>
-              </div>
-              {scrapedData && (
-                <>
-                  {scrapedData.image && <img src={scrapedData.image} alt="" className="w-24 h-24 object-contain rounded-lg mx-auto bg-muted" />}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Item name</Label>
-                    <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Price ($)</Label>
-                      <Input type="number" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Category</Label>
-                      <Select value={newCategory} onValueChange={setNewCategory}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{categories.filter((c) => c !== "All").map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <Button className="w-full rounded-xl" onClick={async () => { await handleAddFromUrl(); scrollToRegistry(); }} disabled={!newName.trim()}>Add to Registry</Button>
-                </>
               )}
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/* === YOUR REGISTRY SECTION === */}
-      <div ref={yourRegistryRef} className="px-6 pt-8 pb-1 mt-4 border-t border-border/60">
-        <div className="flex items-center gap-2 pt-4">
-          <Package className="h-4 w-4 text-primary" />
-          <h2 className="text-base font-bold">Your Registry</h2>
-          <span className="text-xs text-muted-foreground">({items.length} {items.length === 1 ? "item" : "items"})</span>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="px-6 pt-5">
-        <div className="flex items-center justify-between mb-1.5">
-          <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Registry Progress</p>
-          <p className="text-xs font-semibold text-primary">{claimedCount} of {items.length} claimed</p>
-        </div>
-        <div className="h-3 bg-muted rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${pct}%`, background: `linear-gradient(90deg, hsl(var(--primary)), hsl(var(--mint)))` }}
-          />
-        </div>
-      </div>
-
-      {/* Source filter */}
-      <div className="px-6 pt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {sources.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setActiveSource(s.id)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ${activeSource === s.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
-          >
-            <s.icon className="h-3 w-3" />
-            {s.label}
-          </button>
-        ))}
-        <button
-          onClick={() => setShowMine(!showMine)}
-          className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 ml-auto ${showMine ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
-        >
-          <Heart className="h-3 w-3" />
-          I'm Bringing
-        </button>
-      </div>
-
-      {/* Category filter */}
-      <div className="px-6 pt-2 flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
-        {categories.map((cat) => (
-          <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${activeCategory === cat ? "bg-foreground text-background" : "bg-transparent text-muted-foreground hover:text-foreground"}`}>
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* Empty state */}
-      {items.length === 0 && (
-        <div className="px-6 pb-6">
-          <Card className="border-none">
-            <CardContent className="p-8 text-center">
-              <div className="bg-primary/10 h-16 w-16 rounded-2xl mx-auto mb-3 flex items-center justify-center">
-                <ShoppingBag className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="font-bold text-base mb-1">Your registry is just getting started</h3>
-              <p className="text-xs text-muted-foreground">
-                👆 Start with Step 1 above — Tiffany's Bump City picks
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Item grid */}
-      {items.length > 0 && (
-        <div className="px-6 pb-6 grid grid-cols-2 md:grid-cols-3 gap-3">
-          {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center col-span-full py-8">No items match this filter.</p>
-          )}
-          {filtered.map((item) => {
-            const badge = sourceBadge(item.source);
-            const claimedByMe = item.claimed && item.claimed_by === displayName;
-            return (
-              <Card key={item.id} className={`border-none rounded-2xl overflow-hidden hover:-translate-y-0.5 hover:shadow-md transition-all ${item.claimed ? "opacity-90" : ""}`}>
-                <div className="relative aspect-square bg-white">
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-2" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-muted">
-                      <Package className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  <Badge className={`absolute top-1.5 right-1.5 text-[8px] font-bold tracking-wide border-none px-1.5 py-0.5 ${badge.className}`}>
-                    {badge.label}
-                  </Badge>
-                  {item.external_url && (
-                    <a
-                      href={item.external_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="absolute top-1.5 left-1.5 bg-background/80 backdrop-blur rounded-full p-1 hover:bg-background transition-colors"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-                <CardContent className="p-2 space-y-1.5">
-                  <div>
-                    <p className={`font-semibold text-xs leading-tight line-clamp-2 ${item.claimed ? "line-through text-muted-foreground" : ""}`}>{item.name}</p>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[11px] font-semibold text-foreground">${item.price}</span>
-                      <span className="text-[9px] text-muted-foreground">{item.category}</span>
-                    </div>
-                  </div>
-
-                  {item.claimed && item.claimed_by && (
-                    <div className="flex items-center gap-1 bg-mint/30 rounded-md px-1.5 py-0.5">
-                      <div className="h-4 w-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold shrink-0">
-                        {item.claimed_by.charAt(0).toUpperCase()}
-                      </div>
-                      <p className="text-[9px] truncate">
-                        <span className="font-semibold">{claimedByMe ? "you" : item.claimed_by}</span>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-0.5">
-                    {item.claimed ? (
-                      <Button size="sm" variant="outline" className="rounded-full text-[10px] h-7 gap-1 flex-1 px-2" onClick={() => handleUnclaim(item.id)} disabled={!claimedByMe && item.claimed_by !== displayName}>
-                        <Check className="h-3 w-3" /> Claimed
-                      </Button>
-                    ) : (
-                      <Button size="sm" className="rounded-full text-[10px] h-7 flex-1 px-2" onClick={() => handleClaim(item.id)}>Claim</Button>
-                    )}
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+            </Card>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
