@@ -16,18 +16,18 @@ export const ImpersonationBanner = () => {
   if (!isImpersonating || !impersonatedRole) return null;
 
   return (
-    <div className="flex items-center justify-between gap-2 bg-amber-500/95 text-amber-950 px-4 py-1.5 text-xs font-semibold shadow-sm">
-      <div className="flex items-center gap-1.5 min-w-0">
-        <Eye className="h-3.5 w-3.5 flex-shrink-0" />
+    <div className="flex items-center justify-between gap-2 bg-amber-500 text-amber-950 px-4 py-2.5 text-sm font-bold shadow-md border-b-2 border-amber-600">
+      <div className="flex items-center gap-2 min-w-0">
+        <Eye className="h-4 w-4 flex-shrink-0" />
         <span className="truncate">Previewing as {LABELS[impersonatedRole] || impersonatedRole}</span>
       </div>
       <Button
         size="sm"
         variant="ghost"
-        className="h-6 px-2 text-amber-950 hover:bg-amber-600/30 gap-1"
+        className="h-7 px-3 text-amber-950 bg-amber-100/60 hover:bg-amber-50 gap-1 font-bold"
         onClick={() => setImpersonatedRole(null)}
       >
-        <X className="h-3 w-3" /> Exit
+        <X className="h-3.5 w-3.5" /> Stop preview
       </Button>
     </div>
   );

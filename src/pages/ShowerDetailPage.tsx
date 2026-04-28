@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { ChevronLeft, Trash2, Send, Users, Gift, Calendar, MapPin, Sparkles, CalendarPlus, Navigation } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
-import { useEventRole } from "@/hooks/useEventRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { ShowerHero } from "@/components/shower/ShowerHero";
 import { QuickSettingsCard } from "@/components/shower/QuickSettingsCard";
 import { InvitationOptionsCard } from "@/components/shower/InvitationOptionsCard";
@@ -44,13 +44,34 @@ const ShowerDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { allEvents, activeEvent, switchEvent, loading, refetch } = useActiveEvent();
-  const { isHost } = useEventRole();
+  const { user } = useAuth();
+  const [memberRole, setMemberRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (eventId && eventId !== activeEvent?.id) {
       switchEvent(eventId);
     }
   }, [eventId, activeEvent?.id, switchEvent]);
+
+  // Per-event role lookup so host UI doesn't depend on global activeEvent
+  // matching the URL or on stale impersonation state.
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || !eventId) {
+      setMemberRole(null);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("event_members")
+        .select("role")
+        .eq("event_id", eventId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!cancelled) setMemberRole((data?.role as string) || null);
+    })();
+    return () => { cancelled = true; };
+  }, [user, eventId]);
 
   if (loading) {
     return (
@@ -64,6 +85,10 @@ const ShowerDetailPage = () => {
 
   const event = allEvents.find((e) => e.id === eventId);
   if (!event) return <Navigate to="/showers" replace />;
+
+  // Per-event host derivation: owner is always host; otherwise check member role.
+  const isOwner = !!user && event.user_id === user.id;
+  const isHost = isOwner || memberRole === "host" || memberRole === "co-host";
 
   const handleDelete = async () => {
     const { error } = await supabase.from("events").delete().eq("id", event.id);
@@ -85,7 +110,7 @@ const ShowerDetailPage = () => {
         >
           <ChevronLeft className="h-4 w-4" /> Showers
         </button>
-        <ShowerHero event={event} />
+        <ShowerHero event={event} isHost={isHost} />
       </div>
 
       <div className="px-6 pb-8 space-y-6">
