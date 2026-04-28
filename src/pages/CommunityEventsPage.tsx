@@ -165,6 +165,3 @@ const CommunityEventsPage = () => {
 };
 
 export default CommunityEventsPage;
-
-
-export default CommunityEventsPage;
