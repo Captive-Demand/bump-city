@@ -11,8 +11,11 @@ export interface MobileLayoutProps {
 }
 
 const BrandHeader = forwardRef<HTMLDivElement>((_, ref) => (
-  <div ref={ref} className="flex justify-center pt-8 pb-0">
-    <img src={bumpCityLogo} alt="Bump City" className="h-8" />
+  <div
+    ref={ref}
+    className="sticky top-0 z-40 flex justify-center pt-4 pb-3 bg-background/85 backdrop-blur-md border-b border-border/40"
+  >
+    <img src={bumpCityLogo} alt="Bump City" className="h-7" />
   </div>
 ));
 
