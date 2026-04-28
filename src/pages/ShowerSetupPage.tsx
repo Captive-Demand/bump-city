@@ -385,19 +385,27 @@ const ShowerSetupPage = () => {
         </div>
 
         <div className="flex gap-3 pt-6">
-          {step > 0 && (
-            <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back
-            </Button>
-          )}
-          {step < TOTAL_STEPS - 1 ? (
-            <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
-              Next <ArrowRight className="h-4 w-4 ml-1" />
+          {editingEventId ? (
+            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Save changes"}
             </Button>
           ) : (
-            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : editingEventId ? "Save changes" : "Let's go!"}
-            </Button>
+            <>
+              {step > 0 && (
+                <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                </Button>
+              )}
+              {step < TOTAL_STEPS - 1 ? (
+                <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
+                  Next <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : (
+                <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+                  <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
