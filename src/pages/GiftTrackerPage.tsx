@@ -21,11 +21,12 @@ interface GiftReceived {
   created_at: string;
 }
 
-interface ClaimedItem { name: string; price: number | null; claimed_by: string | null; }
+interface ClaimedItem { id: string; name: string; price: number | null; claimed_by: string | null; image_url: string | null; }
 
 const GiftTrackerPage = () => {
   const { user } = useAuth();
   const { event } = useEvent();
+  const navigate = useNavigate();
   const [gifts, setGifts] = useState<GiftReceived[]>([]);
   const [claimed, setClaimed] = useState<ClaimedItem[]>([]);
   const [loading, setLoading] = useState(true);
