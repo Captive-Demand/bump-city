@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import guessWinHero from "@/assets/guess-win-hero.jpg";
 
 interface Prediction {
@@ -57,6 +58,7 @@ const PredictionsPage = () => {
   const [revealed, setRevealed] = useState(false);
   const [revealing, setRevealing] = useState(false);
   const [confetti, setConfetti] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
 
   const fetchPredictions = async () => {
     if (!event) return;
@@ -196,9 +198,12 @@ const PredictionsPage = () => {
           <div className="text-6xl animate-bounce">🎉🎊🥳</div>
         </div>
       )}
-      <div className="px-6 pt-8 pb-2">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Featured Game</p>
-        <div className="rounded-3xl overflow-hidden bg-card shadow-sm border border-border/50">
+      <div className="px-6 pt-8 pb-6">
+        <button
+          type="button"
+          onClick={() => setGameOpen(true)}
+          className="w-full text-left rounded-3xl overflow-hidden bg-card shadow-sm border border-border/50 transition-transform active:scale-[0.99] hover:shadow-md"
+        >
           <div className="relative aspect-[4/3] w-full overflow-hidden">
             <img
               src={guessWinHero}
@@ -230,28 +235,28 @@ const PredictionsPage = () => {
                 <span className="text-[11px] font-bold uppercase tracking-wide text-foreground/80">{predictions.length} playing</span>
               </div>
             </div>
-            <Button
-              size="lg"
-              className="w-full h-12 rounded-full font-bold text-base"
-              onClick={() => document.getElementById("guess-win-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" })}
-            >
+            <div className="w-full h-12 rounded-full font-bold text-base bg-primary text-primary-foreground flex items-center justify-center">
               Play Now
-            </Button>
+            </div>
           </div>
-        </div>
+        </button>
       </div>
 
-      <div id="guess-win-tabs" className="px-6 pt-6 pb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <h2 className="text-lg font-bold">Your Predictions</h2>
-        </div>
-        <Tabs defaultValue="submit">
-          <TabsList className="w-full mb-4">
-            <TabsTrigger value="submit" className="flex-1">Submit</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex-1">Leaderboard</TabsTrigger>
-            <TabsTrigger value="results" className="flex-1">Results</TabsTrigger>
-          </TabsList>
+      <Sheet open={gameOpen} onOpenChange={setGameOpen}>
+        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto rounded-t-3xl p-0">
+          <SheetHeader className="px-6 pt-6 pb-2">
+            <SheetTitle className="flex items-center gap-2 text-left">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Your Predictions
+            </SheetTitle>
+          </SheetHeader>
+          <div className="px-6 pb-8">
+            <Tabs defaultValue="submit">
+              <TabsList className="w-full mb-4">
+                <TabsTrigger value="submit" className="flex-1">Submit</TabsTrigger>
+                <TabsTrigger value="leaderboard" className="flex-1">Leaderboard</TabsTrigger>
+                <TabsTrigger value="results" className="flex-1">Results</TabsTrigger>
+              </TabsList>
 
           <TabsContent value="submit">
             <Card className="border-none">
@@ -429,8 +434,10 @@ const PredictionsPage = () => {
               </Card>
             )}
           </TabsContent>
-        </Tabs>
-      </div>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
     </MobileLayout>
   );
 };
