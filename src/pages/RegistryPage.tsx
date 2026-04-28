@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart, ChevronDown } from "lucide-react";
+import { Check, ShoppingBag, Plus, Upload, Package, Trash2, Pencil, Globe, Sparkles, Store, ExternalLink, Heart, ChevronDown, ChevronLeft } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useNavigate } from "react-router-dom";
 import { useActivityFeed } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
@@ -60,6 +61,7 @@ const sourceBadge = (source: string | null) => {
 };
 
 const RegistryPage = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeSource, setActiveSource] = useState<string>("all");
   const [showMine, setShowMine] = useState(false);
@@ -314,7 +316,13 @@ const RegistryPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-2">
+      <div className="px-6 pt-10 pb-2">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center gap-2 mb-1">
           <ShoppingBag className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Gift Registry</h1>

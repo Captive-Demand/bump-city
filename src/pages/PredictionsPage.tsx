@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Trophy, Send, PartyPopper, Timer, Users, Gift } from "lucide-react";
+import { Sparkles, Trophy, Send, PartyPopper, Timer, Users, Gift, ChevronLeft } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -34,6 +35,7 @@ interface Prediction {
 }
 
 const PredictionsPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { event } = useEvent();
   const { isHost, isAdmin } = useEventRole();
@@ -199,6 +201,12 @@ const PredictionsPage = () => {
         </div>
       )}
       <div className="px-6 pt-8 pb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <button
           type="button"
           onClick={() => setGameOpen(true)}
