@@ -90,7 +90,7 @@ const EventCard = () => {
 const quickActions = [
   { icon: Send, label: "Send Invites", path: "/guests", color: "bg-peach" },
   { icon: Gift, label: "Add Registry", path: "/registry", color: "bg-lavender" },
-  { icon: Sparkles, label: "Guess and win", path: "/predictions", color: "bg-mint" },
+  { icon: Sparkles, label: "Guess & Win", path: "/predictions", color: "bg-mint" },
 ];
 
 const QuickActions = () => {
