@@ -158,12 +158,12 @@ const GiftTrackerPage = () => {
               From the Registry
             </div>
             {unloggedClaimed.map((item) => (
-              <Card key={item.id} className="border-dashed border border-primary/30 bg-primary/5">
+              <Card key={item.id} className="border-dashed border border-primary/30 bg-primary/5 overflow-hidden">
                 <CardContent className="p-3 flex items-center gap-3">
                   {item.image_url ? (
-                    <img src={item.image_url} alt={item.name} className="w-10 h-10 rounded-full object-cover" />
+                    <img src={item.image_url} alt={item.name} className="w-10 h-10 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-lg">🎁</div>
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-primary/15 flex items-center justify-center text-lg">🎁</div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
@@ -172,7 +172,7 @@ const GiftTrackerPage = () => {
                       {item.price ? ` · $${Number(item.price).toFixed(0)}` : ""}
                     </p>
                   </div>
-                  <Button size="sm" variant="outline" className="rounded-full text-xs h-8 gap-1" onClick={() => logClaimedItem(item)}>
+                  <Button size="sm" variant="outline" className="shrink-0 rounded-full text-xs h-8 gap-1 px-3" onClick={() => logClaimedItem(item)}>
                     <Plus className="h-3 w-3" /> Log
                   </Button>
                 </CardContent>
