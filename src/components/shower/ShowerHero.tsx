@@ -7,9 +7,10 @@ import { EventData } from "@/contexts/ActiveEventContext";
 import { getShowerImage } from "@/lib/showerPlaceholders";
 import { useEventRole } from "@/hooks/useEventRole";
 
-export const ShowerHero = ({ event }: { event: EventData }) => {
+export const ShowerHero = ({ event, isHost: isHostProp }: { event: EventData; isHost?: boolean }) => {
   const navigate = useNavigate();
-  const { isHost } = useEventRole();
+  const { isHost: globalIsHost } = useEventRole();
+  const isHost = isHostProp ?? globalIsHost;
   const eventDate = event.event_date ? new Date(event.event_date) : null;
   const days = eventDate
     ? Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
