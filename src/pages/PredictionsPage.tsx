@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Sparkles, Trophy, Send, PartyPopper } from "lucide-react";
+import { Sparkles, Trophy, Send, PartyPopper, Timer, Users, Gift } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import guessWinHero from "@/assets/guess-win-hero.jpg";
 
 interface Prediction {
   id: string;
@@ -195,15 +196,56 @@ const PredictionsPage = () => {
           <div className="text-6xl animate-bounce">🎉🎊🥳</div>
         </div>
       )}
-      <div className="px-6 pt-12 pb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h1 className="text-2xl font-bold">Guess & Win</h1>
+      <div className="px-6 pt-8 pb-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Featured Game</p>
+        <div className="rounded-3xl overflow-hidden bg-card shadow-sm border border-border/50">
+          <div className="relative aspect-[4/3] w-full overflow-hidden">
+            <img
+              src={guessWinHero}
+              alt="Guess & Win baby shower game"
+              width={1280}
+              height={896}
+              className="w-full h-full object-cover"
+            />
+            <Badge className="absolute bottom-3 left-3 bg-primary text-primary-foreground border-none uppercase tracking-wider text-[10px] font-bold px-3 py-1 rounded-md shadow-md">
+              New
+            </Badge>
+          </div>
+          <div className="p-5 space-y-4">
+            <div>
+              <h1 className="text-2xl font-bold mb-1">Guess &amp; Win</h1>
+              <p className="text-sm text-muted-foreground">Predict baby's details — win a prize in every category.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5">
+                <Timer className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-foreground/80">2 mins</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5">
+                <Gift className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-foreground/80">4 prizes</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5">
+                <Users className="h-3.5 w-3.5 text-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-wide text-foreground/80">{predictions.length} playing</span>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              className="w-full h-12 rounded-full font-bold text-base"
+              onClick={() => document.getElementById("guess-win-tabs")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            >
+              Play Now
+            </Button>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">{predictions.length} predictions submitted ✨</p>
       </div>
 
-      <div className="px-6 pb-6">
+      <div id="guess-win-tabs" className="px-6 pt-6 pb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <h2 className="text-lg font-bold">Your Predictions</h2>
+        </div>
         <Tabs defaultValue="submit">
           <TabsList className="w-full mb-4">
             <TabsTrigger value="submit" className="flex-1">Submit</TabsTrigger>
