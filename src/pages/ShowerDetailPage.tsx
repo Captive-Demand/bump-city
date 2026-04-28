@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { ChevronLeft, Trash2, Send, Users, Gift, Calendar, MapPin, Sparkles } from "lucide-react";
+import { ChevronLeft, Trash2, Send, Users, Gift, Calendar, MapPin, Sparkles, CalendarPlus, Navigation } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import { useEventRole } from "@/hooks/useEventRole";
@@ -17,6 +17,28 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
+const PREF_LABELS: Record<string, { label: string; icon: string }> = {
+  bring_gift: { label: "Bring a gift", icon: "🎁" },
+  bring_book: { label: "Bring a book", icon: "📚" },
+  no_gifts: { label: "No gifts please", icon: "💖" },
+  clear_wrapping: { label: "Clear wrapping", icon: "🎀" },
+  ship_to_home: { label: "Ship to home", icon: "📦" },
+  bring_to_event: { label: "Bring to event", icon: "🎈" },
+};
+
+const buildCalendarUrl = (event: any) => {
+  if (!event.event_date) return null;
+  const start = new Date(event.event_date);
+  // default to 2pm local if no time
+  start.setHours(14, 0, 0, 0);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const title = encodeURIComponent(`${event.honoree_name || "Baby"}'s Baby Shower`);
+  const details = encodeURIComponent(event.invite_message || "");
+  const location = encodeURIComponent(event.city || "");
+  return `https://www.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}&location=${location}`;
+};
 
 const ShowerDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
