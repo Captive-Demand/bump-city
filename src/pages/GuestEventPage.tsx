@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
@@ -51,6 +52,10 @@ const GuestEventPage = () => {
   const [predBabyName, setPredBabyName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [predicted, setPredicted] = useState(false);
+  const [signupPrompt, setSignupPrompt] = useState<null | "claim" | "predict">(null);
+  const isAnon = !user;
+  const previewMode = new URLSearchParams(window.location.search).get("preview") === "anon";
+  const treatAsAnon = isAnon || previewMode;
 
   useEffect(() => {
     const load = async () => {
