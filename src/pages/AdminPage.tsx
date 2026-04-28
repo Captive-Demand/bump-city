@@ -7,16 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, ChevronDown, ChevronUp, KeyRound, Mail } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, ChevronDown, ChevronUp, KeyRound, Mail, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEventRole } from "@/hooks/useEventRole";
+import { useEventRole, type ImpersonatedRole } from "@/hooks/useEventRole";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 
 const AdminPage = () => {
   const { user } = useAuth();
-  const { isAdmin, isSuperAdmin, loading: roleLoading } = useEventRole();
+  const { isAdmin, isSuperAdmin, loading: roleLoading, setImpersonatedRole } = useEventRole();
+  const navigate = useNavigate();
 
   // Stats
   const [stats, setStats] = useState({ profiles: 0, events: 0, registryItems: 0, vendors: 0, communityEvents: 0 });
@@ -267,6 +269,42 @@ const AdminPage = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Preview as role */}
+            <Card className="border-none mt-4">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Eye className="h-4 w-4 text-primary" />
+                  <h3 className="font-bold text-sm">Preview the app as…</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  See exactly what each role sees. A banner appears at the top while previewing — tap "Exit" to return to admin.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { role: "host", label: "Host" },
+                    { role: "co-host", label: "Co-Host" },
+                    { role: "honoree", label: "Honoree" },
+                    { role: "guest", label: "Guest" },
+                  ] as { role: ImpersonatedRole; label: string }[]).map((r) => (
+                    <Button
+                      key={r.role}
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full justify-start gap-2"
+                      onClick={() => {
+                        setImpersonatedRole(r.role);
+                        toast.success(`Previewing as ${r.label}`);
+                        navigate("/home");
+                      }}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      {r.label}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Vendors */}

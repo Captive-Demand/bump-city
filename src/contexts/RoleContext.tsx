@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 
 export type EventRole = "host" | "co-host" | "honoree" | "guest" | null;
 export type PlatformRole = "super_admin" | "admin" | null;
+export type ImpersonatedRole = "host" | "co-host" | "honoree" | "guest" | "admin" | null;
 
 interface RoleContextType {
   eventRole: EventRole;
@@ -15,9 +16,14 @@ interface RoleContextType {
   isGuest: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  // Impersonation (admins only). When set, overrides effective role checks app-wide.
+  impersonatedRole: ImpersonatedRole;
+  setImpersonatedRole: (role: ImpersonatedRole) => void;
+  isImpersonating: boolean;
 }
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
+const IMPERSONATE_KEY = "bumpcity:impersonate-role";
 
 export const RoleProvider = ({ children }: { children: ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
@@ -26,6 +32,19 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
   const [platformRole, setPlatformRole] = useState<PlatformRole>(null);
   const [platformLoaded, setPlatformLoaded] = useState(false);
   const [eventRoleLoaded, setEventRoleLoaded] = useState(false);
+  const [impersonatedRole, setImpersonatedRoleState] = useState<ImpersonatedRole>(() => {
+    if (typeof window === "undefined") return null;
+    const v = sessionStorage.getItem(IMPERSONATE_KEY);
+    return (v as ImpersonatedRole) || null;
+  });
+
+  const setImpersonatedRole = useCallback((role: ImpersonatedRole) => {
+    setImpersonatedRoleState(role);
+    if (typeof window !== "undefined") {
+      if (role) sessionStorage.setItem(IMPERSONATE_KEY, role);
+      else sessionStorage.removeItem(IMPERSONATE_KEY);
+    }
+  }, []);
 
   // Platform role: fetch once per user
   useEffect(() => {
@@ -60,7 +79,6 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
       setEventRoleLoaded(true);
       return;
     }
-    // Optimistic: if user owns the event, default to host instantly to avoid nav flicker
     if (activeEvent.user_id === user.id) {
       setEventRole((prev) => prev ?? "host");
     }
@@ -88,19 +106,42 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
   }, [user, activeEvent]);
 
   const value = useMemo<RoleContextType>(() => {
-    const isHost = eventRole === "host" || eventRole === "co-host";
-    const isAdmin = platformRole === "admin" || platformRole === "super_admin";
+    // Real values
+    const realIsAdmin = platformRole === "admin" || platformRole === "super_admin";
+
+    // Only admins can impersonate
+    const activeImpersonation = realIsAdmin ? impersonatedRole : null;
+
+    let effectiveEventRole: EventRole = eventRole;
+    let effectivePlatformRole: PlatformRole = platformRole;
+
+    if (activeImpersonation) {
+      if (activeImpersonation === "admin") {
+        effectivePlatformRole = "admin";
+        effectiveEventRole = "host";
+      } else {
+        effectivePlatformRole = null;
+        effectiveEventRole = activeImpersonation as EventRole;
+      }
+    }
+
+    const isHost = effectiveEventRole === "host" || effectiveEventRole === "co-host";
+    const isAdmin = effectivePlatformRole === "admin" || effectivePlatformRole === "super_admin";
+
     return {
-      eventRole,
-      platformRole,
+      eventRole: effectiveEventRole,
+      platformRole: effectivePlatformRole,
       loading: authLoading || eventLoading || !platformLoaded || !eventRoleLoaded,
       isHost,
-      isHonoree: eventRole === "honoree",
-      isGuest: eventRole === "guest",
+      isHonoree: effectiveEventRole === "honoree",
+      isGuest: effectiveEventRole === "guest",
       isAdmin,
-      isSuperAdmin: platformRole === "super_admin",
+      isSuperAdmin: effectivePlatformRole === "super_admin",
+      impersonatedRole: activeImpersonation,
+      setImpersonatedRole,
+      isImpersonating: !!activeImpersonation,
     };
-  }, [eventRole, platformRole, authLoading, eventLoading, platformLoaded, eventRoleLoaded]);
+  }, [eventRole, platformRole, authLoading, eventLoading, platformLoaded, eventRoleLoaded, impersonatedRole, setImpersonatedRole]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 };
