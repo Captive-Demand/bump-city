@@ -234,20 +234,46 @@ const ShowerSetupPage = () => {
     navigate("/");
   };
 
+  if (loadingEvent) {
+    return (
+      <MobileLayout hideNav>
+        <div className="px-6 pt-10 pb-8 min-h-screen flex items-center justify-center max-w-[500px] mx-auto w-full">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (!canEditEvent) {
+    return (
+      <MobileLayout hideNav>
+        <div className="px-6 pt-10 pb-8 min-h-screen flex items-center justify-center max-w-[500px] mx-auto w-full">
+          <Card className="border-none w-full">
+            <CardContent className="p-5 text-center space-y-3">
+              <h1 className="text-xl font-bold">You can’t edit this shower</h1>
+              <p className="text-sm text-muted-foreground">Only hosts and co-hosts can change shower details.</p>
+              <Button className="w-full rounded-xl" onClick={() => navigate(editingEventId ? `/showers/${editingEventId}` : "/")}>Go back</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout hideNav>
       <div className="px-6 pt-10 pb-8 min-h-screen flex flex-col max-w-[500px] mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Baby className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">Shower Setup</span>
+            <span className="text-sm font-semibold text-primary">{editingEventId ? "Edit Shower" : "Shower Setup"}</span>
           </div>
           <button
             type="button"
-            onClick={() => navigate("/", { replace: true })}
+            onClick={() => navigate(editingEventId ? `/showers/${editingEventId}` : "/", { replace: true })}
             className="text-xs font-medium text-muted-foreground hover:text-foreground underline"
           >
-            Skip for now
+            {editingEventId ? "Cancel" : "Skip for now"}
           </button>
         </div>
         <StepProgress current={step} total={TOTAL_STEPS} />
@@ -369,7 +395,7 @@ const ShowerSetupPage = () => {
             </Button>
           ) : (
             <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : editingEventId ? "Save changes" : "Let's go!"}
             </Button>
           )}
         </div>
