@@ -303,15 +303,15 @@ export const BumpCityInlineBrowser = forwardRef<HTMLDivElement, Props>(
           return (
             <>
               {expanded ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {visible.map(renderCard)}
+                <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
+                  {visible.map((p) => renderCard(p, "row"))}
                 </div>
               ) : (
                 <Carousel opts={{ align: "start", loop: false }} className="px-1">
                   <CarouselContent className="-ml-3">
                     {visible.map((p) => (
                       <CarouselItem key={p.id} className="pl-3 basis-1/3">
-                        {renderCard(p)}
+                        {renderCard(p, "grid")}
                       </CarouselItem>
                     ))}
                   </CarouselContent>
