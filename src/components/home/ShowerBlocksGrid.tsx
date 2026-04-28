@@ -1,9 +1,10 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Plus, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Plus, ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useActiveEvent, EventData } from "@/contexts/ActiveEventContext";
+import { useEventRole } from "@/hooks/useEventRole";
 import { getShowerImage } from "@/lib/showerPlaceholders";
 
 const formatDate = (date: string | null) =>
@@ -48,7 +49,10 @@ export const ShowerBlocksGrid = ({
 }: ShowerBlocksGridProps) => {
   const navigate = useNavigate();
   const { allEvents, switchEvent } = useActiveEvent();
+  const { isHost, isGuest, isHonoree } = useEventRole();
   const showers = sortShowers(allEvents);
+  // A user is "guest-only" if they have no host/co-host event of their own
+  const guestOnly = !isHost && (isGuest || isHonoree);
 
   const open = (id: string) => {
     switchEvent(id);
@@ -131,8 +135,10 @@ export const ShowerBlocksGrid = ({
             onClick={() => navigate("/get-started?new=true")}
           >
             <CardContent className="p-5 flex items-center gap-3 justify-center text-primary">
-              <Plus className="h-4 w-4" />
-              <span className="font-semibold text-sm">Create new shower</span>
+              {guestOnly ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              <span className="font-semibold text-sm">
+                {guestOnly ? "Create your own shower" : "Create new shower"}
+              </span>
             </CardContent>
           </Card>
         )}
