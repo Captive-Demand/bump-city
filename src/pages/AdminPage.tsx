@@ -321,7 +321,7 @@ const AdminPage = () => {
                         toast.error("No active shower selected");
                         return;
                       }
-                      window.open(`/event/${activeEvent.id}?preview=anon`, "_blank");
+                      window.open(`${window.location.origin}/event/${activeEvent.id}?preview=anon`, "_blank");
                     }}
                   >
                     <Eye className="h-3.5 w-3.5" />
