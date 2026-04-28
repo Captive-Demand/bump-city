@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,11 +9,13 @@ export interface MobileLayoutProps {
   hideNav?: boolean;
 }
 
-const BrandHeader = () => (
-  <div className="flex justify-center pt-8 pb-0">
+const BrandHeader = forwardRef<HTMLDivElement>((_, ref) => (
+  <div ref={ref} className="flex justify-center pt-8 pb-0">
     <img src={bumpCityLogo} alt="Bump City" className="h-8" />
   </div>
-);
+));
+
+BrandHeader.displayName = "BrandHeader";
 
 /**
  * Page-level wrapper. When used inside the persistent AppShell (default
@@ -43,8 +45,7 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
 /**
  * Persistent app shell mounted once for all protected routes. Sidebar and
  * bottom nav stay mounted across navigations; only the inner content area
- * swaps when a route changes (and lazy chunks suspend in-place rather than
- * blanking the whole screen).
+ * swaps when a route changes without blanking the whole screen.
  */
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const isMobile = useIsMobile();
