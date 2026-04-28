@@ -195,7 +195,7 @@ export const ShowerBlocksGrid = ({
             <CardContent className="p-5 flex items-center gap-3 justify-center text-primary">
               {guestOnly ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               <span className="font-semibold text-sm">
-                {guestOnly ? "Create your own shower" : "Create new shower"}
+                {guestOnly ? "Create Your Own Shower" : "Create New Shower"}
               </span>
             </CardContent>
           </Card>
