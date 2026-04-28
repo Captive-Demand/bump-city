@@ -62,11 +62,32 @@ const GiftTrackerPage = () => {
     fetchGifts();
   };
 
+  const logClaimedItem = async (item: ClaimedItem) => {
+    if (!event || !user) return;
+    const { error } = await supabase.from("gifts_received").insert({
+      event_id: event.id,
+      user_id: user.id,
+      donor_name: item.claimed_by || "Registry guest",
+      item_description: item.name,
+    });
+    if (error) { toast.error("Failed to log gift"); return; }
+    toast.success("Gift logged");
+    fetchGifts();
+  };
+
   const filtered = gifts.filter((g) => {
     if (filter === "pending" && g.thank_you_sent) return false;
     if (filter === "sent" && !g.thank_you_sent) return false;
     return g.donor_name.toLowerCase().includes(search.toLowerCase()) || g.item_description.toLowerCase().includes(search.toLowerCase());
   });
+
+  // Claimed registry items not yet logged as a received gift (matched on item description + donor name)
+  const loggedKeys = new Set(
+    gifts.map((g) => `${g.item_description.toLowerCase()}::${g.donor_name.toLowerCase()}`)
+  );
+  const unloggedClaimed = claimed.filter(
+    (c) => !loggedKeys.has(`${c.name.toLowerCase()}::${(c.claimed_by || "registry guest").toLowerCase()}`)
+  );
 
   const pendingCount = gifts.filter((g) => !g.thank_you_sent).length;
   const sentCount = gifts.filter((g) => g.thank_you_sent).length;
