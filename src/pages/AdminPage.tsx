@@ -17,7 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 const AdminPage = () => {
   const { user } = useAuth();
-  const { isAdmin, isSuperAdmin, loading: roleLoading } = useEventRole();
+  const { isAdmin, isSuperAdmin, loading: roleLoading, setImpersonatedRole } = useEventRole();
+  const navigate = useNavigate();
 
   // Stats
   const [stats, setStats] = useState({ profiles: 0, events: 0, registryItems: 0, vendors: 0, communityEvents: 0 });
