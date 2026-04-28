@@ -16,9 +16,7 @@ const sampleData = {
   message: "Join us to celebrate!",
 };
 
-const THUMB_WIDTH = 132;
 const TEMPLATE_WIDTH = 380;
-const PREVIEW_SCALE = THUMB_WIDTH / TEMPLATE_WIDTH;
 
 const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -26,7 +24,7 @@ const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => 
   return (
     <div className="space-y-3">
       <p className="text-sm font-semibold tracking-wide">Choose a Style</p>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(132px,132px))] justify-start gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {templateConfigs.map((template) => {
           const TemplatePreview = templates[template.id];
           const isSelected = selected === template.id;
@@ -44,13 +42,13 @@ const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => 
                 }
               }}
               className={cn(
-                "relative w-[132px] cursor-pointer rounded-2xl text-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
+                "relative w-full cursor-pointer rounded-2xl text-center transition-all outline-none focus-visible:ring-2 focus-visible:ring-primary/30",
                 isSelected ? "scale-[1.01]" : "hover:-translate-y-0.5"
               )}
             >
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-[22px] border bg-card shadow-sm transition-all",
+                  "relative w-full overflow-hidden rounded-[22px] border bg-card shadow-sm transition-all",
                   isSelected
                     ? "border-primary shadow-[0_12px_30px_hsl(var(--primary)/0.18)]"
                     : "border-border hover:border-primary/30"
@@ -62,8 +60,20 @@ const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => 
                   className="absolute left-0 top-0 origin-top-left select-none pointer-events-none"
                   style={{
                     width: TEMPLATE_WIDTH,
-                    transform: `scale(${PREVIEW_SCALE})`,
+                    transform: `scale(var(--preview-scale, 1))`,
                     transformOrigin: "top left",
+                  }}
+                  ref={(el) => {
+                    if (!el) return;
+                    const parent = el.parentElement;
+                    if (!parent) return;
+                    const apply = () => {
+                      const w = parent.clientWidth;
+                      el.style.setProperty("--preview-scale", String(w / TEMPLATE_WIDTH));
+                    };
+                    apply();
+                    const ro = new ResizeObserver(apply);
+                    ro.observe(parent);
                   }}
                 >
                   <TemplatePreview {...sampleData} />
