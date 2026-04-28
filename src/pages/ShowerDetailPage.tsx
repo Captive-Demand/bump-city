@@ -130,41 +130,111 @@ const ShowerDetailPage = () => {
           </>
         ) : (
           <>
-            {/* Guest view: read-only essentials + quick links */}
+            {/* Guest view: read-only, polished */}
             <Card className="border-none">
-              <CardContent className="p-4 space-y-3">
-                <h2 className="text-sm font-bold">Event Details</h2>
+              <CardContent className="p-5 space-y-3.5">
+                <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Event Details</h2>
                 {event.event_date && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-primary shrink-0" />
-                    <span>{new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
-                  </div>
-                )}
-                {event.invite_time_range && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-4 w-4 text-primary shrink-0" />
-                    <span>{event.invite_time_range}</span>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-peach p-2 rounded-lg shrink-0">
+                      <Calendar className="h-4 w-4 text-foreground/70" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">
+                        {new Date(event.event_date).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                      </p>
+                      {event.invite_time_range && (
+                        <p className="text-xs text-muted-foreground">{event.invite_time_range}</p>
+                      )}
+                    </div>
                   </div>
                 )}
                 {event.city && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-primary shrink-0" />
-                    <span>{event.city}</span>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-mint p-2 rounded-lg shrink-0">
+                      <MapPin className="h-4 w-4 text-foreground/70" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{event.city}</p>
+                    </div>
                   </div>
                 )}
                 {event.theme && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Sparkles className="h-4 w-4 text-primary shrink-0" />
-                    <span>Theme: {event.theme}</span>
+                  <div className="flex items-start gap-3">
+                    <div className="bg-lavender p-2 rounded-lg shrink-0">
+                      <Sparkles className="h-4 w-4 text-foreground/70" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold">{event.theme}</p>
+                      <p className="text-xs text-muted-foreground">Theme</p>
+                    </div>
                   </div>
                 )}
                 {event.invite_message && (
-                  <p className="text-sm text-muted-foreground italic pt-2 border-t border-border/50">
+                  <p className="text-sm text-muted-foreground italic pt-3 border-t border-border/50">
                     "{event.invite_message}"
                   </p>
                 )}
               </CardContent>
             </Card>
+
+            {/* Add to Calendar / Get Directions */}
+            {(event.event_date || event.city) && (
+              <div className="grid grid-cols-2 gap-3">
+                {event.event_date && (
+                  <Button
+                    variant="outline"
+                    className="h-14 rounded-xl flex-col gap-1"
+                    onClick={() => {
+                      const url = buildCalendarUrl(event);
+                      if (url) window.open(url, "_blank");
+                    }}
+                  >
+                    <CalendarPlus className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-semibold">Add to Calendar</span>
+                  </Button>
+                )}
+                {event.city && (
+                  <Button
+                    variant="outline"
+                    className="h-14 rounded-xl flex-col gap-1"
+                    onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.city!)}`, "_blank")}
+                  >
+                    <Navigation className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-semibold">Get Directions</span>
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Gift Preferences */}
+            {(() => {
+              const prefs = ((event as any).gift_preferences || {}) as Record<string, boolean>;
+              const active = Object.entries(prefs).filter(([, v]) => v).map(([k]) => k);
+              if (active.length === 0) return null;
+              return (
+                <Card className="border-none">
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Gift className="h-4 w-4 text-primary" />
+                      <h2 className="text-sm font-bold">Gift Preferences</h2>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {active.map((key) => {
+                        const meta = PREF_LABELS[key];
+                        if (!meta) return null;
+                        return (
+                          <span key={key} className="inline-flex items-center gap-1.5 bg-muted/60 rounded-full px-3 py-1.5 text-xs font-medium">
+                            <span>{meta.icon}</span>
+                            <span>{meta.label}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" className="h-14 rounded-xl flex-col gap-1" onClick={() => navigate("/registry")}>
