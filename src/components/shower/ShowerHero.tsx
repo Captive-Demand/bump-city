@@ -48,7 +48,7 @@ export const ShowerHero = ({ event, isHost: isHostProp }: { event: EventData; is
           )}
           {isHost && (
             <div className="flex items-center gap-2 mt-4">
-              <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate("/setup/shower")}>
+              <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate(`/setup/shower?eventId=${event.id}`)}>
                 <Pencil className="h-4 w-4 mr-1" />
                 Edit Details
               </Button>

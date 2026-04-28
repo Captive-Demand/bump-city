@@ -1,11 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Plus, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Plus, ArrowRight, Sparkles, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useActiveEvent, EventData } from "@/contexts/ActiveEventContext";
 import { useEventRole } from "@/hooks/useEventRole";
 import { getShowerImage } from "@/lib/showerPlaceholders";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const formatDate = (date: string | null) =>
   date
@@ -49,14 +52,53 @@ export const ShowerBlocksGrid = ({
 }: ShowerBlocksGridProps) => {
   const navigate = useNavigate();
   const { allEvents, switchEvent } = useActiveEvent();
+  const { user } = useAuth();
   const { isHost, isGuest, isHonoree } = useEventRole();
+  const [editableEventIds, setEditableEventIds] = useState<Set<string>>(new Set());
   const showers = sortShowers(allEvents);
   // A user is "guest-only" if they have no host/co-host event of their own
   const guestOnly = !isHost && (isGuest || isHonoree);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || allEvents.length === 0) {
+      setEditableEventIds(new Set());
+      return;
+    }
+
+    const ownedIds = new Set(allEvents.filter((evt) => evt.user_id === user.id).map((evt) => evt.id));
+    const memberEventIds = allEvents.filter((evt) => evt.user_id !== user.id).map((evt) => evt.id);
+
+    if (memberEventIds.length === 0) {
+      setEditableEventIds(ownedIds);
+      return;
+    }
+
+    (async () => {
+      const { data } = await supabase
+        .from("event_members")
+        .select("event_id, role")
+        .eq("user_id", user.id)
+        .in("event_id", memberEventIds)
+        .in("role", ["host", "co-host"]);
+
+      if (cancelled) return;
+      const editable = new Set(ownedIds);
+      (data || []).forEach((member) => editable.add(member.event_id));
+      setEditableEventIds(editable);
+    })();
+
+    return () => { cancelled = true; };
+  }, [allEvents, user]);
+
   const open = (id: string) => {
     switchEvent(id);
     navigate(`/showers/${id}`);
+  };
+
+  const edit = (id: string) => {
+    switchEvent(id);
+    navigate(`/setup/shower?eventId=${id}`);
   };
 
   return (
@@ -113,16 +155,32 @@ export const ShowerBlocksGrid = ({
                       <span className="text-sm">{evt.city}</span>
                     </div>
                   )}
-                  <Button
-                    className="w-full rounded-xl h-11 font-semibold mt-4"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      open(evt.id);
-                    }}
-                  >
-                    Open Shower
-                    <ArrowRight className="h-4 w-4 ml-1" />
-                  </Button>
+                  <div className="flex items-center gap-2 mt-4">
+                    <Button
+                      className="flex-1 rounded-xl h-11 font-semibold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        open(evt.id);
+                      }}
+                    >
+                      Open Shower
+                      <ArrowRight className="h-4 w-4 ml-1" />
+                    </Button>
+                    {editableEventIds.has(evt.id) && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-11 w-11 rounded-xl shrink-0"
+                        aria-label="Edit shower details"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          edit(evt.id);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

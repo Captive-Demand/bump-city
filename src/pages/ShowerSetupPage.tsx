@@ -7,6 +7,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -18,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Baby, CalendarIcon, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
+import type { Json } from "@/integrations/supabase/types";
 
 const TOTAL_STEPS = 3;
 
@@ -34,13 +37,17 @@ const ShowerSetupPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setMode, updateSetupData } = useAppMode();
+  const { refetch } = useActiveEvent();
   const { user } = useAuth();
+  const editingEventId = searchParams.get("eventId");
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [loadingEvent, setLoadingEvent] = useState(false);
+  const [canEditEvent, setCanEditEvent] = useState(!editingEventId);
   const isNewEvent = searchParams.get("new") === "true";
 
   useEffect(() => {
-    if (!user || isNewEvent) return;
+    if (!user || isNewEvent || editingEventId) return;
     const checkExisting = async () => {
       const { data } = await supabase
         .from("events")
@@ -50,7 +57,7 @@ const ShowerSetupPage = () => {
       if (data && data.length > 0) navigate("/", { replace: true });
     };
     checkExisting();
-  }, [user, isNewEvent, navigate]);
+  }, [user, isNewEvent, editingEventId, navigate]);
 
   const [role, setRole] = useState<"planner" | "expectant-parent">("expectant-parent");
   const [honoreeName, setHonoreeName] = useState("");
@@ -73,6 +80,73 @@ const ShowerSetupPage = () => {
   const [giftNote, setGiftNote] = useState("");
   const [pushNotifications, setPushNotifications] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || !editingEventId) {
+      setCanEditEvent(!editingEventId);
+      return;
+    }
+
+    setLoadingEvent(true);
+    (async () => {
+      const { data: eventData, error: eventError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", editingEventId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (eventError || !eventData) {
+        toast.error("Couldn't load this shower.");
+        navigate("/showers", { replace: true });
+        return;
+      }
+
+      let allowed = eventData.user_id === user.id;
+      if (!allowed) {
+        const { data: memberData } = await supabase
+          .from("event_members")
+          .select("role")
+          .eq("event_id", editingEventId)
+          .eq("user_id", user.id)
+          .in("role", ["host", "co-host"])
+          .maybeSingle();
+        allowed = !!memberData;
+      }
+
+      if (!allowed) {
+        setCanEditEvent(false);
+        setLoadingEvent(false);
+        return;
+      }
+
+      setCanEditEvent(true);
+      setRole("planner");
+      setHonoreeName(eventData.honoree_name || "");
+      setDueDate(eventData.due_date ? new Date(`${eventData.due_date}T12:00:00`) : undefined);
+      setEventDate(eventData.event_date ? new Date(`${eventData.event_date}T12:00:00`) : undefined);
+      setCity(eventData.city || "");
+      setTheme(eventData.theme || "");
+      setGiftPolicy((eventData.gift_policy as "bring-gift" | "no-gifts" | "bring-book") || "bring-gift");
+      setGiftPrefs({
+        bring_gift: true,
+        bring_book: false,
+        no_gifts: false,
+        clear_wrapping: eventData.clear_wrapping || false,
+        ship_to_home: false,
+        bring_to_event: true,
+        ...((eventData.gift_preferences as Record<string, boolean> | null) || {}),
+      });
+      setClearWrapping(eventData.clear_wrapping || false);
+      setSurpriseMode(eventData.surprise_mode || false);
+      setGiftNote(eventData.gift_note || "");
+      setLoadingEvent(false);
+    })();
+
+    return () => { cancelled = true; };
+  }, [user, editingEventId, navigate]);
+
   const canNext = () => {
     if (step === 0) return true;
     if (step === 1) return honoreeName.trim().length > 0 && dueDate !== undefined;
@@ -82,6 +156,37 @@ const ShowerSetupPage = () => {
   const handleFinish = async () => {
     if (!user) return;
     setSaving(true);
+
+    if (editingEventId) {
+      const { error } = await supabase
+        .from("events")
+        .update({
+          honoree_name: honoreeName.trim(),
+          due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+          event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
+          city: city.trim() || null,
+          theme: theme.trim() || null,
+          gift_policy: giftPolicy,
+          gift_preferences: giftPrefs as Json,
+          clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
+          gift_note: giftNote.trim() || null,
+          surprise_mode: surpriseMode,
+        })
+        .eq("id", editingEventId);
+
+      if (error) {
+        setSaving(false);
+        toast.error("Failed to update event. Please try again.");
+        return;
+      }
+
+      await supabase.from("profiles").update({ city: city.trim() || null, push_notifications: pushNotifications }).eq("id", user.id);
+      await refetch();
+      setSaving(false);
+      toast.success("Shower details updated");
+      navigate(`/showers/${editingEventId}`);
+      return;
+    }
 
     // Save event to database
     const { data: insertedEvent, error } = await supabase.from("events").insert({
@@ -93,7 +198,7 @@ const ShowerSetupPage = () => {
       city: city.trim() || null,
       theme: theme.trim() || null,
       gift_policy: giftPolicy,
-      gift_preferences: giftPrefs as any,
+      gift_preferences: giftPrefs as Json,
       clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
       gift_note: giftNote.trim() || null,
       surprise_mode: surpriseMode,
@@ -126,8 +231,35 @@ const ShowerSetupPage = () => {
     };
     updateSetupData(setupDataPayload);
     setMode("shower");
+    await refetch();
     navigate("/");
   };
+
+  if (loadingEvent) {
+    return (
+      <MobileLayout hideNav>
+        <div className="px-6 pt-10 pb-8 min-h-screen flex items-center justify-center max-w-[500px] mx-auto w-full">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      </MobileLayout>
+    );
+  }
+
+  if (!canEditEvent) {
+    return (
+      <MobileLayout hideNav>
+        <div className="px-6 pt-10 pb-8 min-h-screen flex items-center justify-center max-w-[500px] mx-auto w-full">
+          <Card className="border-none w-full">
+            <CardContent className="p-5 text-center space-y-3">
+              <h1 className="text-xl font-bold">You can’t edit this shower</h1>
+              <p className="text-sm text-muted-foreground">Only hosts and co-hosts can change shower details.</p>
+              <Button className="w-full rounded-xl" onClick={() => navigate(editingEventId ? `/showers/${editingEventId}` : "/")}>Go back</Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MobileLayout>
+    );
+  }
 
   return (
     <MobileLayout hideNav>
@@ -135,14 +267,14 @@ const ShowerSetupPage = () => {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Baby className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">Shower Setup</span>
+            <span className="text-sm font-semibold text-primary">{editingEventId ? "Edit Shower" : "Shower Setup"}</span>
           </div>
           <button
             type="button"
-            onClick={() => navigate("/", { replace: true })}
+            onClick={() => navigate(editingEventId ? `/showers/${editingEventId}` : "/", { replace: true })}
             className="text-xs font-medium text-muted-foreground hover:text-foreground underline"
           >
-            Skip for now
+            {editingEventId ? "Cancel" : "Skip for now"}
           </button>
         </div>
         <StepProgress current={step} total={TOTAL_STEPS} />
@@ -264,7 +396,7 @@ const ShowerSetupPage = () => {
             </Button>
           ) : (
             <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : editingEventId ? "Save changes" : "Let's go!"}
             </Button>
           )}
         </div>
