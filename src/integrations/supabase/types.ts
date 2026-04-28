@@ -76,6 +76,42 @@ export type Database = {
         }
         Relationships: []
       }
+      budget_items: {
+        Row: {
+          actual_cost: number
+          category: string
+          created_at: string
+          estimated_cost: number
+          event_id: string
+          id: string
+          label: string
+          paid: boolean
+          user_id: string
+        }
+        Insert: {
+          actual_cost?: number
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          event_id: string
+          id?: string
+          label: string
+          paid?: boolean
+          user_id: string
+        }
+        Update: {
+          actual_cost?: number
+          category?: string
+          created_at?: string
+          estimated_cost?: number
+          event_id?: string
+          id?: string
+          label?: string
+          paid?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_events: {
         Row: {
           city: string | null
@@ -228,6 +264,45 @@ export type Database = {
           },
         ]
       }
+      event_vendors: {
+        Row: {
+          category: string | null
+          cost: number | null
+          created_at: string
+          event_id: string
+          id: string
+          name: string
+          notes: string | null
+          status: string
+          user_id: string
+          vendor_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          cost?: number | null
+          created_at?: string
+          event_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          status?: string
+          user_id: string
+          vendor_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          cost?: number | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          status?: string
+          user_id?: string
+          vendor_id?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           city: string | null
@@ -251,6 +326,7 @@ export type Database = {
           registry_private: boolean | null
           surprise_mode: boolean | null
           theme: string | null
+          total_budget: number | null
           updated_at: string
           user_id: string
         }
@@ -276,6 +352,7 @@ export type Database = {
           registry_private?: boolean | null
           surprise_mode?: boolean | null
           theme?: string | null
+          total_budget?: number | null
           updated_at?: string
           user_id: string
         }
@@ -301,6 +378,7 @@ export type Database = {
           registry_private?: boolean | null
           surprise_mode?: boolean | null
           theme?: string | null
+          total_budget?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -481,6 +559,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      potluck_items: {
+        Row: {
+          category: string
+          claimed_by: string | null
+          created_at: string
+          event_id: string
+          id: string
+          label: string
+          notes: string | null
+          quantity_needed: number
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          claimed_by?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          label: string
+          notes?: string | null
+          quantity_needed?: number
+          user_id: string
+        }
+        Update: {
+          category?: string
+          claimed_by?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          label?: string
+          notes?: string | null
+          quantity_needed?: number
+          user_id?: string
+        }
+        Relationships: []
       }
       predictions: {
         Row: {
