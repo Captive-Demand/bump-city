@@ -79,6 +79,73 @@ const ShowerSetupPage = () => {
   const [giftNote, setGiftNote] = useState("");
   const [pushNotifications, setPushNotifications] = useState(false);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || !editingEventId) {
+      setCanEditEvent(!editingEventId);
+      return;
+    }
+
+    setLoadingEvent(true);
+    (async () => {
+      const { data: eventData, error: eventError } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", editingEventId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (eventError || !eventData) {
+        toast.error("Couldn't load this shower.");
+        navigate("/showers", { replace: true });
+        return;
+      }
+
+      let allowed = eventData.user_id === user.id;
+      if (!allowed) {
+        const { data: memberData } = await supabase
+          .from("event_members")
+          .select("role")
+          .eq("event_id", editingEventId)
+          .eq("user_id", user.id)
+          .in("role", ["host", "co-host"])
+          .maybeSingle();
+        allowed = !!memberData;
+      }
+
+      if (!allowed) {
+        setCanEditEvent(false);
+        setLoadingEvent(false);
+        return;
+      }
+
+      setCanEditEvent(true);
+      setRole("planner");
+      setHonoreeName(eventData.honoree_name || "");
+      setDueDate(eventData.due_date ? new Date(`${eventData.due_date}T12:00:00`) : undefined);
+      setEventDate(eventData.event_date ? new Date(`${eventData.event_date}T12:00:00`) : undefined);
+      setCity(eventData.city || "");
+      setTheme(eventData.theme || "");
+      setGiftPolicy((eventData.gift_policy as "bring-gift" | "no-gifts" | "bring-book") || "bring-gift");
+      setGiftPrefs({
+        bring_gift: true,
+        bring_book: false,
+        no_gifts: false,
+        clear_wrapping: eventData.clear_wrapping || false,
+        ship_to_home: false,
+        bring_to_event: true,
+        ...((eventData.gift_preferences as Record<string, boolean> | null) || {}),
+      });
+      setClearWrapping(eventData.clear_wrapping || false);
+      setSurpriseMode(eventData.surprise_mode || false);
+      setGiftNote(eventData.gift_note || "");
+      setLoadingEvent(false);
+    })();
+
+    return () => { cancelled = true; };
+  }, [user, editingEventId, navigate]);
+
   const canNext = () => {
     if (step === 0) return true;
     if (step === 1) return honoreeName.trim().length > 0 && dueDate !== undefined;
