@@ -5,9 +5,11 @@ import { Calendar, MapPin, Pencil } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventData } from "@/contexts/ActiveEventContext";
 import { getShowerImage } from "@/lib/showerPlaceholders";
+import { useEventRole } from "@/hooks/useEventRole";
 
 export const ShowerHero = ({ event }: { event: EventData }) => {
   const navigate = useNavigate();
+  const { isHost } = useEventRole();
   const eventDate = event.event_date ? new Date(event.event_date) : null;
   const days = eventDate
     ? Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -43,12 +45,14 @@ export const ShowerHero = ({ event }: { event: EventData }) => {
               <span className="text-sm">{event.city}</span>
             </div>
           )}
-          <div className="flex items-center gap-2 mt-4">
-            <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate("/setup/shower")}>
-              <Pencil className="h-4 w-4 mr-1" />
-              Edit Details
-            </Button>
-          </div>
+          {isHost && (
+            <div className="flex items-center gap-2 mt-4">
+              <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate("/setup/shower")}>
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit Details
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
