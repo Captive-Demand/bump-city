@@ -585,7 +585,7 @@ const RegistryPage = () => {
       </div>
 
       {/* Source filter */}
-      <div className="px-6 pt-5 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="px-6 pt-5 flex flex-wrap gap-2 pb-1">
         {sources.map((s) => (
           <button
             key={s.id}
