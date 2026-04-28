@@ -202,6 +202,12 @@ const PredictionsPage = () => {
       )}
       <div className="px-6 pt-8 pb-6">
         <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
+        <button
           type="button"
           onClick={() => setGameOpen(true)}
           className="w-full text-left rounded-3xl overflow-hidden bg-card shadow-sm border border-border/50 transition-transform active:scale-[0.99] hover:shadow-md"
