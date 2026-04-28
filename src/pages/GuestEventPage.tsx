@@ -72,6 +72,7 @@ const GuestEventPage = () => {
   }, [eventId]);
 
   const claimItem = async (itemId: string) => {
+    if (treatAsAnon) { setSignupPrompt("claim"); return; }
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "A guest";
     const item = registryItems.find((i) => i.id === itemId);
@@ -99,6 +100,7 @@ const GuestEventPage = () => {
   };
 
   const submitPrediction = async () => {
+    if (treatAsAnon) { setSignupPrompt("predict"); return; }
     if (!eventId || !predName.trim()) return;
     setSubmitting(true);
     const { error } = await supabase.from("predictions").insert({
