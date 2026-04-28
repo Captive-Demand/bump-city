@@ -9,7 +9,7 @@ type NavItem = { icon: any; label: string; path: string; hostOnly?: boolean };
 
 const primaryTabs: NavItem[] = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: PartyPopper, label: "Showers", path: "/showers", hostOnly: true },
+  { icon: PartyPopper, label: "Showers", path: "/showers" },
   { icon: Gift, label: "Registry", path: "/registry" },
   { icon: Sparkles, label: "Guess & Win", path: "/predictions" },
 ];

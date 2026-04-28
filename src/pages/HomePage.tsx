@@ -10,6 +10,7 @@ import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useEventRole } from "@/hooks/useEventRole";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
 import { useEffect, useState } from "react";
@@ -328,6 +329,128 @@ const EventSwitcher = () => {
   );
 };
 
+const GuestRegistryStatus = () => {
+  const navigate = useNavigate();
+  const { event } = useEvent();
+  const [total, setTotal] = useState(0);
+  const [claimed, setClaimed] = useState(0);
+
+  useEffect(() => {
+    if (!event) return;
+    (async () => {
+      const [t, c] = await Promise.all([
+        supabase.from("registry_items").select("id", { count: "exact", head: true }).eq("event_id", event.id),
+        supabase.from("registry_items").select("id", { count: "exact", head: true }).eq("event_id", event.id).eq("claimed", true),
+      ]);
+      setTotal(t.count || 0);
+      setClaimed(c.count || 0);
+    })();
+  }, [event]);
+
+  const remaining = Math.max(0, total - claimed);
+
+  return (
+    <Card className="border-none cursor-pointer" onClick={() => navigate("/registry")}>
+      <CardContent className="p-3.5 flex items-center gap-3">
+        <div className="bg-lavender p-2.5 rounded-xl shrink-0">
+          <Gift className="h-4 w-4 text-foreground/70" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-sm">Gift Registry</p>
+          <p className="text-xs text-muted-foreground">
+            {remaining > 0 ? `${remaining} gift${remaining === 1 ? "" : "s"} still need a home` : "All gifts claimed 🎉"}
+          </p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </CardContent>
+    </Card>
+  );
+};
+
+const GuestDashboard = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { event } = useEvent();
+  const displayName = user?.user_metadata?.display_name?.split(" ")[0] || "there";
+  const avatarUrl = user?.user_metadata?.avatar_url;
+
+  const honoreeName = event?.honoree_name;
+  const eventDate = event?.event_date ? new Date(event.event_date) : null;
+  const daysToGo = eventDate
+    ? Math.max(0, Math.ceil((eventDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  return (
+    <MobileLayout>
+      <div className="px-6 pt-10 pb-4">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName} className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-lavender flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-muted-foreground">{getGreeting()},</p>
+              <h1 className="text-xl font-bold leading-tight">{displayName}!</h1>
+            </div>
+          </div>
+          <button className="p-2 rounded-full hover:bg-muted transition-colors relative">
+            <Bell className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+        <div className="h-px w-full bg-border/60" />
+      </div>
+
+      <div className="px-6 pb-8 space-y-6">
+        <EventSwitcher />
+        <EventCard />
+
+        <div>
+          <h2 className="text-lg font-bold mb-3">What you can do</h2>
+          <div className="space-y-2">
+            <GuestRegistryStatus />
+            <Card className="border-none cursor-pointer" onClick={() => navigate("/predictions")}>
+              <CardContent className="p-3.5 flex items-center gap-3">
+                <div className="bg-mint p-2.5 rounded-xl shrink-0">
+                  <Sparkles className="h-4 w-4 text-foreground/70" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">Guess & Win</p>
+                  <p className="text-xs text-muted-foreground">Cast your predictions for the baby</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </CardContent>
+            </Card>
+            {event && (
+              <Card className="border-none cursor-pointer" onClick={() => navigate(`/showers/${event.id}`)}>
+                <CardContent className="p-3.5 flex items-center gap-3">
+                  <div className="bg-peach p-2.5 rounded-xl shrink-0">
+                    <Calendar className="h-4 w-4 text-foreground/70" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">Event Details</p>
+                    <p className="text-xs text-muted-foreground">
+                      {daysToGo !== null ? `${daysToGo} days to go${honoreeName ? ` · ${honoreeName}'s shower` : ""}` : "View date, location & theme"}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        <CommunityCard />
+      </div>
+    </MobileLayout>
+  );
+};
+
 const ShowerDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -382,8 +505,9 @@ const ShowerDashboard = () => {
 
 const HomePage = () => {
   const { mode, modeLoading } = useAppMode();
+  const { isHost, loading: roleLoading } = useEventRole();
 
-  if (modeLoading) {
+  if (modeLoading || roleLoading) {
     return (
       <MobileLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -394,6 +518,7 @@ const HomePage = () => {
   }
 
   if (mode === "choose") return <EmptyHome />;
+  if (!isHost) return <GuestDashboard />;
   return <ShowerDashboard />;
 };
 
