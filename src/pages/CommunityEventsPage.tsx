@@ -4,8 +4,31 @@ import { Badge } from "@/components/ui/badge";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useEvent } from "@/hooks/useEvent";
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+
+const buildGoogleCalendarUrl = (evt: {
+  title: string;
+  description: string | null;
+  event_date: string | null;
+  location: string | null;
+  city: string | null;
+}) => {
+  if (!evt.event_date) return null;
+  const start = new Date(evt.event_date);
+  const end = new Date(start.getTime() + 60 * 60 * 1000); // default 1hr
+  const fmt = (d: Date) =>
+    d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: evt.title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    details: evt.description || "",
+    location: [evt.location, evt.city].filter(Boolean).join(", "),
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
 
 interface CommunityEvent {
   id: string;
@@ -114,6 +137,23 @@ const CommunityEventsPage = () => {
                       </Badge>
                     )}
                   </div>
+                  {evt.event_date && (() => {
+                    const url = buildGoogleCalendarUrl(evt);
+                    if (!url) return null;
+                    return (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 h-8 text-xs gap-1.5"
+                      >
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <CalendarPlus className="h-3.5 w-3.5" />
+                          Add to Google Calendar
+                        </a>
+                      </Button>
+                    );
+                  })()}
                 </div>
               </div>
             </CardContent>
