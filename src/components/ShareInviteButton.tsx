@@ -9,7 +9,6 @@ import { Share2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const INVITE_BASE_URL = "https://bumpcity.testyour.app";
-import { toast } from "sonner";
 
 const ShareInviteButton = () => {
   const { user } = useAuth();
