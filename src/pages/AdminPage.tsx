@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, ChevronDown, ChevronUp, KeyRound, Mail, Eye } from "lucide-react";
+import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, BarChart3, Crown, Store, CheckCircle2, XCircle, ExternalLink, MessageSquare, ChevronDown, ChevronUp, KeyRound, Mail, Eye, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventRole, type ImpersonatedRole } from "@/hooks/useEventRole";
@@ -234,6 +234,14 @@ const AdminPage = () => {
   return (
     <MobileLayout>
       <div className="px-6 pt-12 pb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5 -ml-2 mb-2 text-muted-foreground hover:text-foreground"
+          onClick={() => navigate("/")}
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </Button>
         <div className="flex items-center gap-2 mb-1">
           <Shield className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Admin Panel</h1>
