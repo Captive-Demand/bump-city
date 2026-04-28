@@ -8,7 +8,7 @@ type Tab = { icon: any; label: string; path: string; hostOnly?: boolean };
 
 const tabsConfig: Tab[] = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: PartyPopper, label: "Showers", path: "/showers", hostOnly: true },
+  { icon: PartyPopper, label: "Showers", path: "/showers" },
   { icon: Gift, label: "Registry", path: "/registry" },
   { icon: Send, label: "Invites", path: "/invites", hostOnly: true },
   { icon: Sparkles, label: "Guess & Win", path: "/predictions" },
