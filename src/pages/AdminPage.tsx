@@ -295,7 +295,7 @@ const AdminPage = () => {
                       onClick={() => {
                         setImpersonatedRole(r.role);
                         toast.success(`Previewing as ${r.label}`);
-                        navigate("/home");
+                        navigate("/");
                       }}
                     >
                       <Eye className="h-3.5 w-3.5" />
