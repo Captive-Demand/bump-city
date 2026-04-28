@@ -1,4 +1,5 @@
-import { forwardRef, type ReactNode } from "react";
+import { forwardRef, useEffect, useRef, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -49,12 +50,21 @@ export const MobileLayout = ({ children, hideNav }: MobileLayoutProps) => {
  */
 export const AppShell = ({ children }: { children: ReactNode }) => {
   const isMobile = useIsMobile();
+  const location = useLocation();
+  const mainRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      mainRef.current?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
+  }, [location.pathname]);
 
   if (!isMobile) {
     return (
       <div className="flex min-h-screen bg-muted/50">
         <DesktopSidebar />
-        <main className="flex-1 overflow-y-auto">
+        <main ref={mainRef} className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
             <BrandHeader />
             {children}
@@ -67,7 +77,7 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex justify-center min-h-screen bg-muted/50">
       <div className="w-full max-w-[430px] md:max-w-none min-h-screen bg-background relative flex flex-col shadow-2xl md:shadow-none">
-        <main className="flex-1 overflow-y-auto pb-20">
+        <main ref={mainRef} className="flex-1 overflow-y-auto pb-20">
           <BrandHeader />
           {children}
         </main>
