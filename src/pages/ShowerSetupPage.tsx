@@ -156,6 +156,37 @@ const ShowerSetupPage = () => {
     if (!user) return;
     setSaving(true);
 
+    if (editingEventId) {
+      const { error } = await supabase
+        .from("events")
+        .update({
+          honoree_name: honoreeName.trim(),
+          due_date: dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+          event_date: eventDate ? format(eventDate, "yyyy-MM-dd") : null,
+          city: city.trim() || null,
+          theme: theme.trim() || null,
+          gift_policy: giftPolicy,
+          gift_preferences: giftPrefs as any,
+          clear_wrapping: giftPrefs.clear_wrapping || clearWrapping,
+          gift_note: giftNote.trim() || null,
+          surprise_mode: surpriseMode,
+        })
+        .eq("id", editingEventId);
+
+      if (error) {
+        setSaving(false);
+        toast.error("Failed to update event. Please try again.");
+        return;
+      }
+
+      await supabase.from("profiles").update({ city: city.trim() || null, push_notifications: pushNotifications }).eq("id", user.id);
+      await refetch();
+      setSaving(false);
+      toast.success("Shower details updated");
+      navigate(`/showers/${editingEventId}`);
+      return;
+    }
+
     // Save event to database
     const { data: insertedEvent, error } = await supabase.from("events").insert({
       user_id: user.id,
@@ -199,6 +230,7 @@ const ShowerSetupPage = () => {
     };
     updateSetupData(setupDataPayload);
     setMode("shower");
+    await refetch();
     navigate("/");
   };
 
