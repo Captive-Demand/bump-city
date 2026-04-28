@@ -277,10 +277,10 @@ const ShowerSetupPage = () => {
             {editingEventId ? "Cancel" : "Skip for now"}
           </button>
         </div>
-        <StepProgress current={step} total={TOTAL_STEPS} />
+        {!editingEventId && <StepProgress current={step} total={TOTAL_STEPS} />}
 
         <div className="flex-1">
-          {step === 0 && (
+          {(editingEventId || step === 0) && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold">What's your role?</h2>
@@ -299,7 +299,7 @@ const ShowerSetupPage = () => {
             </div>
           )}
 
-          {step === 1 && (
+          {(editingEventId || step === 1) && (
             <div className="space-y-5">
               <div><h2 className="text-2xl font-bold">Event Details</h2><p className="text-sm text-muted-foreground mt-1">Tell us about the shower.</p></div>
               <div className="space-y-1.5">
@@ -340,7 +340,7 @@ const ShowerSetupPage = () => {
             </div>
           )}
 
-          {step === 2 && (
+          {(editingEventId || step === 2) && (
             <div className="space-y-5">
               <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Pick all that apply — you can change these later.</p></div>
               <div className="space-y-2">
@@ -385,19 +385,27 @@ const ShowerSetupPage = () => {
         </div>
 
         <div className="flex gap-3 pt-6">
-          {step > 0 && (
-            <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> Back
-            </Button>
-          )}
-          {step < TOTAL_STEPS - 1 ? (
-            <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
-              Next <ArrowRight className="h-4 w-4 ml-1" />
+          {editingEventId ? (
+            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Save changes"}
             </Button>
           ) : (
-            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : editingEventId ? "Save changes" : "Let's go!"}
-            </Button>
+            <>
+              {step > 0 && (
+                <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
+                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                </Button>
+              )}
+              {step < TOTAL_STEPS - 1 ? (
+                <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
+                  Next <ArrowRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : (
+                <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+                  <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
