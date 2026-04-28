@@ -45,6 +45,7 @@ const CommunityEventsPage = () => {
   const [events, setEvents] = useState<CommunityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { event: activeEvent } = useEvent();
+  const navigate = useNavigate();
 
   const userCity = activeEvent?.city || null;
 
