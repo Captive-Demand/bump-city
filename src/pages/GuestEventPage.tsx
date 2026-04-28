@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
@@ -51,6 +52,10 @@ const GuestEventPage = () => {
   const [predBabyName, setPredBabyName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [predicted, setPredicted] = useState(false);
+  const [signupPrompt, setSignupPrompt] = useState<null | "claim" | "predict">(null);
+  const isAnon = !user;
+  const previewMode = new URLSearchParams(window.location.search).get("preview") === "anon";
+  const treatAsAnon = isAnon || previewMode;
 
   useEffect(() => {
     const load = async () => {
@@ -67,6 +72,7 @@ const GuestEventPage = () => {
   }, [eventId]);
 
   const claimItem = async (itemId: string) => {
+    if (treatAsAnon) { setSignupPrompt("claim"); return; }
     if (!user) return;
     const displayName = user.user_metadata?.display_name || user.email || "A guest";
     const item = registryItems.find((i) => i.id === itemId);
@@ -94,6 +100,7 @@ const GuestEventPage = () => {
   };
 
   const submitPrediction = async () => {
+    if (treatAsAnon) { setSignupPrompt("predict"); return; }
     if (!eventId || !predName.trim()) return;
     setSubmitting(true);
     const { error } = await supabase.from("predictions").insert({
@@ -140,8 +147,29 @@ const GuestEventPage = () => {
       <div className="px-6 pt-8 pb-6 max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <img src={bumpCityLogo} alt="Bump City" className="h-7" />
-          <Badge variant="secondary" className="text-[10px]">Guest View</Badge>
+          {previewMode ? (
+            <Badge className="bg-amber-500 text-amber-950 text-[10px]">Preview · Anon</Badge>
+          ) : (
+            <Badge variant="secondary" className="text-[10px]">Guest View</Badge>
+          )}
         </div>
+
+        {treatAsAnon && (
+          <div className="mb-4 rounded-xl bg-primary/10 border border-primary/20 p-3 flex items-center gap-3">
+            <UserPlus className="h-5 w-5 text-primary shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold">Create a free account</p>
+              <p className="text-xs text-muted-foreground">Sign up to claim gifts and join Guess & Win.</p>
+            </div>
+            <Button
+              size="sm"
+              className="rounded-full"
+              onClick={() => navigate(`/auth?redirect=/event/${eventId}`)}
+            >
+              Sign Up
+            </Button>
+          </div>
+        )}
 
         <h1 className="text-2xl font-bold">
           {event.honoree_name ? `${event.honoree_name}'s Baby Shower` : "Baby Shower"}
@@ -324,6 +352,32 @@ const GuestEventPage = () => {
           <p className="text-[10px] text-muted-foreground">Powered by Bump City</p>
         </footer>
       </div>
+
+      <Dialog open={!!signupPrompt} onOpenChange={(open) => !open && setSignupPrompt(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-2">
+              <UserPlus className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center">
+              {signupPrompt === "claim" ? "Sign up to claim this gift" : "Sign up to play Guess & Win"}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {signupPrompt === "claim"
+                ? "Create a free Bump City account so the parents-to-be know who's bringing what."
+                : "Create a free Bump City account to lock in your predictions and find out if you win."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button className="w-full" onClick={() => navigate(`/auth?redirect=/event/${eventId}`)}>
+              Create Free Account
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={() => setSignupPrompt(null)}>
+              Maybe Later
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

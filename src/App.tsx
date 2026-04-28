@@ -68,7 +68,7 @@ const App = () => (
                   <Route path="/setup/shower" element={<ProtectedRoute><ShowerSetupPage /></ProtectedRoute>} />
                   <Route path="/setup/registry" element={<Navigate to="/setup/shower" replace />} />
                   <Route path="/join" element={<ProtectedRoute><JoinEventPage /></ProtectedRoute>} />
-                  <Route path="/event/:eventId" element={<ProtectedRoute><GuestEventPage /></ProtectedRoute>} />
+                  <Route path="/event/:eventId" element={<GuestEventPage />} />
 
                   {/* Protected pages inside the persistent shell */}
                   <Route path="/" element={<Shell><HomePage /></Shell>} />
