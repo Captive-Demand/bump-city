@@ -1,14 +1,16 @@
 import { useEffect } from "react";
 import { useNavigate, useParams, Navigate } from "react-router-dom";
-import { ChevronLeft, Trash2, Send, Users, Gift } from "lucide-react";
+import { ChevronLeft, Trash2, Send, Users, Gift, Calendar, MapPin, Sparkles } from "lucide-react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
+import { useEventRole } from "@/hooks/useEventRole";
 import { ShowerHero } from "@/components/shower/ShowerHero";
 import { QuickSettingsCard } from "@/components/shower/QuickSettingsCard";
 import { InvitationOptionsCard } from "@/components/shower/InvitationOptionsCard";
 import { ManageTilesGrid } from "@/components/shower/ManageTilesGrid";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
