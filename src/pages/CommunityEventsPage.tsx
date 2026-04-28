@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useEvent } from "@/hooks/useEvent";
-import { CalendarDays, MapPin, CalendarPlus } from "lucide-react";
+import { CalendarDays, MapPin, CalendarPlus, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const buildGoogleCalendarUrl = (evt: {
   title: string;
@@ -44,6 +45,7 @@ const CommunityEventsPage = () => {
   const [events, setEvents] = useState<CommunityEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const { event: activeEvent } = useEvent();
+  const navigate = useNavigate();
 
   const userCity = activeEvent?.city || null;
 
@@ -76,7 +78,13 @@ const CommunityEventsPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-6">
+      <div className="px-6 pt-8 pb-6">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center gap-2 mb-1">
           <CalendarDays className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Community</h1>
