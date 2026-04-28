@@ -11,6 +11,7 @@ import { Shield, Plus, Pencil, Trash2, Users, Calendar, ShoppingBag, Settings, B
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventRole, type ImpersonatedRole } from "@/hooks/useEventRole";
+import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 const AdminPage = () => {
   const { user } = useAuth();
   const { isAdmin, isSuperAdmin, loading: roleLoading, setImpersonatedRole } = useEventRole();
+  const { activeEvent } = useActiveEvent();
   const navigate = useNavigate();
 
   // Stats
@@ -302,6 +304,29 @@ const AdminPage = () => {
                       {r.label}
                     </Button>
                   ))}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <p className="text-xs font-semibold mb-1">Unauthenticated invite</p>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    See exactly what someone with the invite link sees before they create an account.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full rounded-full gap-2"
+                    disabled={!activeEvent}
+                    onClick={() => {
+                      if (!activeEvent) {
+                        toast.error("No active shower selected");
+                        return;
+                      }
+                      window.open(`/event/${activeEvent.id}?preview=anon`, "_blank");
+                    }}
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    Preview anonymous invite
+                  </Button>
                 </div>
               </CardContent>
             </Card>
