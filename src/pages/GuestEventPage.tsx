@@ -21,6 +21,7 @@ interface EventData {
   theme: string | null;
   city: string | null;
   invite_time_range: string | null;
+  event_image_url: string | null;
 }
 
 interface RegistryItem {
