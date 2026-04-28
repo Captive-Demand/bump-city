@@ -434,8 +434,10 @@ const PredictionsPage = () => {
               </Card>
             )}
           </TabsContent>
-        </Tabs>
-      </div>
+            </Tabs>
+          </div>
+        </SheetContent>
+      </Sheet>
     </MobileLayout>
   );
 };
