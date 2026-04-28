@@ -780,12 +780,16 @@ const RegistryPage = () => {
                       ) : (
                         <Button size="sm" className="rounded-full text-[10px] h-7 flex-1 px-2" onClick={() => handleClaim(item.id)}>Claim</Button>
                       )}
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {isHost && (
+                        <>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-primary" onClick={() => openEdit(item)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDelete(item.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </CardContent>
                 </div>
