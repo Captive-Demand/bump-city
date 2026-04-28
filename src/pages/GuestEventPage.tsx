@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Gift, Calendar, Sparkles, Users, Check, Loader2, MapPin, Clock, Palette, Package, ExternalLink, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
+import { getShowerImage } from "@/lib/showerPlaceholders";
 
 interface EventData {
   id: string;
