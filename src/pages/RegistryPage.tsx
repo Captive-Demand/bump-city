@@ -329,7 +329,9 @@ const RegistryPage = () => {
           <ShoppingBag className="h-5 w-5 text-primary" />
           <h1 className="text-2xl font-bold">Gift Registry</h1>
         </div>
-        <p className="text-xs text-muted-foreground italic">{blurb}</p>
+        <p className="text-xs text-muted-foreground italic">
+          {isHost ? blurb : "Tap any gift below to claim it for the parents-to-be."}
+        </p>
       </div>
 
       {/* Shared Add/URL dialogs */}
