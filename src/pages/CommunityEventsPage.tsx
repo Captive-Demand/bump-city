@@ -137,11 +137,34 @@ const CommunityEventsPage = () => {
                       </Badge>
                     )}
                   </div>
+                  {evt.event_date && (() => {
+                    const url = buildGoogleCalendarUrl(evt);
+                    if (!url) return null;
+                    return (
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="mt-3 h-8 text-xs gap-1.5"
+                      >
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          <CalendarPlus className="h-3.5 w-3.5" />
+                          Add to Google Calendar
+                        </a>
+                      </Button>
+                    );
+                  })()}
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
+      </div>
+    </MobileLayout>
+  );
+};
+
+export default CommunityEventsPage;
       </div>
     </MobileLayout>
   );
