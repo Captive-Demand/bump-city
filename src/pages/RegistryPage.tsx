@@ -409,6 +409,14 @@ const RegistryPage = () => {
         </DialogContent>
       </Dialog>
 
+      {/* === ADD TO REGISTRY SECTION (host only) === */}
+      {isHost && <></>}
+      {isHost && (<>
+      </>)}
+      {isHost && (
+      <>
+      </>
+      )}
       {/* === ADD TO REGISTRY SECTION === */}
       <div className="px-6 pt-4 pb-1 flex items-center justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">Add to Registry</h2>
