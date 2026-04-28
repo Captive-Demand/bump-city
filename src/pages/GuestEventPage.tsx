@@ -62,7 +62,7 @@ const GuestEventPage = () => {
     const load = async () => {
       if (!eventId) return;
       const [{ data: eventData }, { data: items }] = await Promise.all([
-        supabase.from("events").select("id, honoree_name, event_date, due_date, theme, city, invite_time_range").eq("id", eventId).maybeSingle(),
+        supabase.from("events").select("id, honoree_name, event_date, due_date, theme, city, invite_time_range, event_image_url").eq("id", eventId).maybeSingle(),
         supabase.from("registry_items").select("id, name, category, price, emoji, claimed, claimed_by, image_url, external_url, source").eq("event_id", eventId).order("created_at"),
       ]);
       setEvent(eventData as EventData | null);
