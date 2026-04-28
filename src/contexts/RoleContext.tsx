@@ -91,10 +91,13 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
-      if (memberData) {
-        setEventRole(memberData.role as EventRole);
-      } else if (activeEvent.user_id === user.id) {
+      // Event owner is always treated as host, regardless of any
+      // event_members row that may exist (e.g. legacy "guest" rows
+      // created when they accepted their own invite link).
+      if (activeEvent.user_id === user.id) {
         setEventRole("host");
+      } else if (memberData) {
+        setEventRole(memberData.role as EventRole);
       } else {
         setEventRole(null);
       }
