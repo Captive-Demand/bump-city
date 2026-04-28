@@ -505,8 +505,9 @@ const ShowerDashboard = () => {
 
 const HomePage = () => {
   const { mode, modeLoading } = useAppMode();
+  const { isHost, loading: roleLoading } = useEventRole();
 
-  if (modeLoading) {
+  if (modeLoading || roleLoading) {
     return (
       <MobileLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -517,6 +518,7 @@ const HomePage = () => {
   }
 
   if (mode === "choose") return <EmptyHome />;
+  if (!isHost) return <GuestDashboard />;
   return <ShowerDashboard />;
 };
 
