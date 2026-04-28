@@ -49,14 +49,20 @@ const VendorDirectoryPage = () => {
 
   return (
     <MobileLayout>
-      <div className="px-6 pt-12 pb-4">
+      <div className="px-6 pt-8 pb-4">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-1 text-sm text-muted-foreground mb-4 hover:text-foreground"
+        >
+          <ChevronLeft className="h-4 w-4" /> Home
+        </button>
         <div className="flex items-center gap-2 mb-1"><MapPin className="h-5 w-5 text-primary" /><h1 className="text-2xl font-bold">Local Vendors</h1></div>
         <p className="text-sm text-muted-foreground">Nashville's best baby shower vendors 🎵</p>
       </div>
 
-      <div className="px-6 flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
+      <div className="px-6 flex flex-wrap gap-2 pb-3">
         {vendorCategories.map((cat) => (
-          <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{cat}</button>
+          <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{cat}</button>
         ))}
       </div>
 
