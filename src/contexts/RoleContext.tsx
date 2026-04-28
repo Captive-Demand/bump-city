@@ -150,7 +150,7 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
       setImpersonatedRole,
       isImpersonating: !!activeImpersonation,
     };
-  }, [eventRole, platformRole, authLoading, eventLoading, platformLoaded, eventRoleLoaded, impersonatedRole, setImpersonatedRole]);
+  }, [eventRole, platformRole, authLoading, eventLoading, platformLoaded, eventRoleLoaded, impersonatedRole, setImpersonatedRole, user, activeEvent]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 };
