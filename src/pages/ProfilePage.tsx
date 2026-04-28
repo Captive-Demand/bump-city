@@ -337,16 +337,6 @@ const ProfilePage = () => {
           </Card>
           <Card className="border-none">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="bg-primary/10 p-2 rounded-lg"><Palette className="h-4 w-4 text-primary" /></div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Theme</p>
-                <p className="text-[10px] text-muted-foreground">Pastel Pink</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-          <Card className="border-none">
-            <CardContent className="p-3 flex items-center gap-3">
               <div className="bg-primary/10 p-2 rounded-lg"><Share2 className="h-4 w-4 text-primary" /></div>
               <div className="flex-1"><p className="text-sm font-medium">Share Event Link</p></div>
               <ShareInviteButton />
