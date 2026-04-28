@@ -70,8 +70,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
         <DesktopSidebar />
         <main ref={mainRef} className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto">
-            <ImpersonationBanner />
             <BrandHeader />
+            <ImpersonationBanner />
             {children}
           </div>
         </main>
@@ -83,8 +83,8 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
     <div className="flex justify-center h-screen bg-muted/50">
       <div className="w-full max-w-[430px] md:max-w-none h-screen bg-background relative flex flex-col shadow-2xl md:shadow-none">
         <main ref={mainRef} className="flex-1 overflow-y-auto pb-20">
-          <ImpersonationBanner />
           <BrandHeader />
+          <ImpersonationBanner />
           {children}
         </main>
         <BottomNav />

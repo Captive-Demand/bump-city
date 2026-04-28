@@ -16,7 +16,7 @@ export const ImpersonationBanner = () => {
   if (!isImpersonating || !impersonatedRole) return null;
 
   return (
-    <div className="sticky top-0 z-50 flex items-center justify-between gap-2 bg-amber-500/95 text-amber-950 px-4 py-1.5 text-xs font-semibold shadow-md">
+    <div className="flex items-center justify-between gap-2 bg-amber-500/95 text-amber-950 px-4 py-1.5 text-xs font-semibold shadow-sm">
       <div className="flex items-center gap-1.5 min-w-0">
         <Eye className="h-3.5 w-3.5 flex-shrink-0" />
         <span className="truncate">Previewing as {LABELS[impersonatedRole] || impersonatedRole}</span>
