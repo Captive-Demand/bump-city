@@ -10,6 +10,7 @@ import { useAppMode } from "@/contexts/AppModeContext";
 import { useActivityFeed, formatRelativeTime } from "@/contexts/ActivityFeedContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
+import { useEventRole } from "@/hooks/useEventRole";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 import bumpCityIcon from "@/assets/bump-city-icon.png";
 import { useEffect, useState } from "react";
