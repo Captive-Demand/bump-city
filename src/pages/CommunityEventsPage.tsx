@@ -165,9 +165,6 @@ const CommunityEventsPage = () => {
 };
 
 export default CommunityEventsPage;
-      </div>
-    </MobileLayout>
-  );
-};
+
 
 export default CommunityEventsPage;
