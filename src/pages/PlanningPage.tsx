@@ -340,7 +340,7 @@ const PlanningPage = () => {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="w-full justify-start gap-2 px-6 bg-transparent border-b border-border rounded-none h-auto p-0">
+        <TabsList className="w-full justify-center gap-2 px-6 bg-transparent border-b border-border rounded-none h-auto p-0">
           {[
             { id: "checklist", label: "Checklist" },
             { id: "budget", label: "Budget" },
