@@ -299,7 +299,7 @@ const ShowerSetupPage = () => {
             </div>
           )}
 
-          {step === 1 && (
+          {(editingEventId || step === 1) && (
             <div className="space-y-5">
               <div><h2 className="text-2xl font-bold">Event Details</h2><p className="text-sm text-muted-foreground mt-1">Tell us about the shower.</p></div>
               <div className="space-y-1.5">
