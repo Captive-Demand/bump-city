@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useRef, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { DesktopSidebar } from "./DesktopSidebar";
+import { ImpersonationBanner } from "./ImpersonationBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bumpCityLogo from "@/assets/bump-city-logo-hz.png";
 
