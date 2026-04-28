@@ -29,6 +29,7 @@ const EventCard = () => {
   const navigate = useNavigate();
   const { event } = useEvent();
   const { setupData } = useAppMode();
+  const { isHost } = useEventRole();
 
   const honoreeName = event?.honoree_name || setupData.honoreeName;
   const eventDate = event?.event_date ? new Date(event.event_date) : setupData.eventDate;
@@ -75,12 +76,17 @@ const EventCard = () => {
             </div>
           )}
           <div className="flex items-center gap-2 mt-4">
-            <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate("/profile")}>
+            <Button
+              className="flex-1 rounded-xl h-11 font-semibold"
+              onClick={() => navigate(isHost ? "/profile" : event ? `/showers/${event.id}` : "/showers")}
+            >
               View Details
             </Button>
-            <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shrink-0" onClick={() => navigate("/profile")}>
-              <Pencil className="h-4 w-4" />
-            </Button>
+            {isHost && (
+              <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl shrink-0" onClick={() => navigate("/profile")}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
