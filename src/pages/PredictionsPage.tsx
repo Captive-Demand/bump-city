@@ -35,6 +35,7 @@ interface Prediction {
 }
 
 const PredictionsPage = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { event } = useEvent();
   const { isHost, isAdmin } = useEventRole();
