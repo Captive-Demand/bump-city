@@ -118,7 +118,13 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     let effectiveEventRole: EventRole = eventRole;
     let effectivePlatformRole: PlatformRole = platformRole;
 
-    if (activeImpersonation) {
+    // Owner of the active event is always treated as host — impersonation
+    // only affects events the user does NOT own (so admins can preview the
+    // guest experience on someone else's event without losing host UI on
+    // their own).
+    const isOwnerOfActive = !!user && !!activeEvent && activeEvent.user_id === user.id;
+
+    if (activeImpersonation && !isOwnerOfActive) {
       if (activeImpersonation === "admin") {
         effectivePlatformRole = "admin";
         effectiveEventRole = "host";
