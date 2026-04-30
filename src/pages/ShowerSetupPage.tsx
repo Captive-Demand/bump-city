@@ -36,14 +36,25 @@ const StepProgress = ({ current, total }: { current: number; total: number }) =>
 const ShowerSetupPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { setMode, updateSetupData } = useAppMode();
-  const { refetch } = useActiveEvent();
+  const { updateSetupData } = useAppMode();
+  const { refetch, allEvents } = useActiveEvent();
   const { user } = useAuth();
   const editingEventId = searchParams.get("eventId");
+  // Look up the event in already-loaded context so we can populate the form
+  // instantly when the user navigates here from the shower detail page —
+  // no waiting on a network round-trip just to render a form.
+  const cachedEvent = editingEventId ? allEvents.find((e) => e.id === editingEventId) : null;
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [loadingEvent, setLoadingEvent] = useState(false);
-  const [canEditEvent, setCanEditEvent] = useState(!editingEventId);
+  // Only show the loader on a true cold load (deep-linked edit URL with no
+  // cached event yet). Otherwise we have everything we need and can render
+  // immediately while a permission check happens in the background.
+  const [loadingEvent, setLoadingEvent] = useState(!!editingEventId && !cachedEvent);
+  // Optimistic permission for the common case: editing your own cached
+  // shower. We still re-confirm against the server in case membership has
+  // changed, but render-blocking on that round-trip is a slow-feel killer.
+  const isCachedOwner = !!user && !!cachedEvent && cachedEvent.user_id === user.id;
+  const [canEditEvent, setCanEditEvent] = useState(!editingEventId || isCachedOwner);
   const isNewEvent = searchParams.get("new") === "true";
 
   useEffect(() => {
@@ -59,25 +70,35 @@ const ShowerSetupPage = () => {
     checkExisting();
   }, [user, isNewEvent, editingEventId, navigate]);
 
-  const [role, setRole] = useState<"planner" | "expectant-parent">("expectant-parent");
-  const [honoreeName, setHonoreeName] = useState("");
-  const [dueDate, setDueDate] = useState<Date>();
-  const [eventDate, setEventDate] = useState<Date>();
-  const [city, setCity] = useState("");
-  const [theme, setTheme] = useState("");
-  const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">("bring-gift");
+  // Seed form state from the cached event when present, so the inputs render
+  // pre-filled on the first paint instead of empty-then-populated.
+  const [role, setRole] = useState<"planner" | "expectant-parent">(
+    cachedEvent ? "planner" : "expectant-parent"
+  );
+  const [honoreeName, setHonoreeName] = useState(cachedEvent?.honoree_name || "");
+  const [dueDate, setDueDate] = useState<Date | undefined>(
+    cachedEvent?.due_date ? new Date(`${cachedEvent.due_date}T12:00:00`) : undefined
+  );
+  const [eventDate, setEventDate] = useState<Date | undefined>(
+    cachedEvent?.event_date ? new Date(`${cachedEvent.event_date}T12:00:00`) : undefined
+  );
+  const [city, setCity] = useState(cachedEvent?.city || "");
+  const [theme, setTheme] = useState(cachedEvent?.theme || "");
+  const [giftPolicy, setGiftPolicy] = useState<"bring-gift" | "no-gifts" | "bring-book">(
+    (cachedEvent?.gift_policy as "bring-gift" | "no-gifts" | "bring-book") || "bring-gift"
+  );
   const [giftPrefs, setGiftPrefs] = useState<Record<string, boolean>>({
     bring_gift: true,
     bring_book: false,
     no_gifts: false,
-    clear_wrapping: false,
+    clear_wrapping: cachedEvent?.clear_wrapping || false,
     ship_to_home: false,
     bring_to_event: true,
   });
   const togglePref = (key: string) => setGiftPrefs((p) => ({ ...p, [key]: !p[key] }));
-  const [clearWrapping, setClearWrapping] = useState(false);
-  const [surpriseMode, setSurpriseMode] = useState(false);
-  const [giftNote, setGiftNote] = useState("");
+  const [clearWrapping, setClearWrapping] = useState(cachedEvent?.clear_wrapping || false);
+  const [surpriseMode, setSurpriseMode] = useState(cachedEvent?.surprise_mode || false);
+  const [giftNote, setGiftNote] = useState(cachedEvent?.gift_note || "");
   const [pushNotifications, setPushNotifications] = useState(false);
 
   useEffect(() => {
@@ -87,13 +108,32 @@ const ShowerSetupPage = () => {
       return;
     }
 
-    setLoadingEvent(true);
+    // Fetch event + (when not the owner) membership in parallel. Skip the
+    // membership query when we already know the user owns the event from
+    // cache — that's the overwhelming common case from the shower detail
+    // page.
     (async () => {
-      const { data: eventData, error: eventError } = await supabase
+      const eventPromise = supabase
         .from("events")
         .select("*")
         .eq("id", editingEventId)
         .maybeSingle();
+
+      const needsMembershipCheck = !isCachedOwner;
+      const memberPromise = needsMembershipCheck
+        ? supabase
+            .from("event_members")
+            .select("role")
+            .eq("event_id", editingEventId)
+            .eq("user_id", user.id)
+            .in("role", ["host", "co-host"])
+            .maybeSingle()
+        : Promise.resolve({ data: null });
+
+      const [{ data: eventData, error: eventError }, { data: memberData }] = await Promise.all([
+        eventPromise,
+        memberPromise,
+      ]);
 
       if (cancelled) return;
 
@@ -103,18 +143,7 @@ const ShowerSetupPage = () => {
         return;
       }
 
-      let allowed = eventData.user_id === user.id;
-      if (!allowed) {
-        const { data: memberData } = await supabase
-          .from("event_members")
-          .select("role")
-          .eq("event_id", editingEventId)
-          .eq("user_id", user.id)
-          .in("role", ["host", "co-host"])
-          .maybeSingle();
-        allowed = !!memberData;
-      }
-
+      const allowed = eventData.user_id === user.id || !!memberData;
       if (!allowed) {
         setCanEditEvent(false);
         setLoadingEvent(false);
@@ -145,7 +174,7 @@ const ShowerSetupPage = () => {
     })();
 
     return () => { cancelled = true; };
-  }, [user, editingEventId, navigate]);
+  }, [user, editingEventId, navigate, isCachedOwner]);
 
   const canNext = () => {
     if (step === 0) return true;
@@ -230,7 +259,9 @@ const ShowerSetupPage = () => {
       city: city.trim(), theme: theme.trim(), giftPolicy, clearWrapping, giftNote: giftNote.trim(),
     };
     updateSetupData(setupDataPayload);
-    setMode("shower");
+    // `mode` is now derived from the active event in AppModeContext; once
+    // refetch resolves, the home page will pick the right dashboard with
+    // no flash of the empty-state "choose" view.
     await refetch();
     navigate("/");
   };
@@ -261,26 +292,171 @@ const ShowerSetupPage = () => {
     );
   }
 
+  // The fields that appear in both flows — extracted so the editing layout
+  // can arrange them in a 2-column grid without duplicating JSX.
+  const eventDetailsFields = (
+    <div className="space-y-5">
+      <div className="space-y-1.5">
+        <Label htmlFor="honoree">Honoree name(s) *</Label>
+        <Input id="honoree" placeholder="e.g. Sarah & Mike" value={honoreeName} onChange={(e) => setHonoreeName(e.target.value)} maxLength={100} />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Due date *</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />{dueDate ? format(dueDate, "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
+        </Popover>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Event date (optional)</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !eventDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />{eventDate ? format(eventDate, "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
+        </Popover>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="city">City / Location</Label>
+        <Input id="city" placeholder="e.g. Nashville, TN" value={city} onChange={(e) => setCity(e.target.value)} maxLength={100} />
+        {city.toLowerCase().includes("nashville") && <p className="text-xs text-primary font-medium">🎵 Nashville unlocks local vendors & events!</p>}
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="theme">Theme (optional)</Label>
+        <Input id="theme" placeholder="e.g. Woodland, Boho, Safari" value={theme} onChange={(e) => setTheme(e.target.value)} maxLength={100} />
+      </div>
+    </div>
+  );
+
+  const giftPreferenceOptions = [
+    { key: "bring_gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared", icon: "🎁" },
+    { key: "bring_book", label: "Bring a book instead", desc: "Build baby's first library", icon: "📚" },
+    { key: "no_gifts", label: "No gifts please", desc: "Presence over presents", icon: "💖" },
+    { key: "clear_wrapping", label: "Clear wrapping requested", desc: "For guessing games", icon: "🎀" },
+    { key: "ship_to_home", label: "Ship to home", desc: "Send registry items to shipping address", icon: "📦" },
+    { key: "bring_to_event", label: "Bring gifts to the event", desc: "Open them at the shower", icon: "🎈" },
+  ];
+
+  const giftingFields = (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        {giftPreferenceOptions.map((opt) => (
+          <Label key={opt.key} htmlFor={opt.key} className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all", giftPrefs[opt.key] ? "border-primary bg-primary/5" : "border-border")}>
+            <Checkbox id={opt.key} checked={!!giftPrefs[opt.key]} onCheckedChange={() => {
+              togglePref(opt.key);
+              if (opt.key === "bring_gift") setGiftPolicy("bring-gift");
+              if (opt.key === "bring_book") setGiftPolicy("bring-book");
+              if (opt.key === "no_gifts") setGiftPolicy("no-gifts");
+            }} className="mt-0.5" />
+            <div className="flex-1">
+              <p className="font-semibold text-sm flex items-center gap-2"><span>{opt.icon}</span>{opt.label}</p>
+              <p className="text-xs text-muted-foreground">{opt.desc}</p>
+            </div>
+          </Label>
+        ))}
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="note">Custom note for guests (optional)</Label>
+        <Textarea id="note" placeholder="Any special instructions for your guests..." value={giftNote} onChange={(e) => setGiftNote(e.target.value)} maxLength={500} rows={3} />
+      </div>
+      {role === "planner" && (
+        <div className="flex items-center justify-between p-4 rounded-xl border border-border">
+          <div><p className="font-semibold text-sm">🤫 Surprise Mode</p><p className="text-xs text-muted-foreground">Hide shower details from the expectant parent</p></div>
+          <Switch checked={surpriseMode} onCheckedChange={setSurpriseMode} />
+        </div>
+      )}
+      <div className="flex items-center justify-between p-4 rounded-xl border border-border">
+        <div><p className="font-semibold text-sm">🔔 Local event notifications</p><p className="text-xs text-muted-foreground">Get notified about community events & meetups</p></div>
+        <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
+      </div>
+    </div>
+  );
+
+  // Edit-mode layout: wider container, sectioned cards, 2-column on desktop.
+  if (editingEventId) {
+    return (
+      <MobileLayout hideNav>
+        <div className="px-6 pt-10 pb-10 min-h-screen flex flex-col max-w-4xl mx-auto w-full">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Baby className="h-5 w-5 text-primary" />
+              <span className="text-sm font-semibold text-primary">Edit Shower</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/showers/${editingEventId}`, { replace: true })}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground underline"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">Edit shower details</h1>
+            <p className="text-sm text-muted-foreground mt-1">Update the basics, gifting preferences, and notifications.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 flex-1">
+            <Card className="border-none">
+              <CardContent className="p-5 space-y-4">
+                <div>
+                  <h2 className="text-base font-bold">Event details</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">The basics about the shower.</p>
+                </div>
+                {eventDetailsFields}
+              </CardContent>
+            </Card>
+
+            <Card className="border-none">
+              <CardContent className="p-5 space-y-4">
+                <div>
+                  <h2 className="text-base font-bold">Gifting & notifications</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Tell guests what to bring and how you'd like to stay in the loop.</p>
+                </div>
+                {giftingFields}
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex gap-3 pt-6 sticky bottom-0 bg-background/85 backdrop-blur-sm py-4 -mx-6 px-6 border-t border-border/40 mt-6">
+            <Button variant="outline" className="flex-1 max-w-[200px]" onClick={() => navigate(`/showers/${editingEventId}`, { replace: true })}>
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Save changes"}
+            </Button>
+          </div>
+        </div>
+      </MobileLayout>
+    );
+  }
+
   return (
     <MobileLayout hideNav>
       <div className="px-6 pt-10 pb-8 min-h-screen flex flex-col max-w-[500px] mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Baby className="h-5 w-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">{editingEventId ? "Edit Shower" : "Shower Setup"}</span>
+            <span className="text-sm font-semibold text-primary">Shower Setup</span>
           </div>
           <button
             type="button"
-            onClick={() => navigate(editingEventId ? `/showers/${editingEventId}` : "/", { replace: true })}
+            onClick={() => navigate("/", { replace: true })}
             className="text-xs font-medium text-muted-foreground hover:text-foreground underline"
           >
-            {editingEventId ? "Cancel" : "Skip for now"}
+            Skip for now
           </button>
         </div>
-        {!editingEventId && <StepProgress current={step} total={TOTAL_STEPS} />}
+        <StepProgress current={step} total={TOTAL_STEPS} />
 
         <div className="flex-1">
-          {!editingEventId && step === 0 && (
+          {step === 0 && (
             <div className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold">What's your role?</h2>
@@ -299,113 +475,35 @@ const ShowerSetupPage = () => {
             </div>
           )}
 
-          {(editingEventId || step === 1) && (
+          {step === 1 && (
             <div className="space-y-5">
               <div><h2 className="text-2xl font-bold">Event Details</h2><p className="text-sm text-muted-foreground mt-1">Tell us about the shower.</p></div>
-              <div className="space-y-1.5">
-                <Label htmlFor="honoree">Honoree name(s) *</Label>
-                <Input id="honoree" placeholder="e.g. Sarah & Mike" value={honoreeName} onChange={(e) => setHonoreeName(e.target.value)} maxLength={100} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Due date *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dueDate && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />{dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Event date (optional)</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !eventDate && "text-muted-foreground")}>
-                      <CalendarIcon className="mr-2 h-4 w-4" />{eventDate ? format(eventDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={eventDate} onSelect={setEventDate} initialFocus className="p-3 pointer-events-auto" /></PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="city">City / Location</Label>
-                <Input id="city" placeholder="e.g. Nashville, TN" value={city} onChange={(e) => setCity(e.target.value)} maxLength={100} />
-                {city.toLowerCase().includes("nashville") && <p className="text-xs text-primary font-medium">🎵 Nashville unlocks local vendors & events!</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="theme">Theme (optional)</Label>
-                <Input id="theme" placeholder="e.g. Woodland, Boho, Safari" value={theme} onChange={(e) => setTheme(e.target.value)} maxLength={100} />
-              </div>
+              {eventDetailsFields}
             </div>
           )}
 
-          {(editingEventId || step === 2) && (
-            <div className={cn("space-y-5", editingEventId && "pt-6")}>
+          {step === 2 && (
+            <div className="space-y-5">
               <div><h2 className="text-2xl font-bold">Gifting Preferences</h2><p className="text-sm text-muted-foreground mt-1">Pick all that apply — you can change these later.</p></div>
-              <div className="space-y-2">
-                {[
-                  { key: "bring_gift", label: "Bring a gift", desc: "Gifts welcome — registry link will be shared", icon: "🎁" },
-                  { key: "bring_book", label: "Bring a book instead", desc: "Build baby's first library", icon: "📚" },
-                  { key: "no_gifts", label: "No gifts please", desc: "Presence over presents", icon: "💖" },
-                  { key: "clear_wrapping", label: "Clear wrapping requested", desc: "For guessing games", icon: "🎀" },
-                  { key: "ship_to_home", label: "Ship to home", desc: "Send registry items to shipping address", icon: "📦" },
-                  { key: "bring_to_event", label: "Bring gifts to the event", desc: "Open them at the shower", icon: "🎈" },
-                ].map((opt) => (
-                  <Label key={opt.key} htmlFor={opt.key} className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all", giftPrefs[opt.key] ? "border-primary bg-primary/5" : "border-border")}>
-                    <Checkbox id={opt.key} checked={!!giftPrefs[opt.key]} onCheckedChange={() => {
-                      togglePref(opt.key);
-                      if (opt.key === "bring_gift") setGiftPolicy("bring-gift");
-                      if (opt.key === "bring_book") setGiftPolicy("bring-book");
-                      if (opt.key === "no_gifts") setGiftPolicy("no-gifts");
-                    }} className="mt-0.5" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-sm flex items-center gap-2"><span>{opt.icon}</span>{opt.label}</p>
-                      <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                    </div>
-                  </Label>
-                ))}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="note">Custom note for guests (optional)</Label>
-                <Textarea id="note" placeholder="Any special instructions for your guests..." value={giftNote} onChange={(e) => setGiftNote(e.target.value)} maxLength={500} rows={3} />
-              </div>
-              {role === "planner" && (
-                <div className="flex items-center justify-between p-4 rounded-xl border border-border">
-                  <div><p className="font-semibold text-sm">🤫 Surprise Mode</p><p className="text-xs text-muted-foreground">Hide shower details from the expectant parent</p></div>
-                  <Switch checked={surpriseMode} onCheckedChange={setSurpriseMode} />
-                </div>
-              )}
-              <div className="flex items-center justify-between p-4 rounded-xl border border-border">
-                <div><p className="font-semibold text-sm">🔔 Local event notifications</p><p className="text-xs text-muted-foreground">Get notified about community events & meetups</p></div>
-                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
-              </div>
+              {giftingFields}
             </div>
           )}
         </div>
 
         <div className="flex gap-3 pt-6">
-          {editingEventId ? (
-            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Save changes"}
+          {step > 0 && (
+            <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            </Button>
+          )}
+          {step < TOTAL_STEPS - 1 ? (
+            <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
+              Next <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           ) : (
-            <>
-              {step > 0 && (
-                <Button variant="outline" className="flex-1" onClick={() => setStep(step - 1)}>
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
-                </Button>
-              )}
-              {step < TOTAL_STEPS - 1 ? (
-                <Button className="flex-1" disabled={!canNext()} onClick={() => setStep(step + 1)}>
-                  Next <ArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : (
-                <Button className="flex-1" onClick={handleFinish} disabled={saving}>
-                  <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
-                </Button>
-              )}
-            </>
+            <Button className="flex-1" onClick={handleFinish} disabled={saving}>
+              <Sparkles className="h-4 w-4 mr-1" /> {saving ? "Saving..." : "Let's go!"}
+            </Button>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, useEffect, ReactNode } from "react";
 import { useActiveEvent } from "@/contexts/ActiveEventContext";
 
 type AppMode = "choose" | "shower" | "registry";
@@ -20,8 +20,18 @@ export interface SetupData {
 }
 
 interface AppModeContextType {
+  /**
+   * Always exactly tracks the active event:
+   *   - no event → "choose"
+   *   - event_type === "registry" → "registry"
+   *   - otherwise → "shower"
+   *
+   * Derived (not stored in state) so we never render a stale "choose" frame
+   * after the active event finishes loading. Previously the mode was a
+   * useState mirror updated via useEffect, which produced a 1-frame flash
+   * of the "Welcome, you don't have an event yet" empty home on every load.
+   */
   mode: AppMode;
-  setMode: (mode: AppMode) => void;
   setupData: SetupData;
   updateSetupData: (data: Partial<SetupData>) => void;
   modeLoading: boolean;
@@ -31,13 +41,20 @@ const AppModeContext = createContext<AppModeContextType | undefined>(undefined);
 
 export const AppModeProvider = ({ children }: { children: ReactNode }) => {
   const { activeEvent, loading: eventLoading } = useActiveEvent();
-  const [mode, setMode] = useState<AppMode>("choose");
   const [setupData, setSetupData] = useState<SetupData>({});
 
+  // Pure derivation — single source of truth is `activeEvent`.
+  const mode: AppMode = useMemo(() => {
+    if (!activeEvent) return "choose";
+    return activeEvent.event_type === "registry" ? "registry" : "shower";
+  }, [activeEvent]);
+
+  // Setup data (form prefill values used by the setup wizard) still needs
+  // to mirror the event since users can edit it pre-save. We sync from the
+  // active event whenever it changes.
   useEffect(() => {
     if (eventLoading) return;
     if (activeEvent) {
-      setMode(activeEvent.event_type === "shower" ? "shower" : "registry");
       setSetupData({
         honoreeName: activeEvent.honoree_name || undefined,
         dueDate: activeEvent.due_date ? new Date(activeEvent.due_date) : undefined,
@@ -51,7 +68,6 @@ export const AppModeProvider = ({ children }: { children: ReactNode }) => {
         registryPrivate: activeEvent.registry_private || false,
       });
     } else {
-      setMode("choose");
       setSetupData({});
     }
   }, [activeEvent, eventLoading]);
@@ -61,7 +77,9 @@ export const AppModeProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AppModeContext.Provider value={{ mode, setMode, setupData, updateSetupData, modeLoading: eventLoading }}>
+    <AppModeContext.Provider
+      value={{ mode, setupData, updateSetupData, modeLoading: eventLoading }}
+    >
       {children}
     </AppModeContext.Provider>
   );
