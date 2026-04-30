@@ -24,7 +24,7 @@ const InviteTemplatePicker = ({ selected, onSelect, onUploadCustom }: Props) => 
   return (
     <div className="space-y-3">
       <p className="text-sm font-semibold tracking-wide">Choose a Style</p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {templateConfigs.map((template) => {
           const TemplatePreview = templates[template.id];
           const isSelected = selected === template.id;

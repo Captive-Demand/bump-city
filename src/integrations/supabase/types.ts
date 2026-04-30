@@ -312,6 +312,7 @@ export type Database = {
           event_date: string | null
           event_image_url: string | null
           event_type: string
+          first_time_parent: boolean | null
           gift_note: string | null
           gift_policy: string | null
           gift_preferences: Json | null
@@ -322,8 +323,11 @@ export type Database = {
           invite_template: string | null
           invite_time_range: string | null
           invite_title: string | null
+          journey: string | null
+          multiples: boolean
           registry_name: string | null
           registry_private: boolean | null
+          role: string | null
           surprise_mode: boolean | null
           theme: string | null
           total_budget: number | null
@@ -338,6 +342,7 @@ export type Database = {
           event_date?: string | null
           event_image_url?: string | null
           event_type?: string
+          first_time_parent?: boolean | null
           gift_note?: string | null
           gift_policy?: string | null
           gift_preferences?: Json | null
@@ -348,8 +353,11 @@ export type Database = {
           invite_template?: string | null
           invite_time_range?: string | null
           invite_title?: string | null
+          journey?: string | null
+          multiples?: boolean
           registry_name?: string | null
           registry_private?: boolean | null
+          role?: string | null
           surprise_mode?: boolean | null
           theme?: string | null
           total_budget?: number | null
@@ -364,6 +372,7 @@ export type Database = {
           event_date?: string | null
           event_image_url?: string | null
           event_type?: string
+          first_time_parent?: boolean | null
           gift_note?: string | null
           gift_policy?: string | null
           gift_preferences?: Json | null
@@ -374,8 +383,11 @@ export type Database = {
           invite_template?: string | null
           invite_time_range?: string | null
           invite_title?: string | null
+          journey?: string | null
+          multiples?: boolean
           registry_name?: string | null
           registry_private?: boolean | null
+          role?: string | null
           surprise_mode?: boolean | null
           theme?: string | null
           total_budget?: number | null
@@ -428,6 +440,7 @@ export type Database = {
           dietary_notes: string | null
           email: string | null
           event_id: string
+          group_label: string | null
           id: string
           invite_sent: boolean | null
           invite_sent_at: string | null
@@ -443,6 +456,7 @@ export type Database = {
           dietary_notes?: string | null
           email?: string | null
           event_id: string
+          group_label?: string | null
           id?: string
           invite_sent?: boolean | null
           invite_sent_at?: string | null
@@ -458,6 +472,7 @@ export type Database = {
           dietary_notes?: string | null
           email?: string | null
           event_id?: string
+          group_label?: string | null
           id?: string
           invite_sent?: boolean | null
           invite_sent_at?: string | null
@@ -607,6 +622,7 @@ export type Database = {
           predicted_gender: string | null
           predicted_name: string | null
           predicted_weight: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -618,6 +634,7 @@ export type Database = {
           predicted_gender?: string | null
           predicted_name?: string | null
           predicted_weight?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -629,6 +646,7 @@ export type Database = {
           predicted_gender?: string | null
           predicted_name?: string | null
           predicted_weight?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -692,6 +710,7 @@ export type Database = {
           image_url: string | null
           name: string
           price: number | null
+          priority: boolean
           source: string | null
           user_id: string
         }
@@ -707,6 +726,7 @@ export type Database = {
           image_url?: string | null
           name: string
           price?: number | null
+          priority?: boolean
           source?: string | null
           user_id: string
         }
@@ -722,6 +742,7 @@ export type Database = {
           image_url?: string | null
           name?: string
           price?: number | null
+          priority?: boolean
           source?: string | null
           user_id?: string
         }

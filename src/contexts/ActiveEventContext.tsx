@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -44,9 +44,14 @@ export const ActiveEventProvider = ({ children }: { children: ReactNode }) => {
     try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
   });
   const [loading, setLoading] = useState(true);
+  // Keyed off user.id (not the user object) so token refresh, which produces
+  // a new user reference with the same id, doesn't trigger a refetch.
+  const userId = user?.id ?? null;
+  const activeEventIdRef = useRef(activeEventId);
+  activeEventIdRef.current = activeEventId;
 
   const fetchEvents = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setAllEvents([]);
       setLoading(false);
       return;
@@ -56,19 +61,18 @@ export const ActiveEventProvider = ({ children }: { children: ReactNode }) => {
     const { data: ownedEvents } = await supabase
       .from("events")
       .select("*")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
     // Fetch events user is a member of
     const { data: memberships } = await supabase
       .from("event_members")
       .select("event_id")
-      .eq("user_id", user.id);
+      .eq("user_id", userId);
 
     let memberEvents: EventData[] = [];
     if (memberships && memberships.length > 0) {
       const memberEventIds = memberships.map((m) => m.event_id);
-      // Filter out events already owned
       const ownedIds = new Set((ownedEvents || []).map((e) => e.id));
       const extraIds = memberEventIds.filter((id) => !ownedIds.has(id));
 
@@ -84,12 +88,10 @@ export const ActiveEventProvider = ({ children }: { children: ReactNode }) => {
     const combined = [...(ownedEvents || []), ...memberEvents] as EventData[];
     setAllEvents(combined);
 
-    // Resolve active event
     if (combined.length > 0) {
-      const storedId = activeEventId;
+      const storedId = activeEventIdRef.current;
       const match = storedId ? combined.find((e) => e.id === storedId) : null;
       if (!match) {
-        // Default to first owned event or first event
         const defaultId = combined[0].id;
         setActiveEventId(defaultId);
         try { localStorage.setItem(STORAGE_KEY, defaultId); } catch {}
@@ -100,21 +102,32 @@ export const ActiveEventProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setLoading(false);
-  }, [user]);
+  }, [userId]);
 
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
 
-  const switchEvent = (eventId: string) => {
+  const switchEvent = useCallback((eventId: string) => {
     setActiveEventId(eventId);
     try { localStorage.setItem(STORAGE_KEY, eventId); } catch {}
-  };
+  }, []);
 
-  const activeEvent = allEvents.find((e) => e.id === activeEventId) || null;
+  // Memoize so consumers' effects keyed on `activeEvent` don't re-run on
+  // every parent render (a fresh Array.find result has a new reference each
+  // call, even when the underlying event hasn't changed).
+  const activeEvent = useMemo(
+    () => allEvents.find((e) => e.id === activeEventId) || null,
+    [allEvents, activeEventId]
+  );
+
+  const value = useMemo(
+    () => ({ activeEvent, allEvents, switchEvent, loading, refetch: fetchEvents }),
+    [activeEvent, allEvents, switchEvent, loading, fetchEvents]
+  );
 
   return (
-    <ActiveEventContext.Provider value={{ activeEvent, allEvents, switchEvent, loading, refetch: fetchEvents }}>
+    <ActiveEventContext.Provider value={value}>
       {children}
     </ActiveEventContext.Provider>
   );

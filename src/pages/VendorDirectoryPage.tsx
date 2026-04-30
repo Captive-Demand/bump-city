@@ -3,8 +3,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { PageLoader } from "@/components/PageLoader";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, Search, ExternalLink, Phone, Copy, Tag, ChevronLeft, ChevronDown } from "lucide-react";
+import {
+  MapPin,
+  Search,
+  ExternalLink,
+  Phone,
+  Copy,
+  Tag,
+  ChevronLeft,
+  ChevronDown,
+  Music,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +57,7 @@ const VendorDirectoryPage = () => {
     return v.name.toLowerCase().includes(search.toLowerCase());
   });
 
-  if (loading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
+  if (loading) return <MobileLayout><PageLoader /></MobileLayout>;
 
   return (
     <MobileLayout>
@@ -58,7 +69,10 @@ const VendorDirectoryPage = () => {
           <ChevronLeft className="h-4 w-4" /> Home
         </button>
         <div className="flex items-center gap-2 mb-1"><MapPin className="h-5 w-5 text-primary" /><h1 className="text-2xl font-bold">Local Vendors</h1></div>
-        <p className="text-sm text-muted-foreground">Nashville's best baby shower vendors 🎵</p>
+        <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5">
+          Nashville's best baby shower vendors
+          <Music className="h-3.5 w-3.5 text-primary/70" />
+        </p>
       </div>
 
       <div className="px-6 flex flex-wrap gap-2 pb-3">
@@ -93,7 +107,10 @@ const VendorDirectoryPage = () => {
                   <h3 className="font-bold text-sm">{vendor.name}</h3>
                   <Badge variant="secondary" className="text-[10px] mt-1">{vendor.category}</Badge>
                 </div>
-                <span className="text-xs text-muted-foreground">📍 {vendor.city}</span>
+                <span className="text-xs text-muted-foreground inline-flex items-center gap-1 shrink-0">
+                  <MapPin className="h-3 w-3" />
+                  {vendor.city}
+                </span>
               </div>
               {vendor.description && <p className="text-xs text-muted-foreground mt-2">{vendor.description}</p>}
               {vendor.discount_code && (

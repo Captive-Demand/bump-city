@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { PageLoader } from "@/components/PageLoader";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvent } from "@/hooks/useEvent";
 import { supabase } from "@/integrations/supabase/client";
@@ -317,9 +318,7 @@ const PlanningPage = () => {
   if (loading)
     return (
       <MobileLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-        </div>
+        <PageLoader />
       </MobileLayout>
     );
 
@@ -395,8 +394,9 @@ const PlanningPage = () => {
             </CardContent>
           </Card>
 
-          {/* Filter pills */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
+          {/* Filter pills — wrap to a new row on narrow screens instead of
+              scrolling horizontally (eliminates the mobile scrollbar). */}
+          <div className="flex flex-wrap gap-2">
             {TASK_FILTERS.map((f) => (
               <button
                 key={f}
@@ -597,15 +597,26 @@ const PlanningPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Floating Action Button */}
-      <button
-        onClick={openFab}
-        className="fixed bottom-24 right-6 z-30 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
-        style={{ left: "calc(50% + min(215px, 50vw) - 84px)" }}
-        aria-label="Add"
+      {/* Floating Action Button.
+          Lives inside a fixed full-width sliver so its inner max-w-4xl
+          wrapper anchors the button to the right edge of the page's
+          centered content area on every breakpoint — no hand-rolled calc.
+          On mobile (<md) the wrapper still works because max-w-4xl is
+          wider than the phone frame so it fills the viewport. */}
+      <div
+        className="fixed inset-x-0 bottom-24 md:bottom-6 z-30 px-6 pointer-events-none"
+        aria-hidden="true"
       >
-        <Plus className="h-6 w-6" />
-      </button>
+        <div className="max-w-4xl mx-auto flex justify-end">
+          <button
+            onClick={openFab}
+            className="pointer-events-auto h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+            aria-label="Add"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+        </div>
+      </div>
 
       {/* Add Task Dialog */}
       <Dialog open={addTaskOpen} onOpenChange={setAddTaskOpen}>

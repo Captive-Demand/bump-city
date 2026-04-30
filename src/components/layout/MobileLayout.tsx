@@ -69,9 +69,12 @@ export const AppShell = ({ children }: { children: ReactNode }) => {
       <div className="flex h-screen bg-muted/50">
         <DesktopSidebar />
         <main ref={mainRef} className="flex-1 overflow-y-auto">
+          {/* Header + impersonation banner span the full main column
+              (sidebar edge → right edge); page content is still centered
+              within max-w-4xl below. */}
+          <BrandHeader />
+          <ImpersonationBanner />
           <div className="max-w-4xl mx-auto">
-            <BrandHeader />
-            <ImpersonationBanner />
             {children}
           </div>
         </main>

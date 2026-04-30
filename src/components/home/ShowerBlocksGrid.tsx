@@ -103,14 +103,16 @@ export const ShowerBlocksGrid = ({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-bold">{title}</h2>
-        {showSeeAll && allEvents.length > 0 && (
-          <button className="text-sm font-semibold text-primary" onClick={() => navigate("/showers")}>
-            See all
-          </button>
-        )}
-      </div>
+      {(title || (showSeeAll && allEvents.length > 0)) && (
+        <div className="flex items-center justify-between mb-3">
+          {title ? <h2 className="text-lg font-bold">{title}</h2> : <span />}
+          {showSeeAll && allEvents.length > 0 && (
+            <button className="text-sm font-semibold text-primary" onClick={() => navigate("/showers")}>
+              See all
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="space-y-4">
         {showers.map((evt) => {

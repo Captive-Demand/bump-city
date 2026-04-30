@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MobileLayout } from "@/components/layout/MobileLayout";
+import { PageLoader } from "@/components/PageLoader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -225,7 +226,7 @@ const AdminPage = () => {
     setSendingReset(null);
   };
 
-  if (roleLoading) return <MobileLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div></MobileLayout>;
+  if (roleLoading) return <MobileLayout><PageLoader /></MobileLayout>;
 
   if (!isAdmin) return (
     <MobileLayout>

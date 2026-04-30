@@ -12,19 +12,27 @@ export interface HowItWorksStep {
   title: string;
   description: string;
   icon: LucideIcon;
+  /** Optional completion flag. When provided on every step and all are true,
+   *  the card auto-hides — no point telling the host how to do something
+   *  they've already finished. */
+  done?: boolean;
 }
 
 interface HowItWorksProps {
   title?: string;
   steps: HowItWorksStep[];
   storageKey: string;
+  /** When true, completed steps render with a subtle done style. */
+  showCompletion?: boolean;
 }
 
-export const HowItWorks = ({ title = "How it works", steps, storageKey }: HowItWorksProps) => {
+export const HowItWorks = ({ title = "How it works", steps, storageKey, showCompletion = false }: HowItWorksProps) => {
   const [visited, setVisited] = useState(false);
   const [expanded, setExpanded] = useState(true);
   const [api, setApi] = useState<any>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  const allDone = showCompletion && steps.length > 0 && steps.every((s) => s.done);
 
   useEffect(() => {
     try {
@@ -60,19 +68,31 @@ export const HowItWorks = ({ title = "How it works", steps, storageKey }: HowItW
 
   const renderCard = (step: HowItWorksStep) => {
     const Icon = step.icon;
+    const done = showCompletion && step.done;
     return (
-      <div className="h-full bg-background/70 backdrop-blur rounded-2xl p-3 flex flex-col gap-2">
+      <div className={`h-full bg-background/70 backdrop-blur rounded-2xl p-3 flex flex-col gap-2 ${done ? "opacity-60" : ""}`}>
         <div className="flex items-center gap-2">
-          <span className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center ring-1 ring-primary/15">
+          <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-1 ${
+            done
+              ? "bg-mint/40 text-mint-foreground ring-mint/40"
+              : "bg-primary/10 text-primary ring-primary/15"
+          }`}>
             <Icon className="h-4 w-4" strokeWidth={2.25} />
           </span>
-          <span className="text-[10px] font-bold text-primary tracking-wider">STEP {step.number}</span>
+          <span className={`text-[10px] font-bold tracking-wider ${done ? "text-mint-foreground" : "text-primary"}`}>
+            {done ? "DONE" : `STEP ${step.number}`}
+          </span>
         </div>
-        <p className="text-sm font-semibold leading-tight">{step.title}</p>
+        <p className={`text-sm font-semibold leading-tight ${done ? "line-through" : ""}`}>{step.title}</p>
         <p className="text-xs text-muted-foreground leading-snug">{step.description}</p>
       </div>
     );
   };
+
+  // Hide entirely once every step is complete — no more "Get this shower
+  // ready" card sitting on top of an already-ready shower. Placed AFTER all
+  // hook calls to keep hook order stable across renders.
+  if (allDone) return null;
 
   // Collapsed link state (after first visit)
   if (visited && !expanded) {

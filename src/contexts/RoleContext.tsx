@@ -10,7 +10,13 @@ export type ImpersonatedRole = "host" | "co-host" | "honoree" | "guest" | "admin
 interface RoleContextType {
   eventRole: EventRole;
   platformRole: PlatformRole;
+  // True until the very first resolve of platform + event role. Pages that
+  // gate their initial render on roles should use this. After first resolve
+  // it stays false, so subsequent refetches don't blank the UI.
   loading: boolean;
+  // True only while a per-event role fetch is in flight. Use for inline
+  // skeletons; do not blank the page on this.
+  eventRoleFetching: boolean;
   isHost: boolean;
   isHonoree: boolean;
   isGuest: boolean;
@@ -30,8 +36,11 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
   const { activeEvent, loading: eventLoading } = useActiveEvent();
   const [eventRole, setEventRole] = useState<EventRole>(null);
   const [platformRole, setPlatformRole] = useState<PlatformRole>(null);
-  const [platformLoaded, setPlatformLoaded] = useState(false);
-  const [eventRoleLoaded, setEventRoleLoaded] = useState(false);
+  // *Loaded once. These flip to true on first resolve and never go back to
+  // false — they drive the initial-render gate. Use *Fetching for refetch UX.
+  const [platformLoadedOnce, setPlatformLoadedOnce] = useState(false);
+  const [eventRoleLoadedOnce, setEventRoleLoadedOnce] = useState(false);
+  const [eventRoleFetching, setEventRoleFetching] = useState(false);
   const [impersonatedRole, setImpersonatedRoleState] = useState<ImpersonatedRole>(() => {
     if (typeof window === "undefined") return null;
     const v = sessionStorage.getItem(IMPERSONATE_KEY);
@@ -46,67 +55,71 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Platform role: fetch once per user
+  // Platform role: fetch once per user id. Keyed by id (not user object)
+  // so token refresh doesn't trigger a refetch.
+  const userId = user?.id ?? null;
   useEffect(() => {
     let cancelled = false;
-    if (!user) {
+    if (!userId) {
       setPlatformRole(null);
-      setPlatformLoaded(true);
+      setPlatformLoadedOnce(true);
       return;
     }
-    setPlatformLoaded(false);
     (async () => {
       const { data } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .maybeSingle();
       if (cancelled) return;
       const r = (data?.role as string) || null;
       setPlatformRole(r === "super_admin" || r === "admin" ? (r as PlatformRole) : null);
-      setPlatformLoaded(true);
+      setPlatformLoadedOnce(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [userId]);
 
-  // Event role: refetch when active event changes
+  // Event role: refetch when active event id changes (not the event object).
+  const activeEventId = activeEvent?.id ?? null;
+  const activeEventOwnerId = activeEvent?.user_id ?? null;
   useEffect(() => {
     let cancelled = false;
-    if (!user || !activeEvent) {
+    if (!userId || !activeEventId) {
       setEventRole(null);
-      setEventRoleLoaded(true);
+      setEventRoleFetching(false);
+      setEventRoleLoadedOnce(true);
       return;
     }
-    if (activeEvent.user_id === user.id) {
+    // If we own the event, set role optimistically so the UI doesn't flash
+    // through "no role" while the membership query is in flight.
+    if (activeEventOwnerId === userId) {
       setEventRole((prev) => prev ?? "host");
     }
-    setEventRoleLoaded(false);
+    setEventRoleFetching(true);
     (async () => {
       const { data: memberData } = await supabase
         .from("event_members")
         .select("role")
-        .eq("event_id", activeEvent.id)
-        .eq("user_id", user.id)
+        .eq("event_id", activeEventId)
+        .eq("user_id", userId)
         .maybeSingle();
       if (cancelled) return;
-      // Event owner is always treated as host, regardless of any
-      // event_members row that may exist (e.g. legacy "guest" rows
-      // created when they accepted their own invite link).
-      if (activeEvent.user_id === user.id) {
+      if (activeEventOwnerId === userId) {
         setEventRole("host");
       } else if (memberData) {
         setEventRole(memberData.role as EventRole);
       } else {
         setEventRole(null);
       }
-      setEventRoleLoaded(true);
+      setEventRoleFetching(false);
+      setEventRoleLoadedOnce(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [user, activeEvent]);
+  }, [userId, activeEventId, activeEventOwnerId]);
 
   const value = useMemo<RoleContextType>(() => {
     // Real values
@@ -118,13 +131,10 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     let effectiveEventRole: EventRole = eventRole;
     let effectivePlatformRole: PlatformRole = platformRole;
 
-    // Owner of the active event is always treated as host — impersonation
-    // only affects events the user does NOT own (so admins can preview the
-    // guest experience on someone else's event without losing host UI on
-    // their own).
-    const isOwnerOfActive = !!user && !!activeEvent && activeEvent.user_id === user.id;
-
-    if (activeImpersonation && !isOwnerOfActive) {
+    // Impersonation takes effect on every event, including ones the admin
+    // owns — so previewing "as Guest" actually hides edit controls etc. The
+    // orange ImpersonationBanner with "Stop preview" is the escape hatch.
+    if (activeImpersonation) {
       if (activeImpersonation === "admin") {
         effectivePlatformRole = "admin";
         effectiveEventRole = "host";
@@ -140,7 +150,11 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
     return {
       eventRole: effectiveEventRole,
       platformRole: effectivePlatformRole,
-      loading: authLoading || eventLoading || !platformLoaded || !eventRoleLoaded,
+      // Initial-render gate: stays true only until the first resolve of both
+      // platform role and (if there's an active event) event role. After that
+      // it stays false through refetches, switches, and token refresh.
+      loading: authLoading || eventLoading || !platformLoadedOnce || !eventRoleLoadedOnce,
+      eventRoleFetching,
       isHost,
       isHonoree: effectiveEventRole === "honoree",
       isGuest: effectiveEventRole === "guest",
@@ -150,7 +164,7 @@ export const RoleProvider = ({ children }: { children: ReactNode }) => {
       setImpersonatedRole,
       isImpersonating: !!activeImpersonation,
     };
-  }, [eventRole, platformRole, authLoading, eventLoading, platformLoaded, eventRoleLoaded, impersonatedRole, setImpersonatedRole, user, activeEvent]);
+  }, [eventRole, platformRole, authLoading, eventLoading, platformLoadedOnce, eventRoleLoadedOnce, eventRoleFetching, impersonatedRole, setImpersonatedRole]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 };

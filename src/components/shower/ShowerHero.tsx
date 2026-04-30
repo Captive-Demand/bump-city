@@ -23,11 +23,22 @@ export const ShowerHero = ({ event, isHost: isHostProp }: { event: EventData; is
     <Card className="border-none overflow-hidden">
       <CardContent className="p-0">
         <div className="relative">
-          <img src={getShowerImage(event)} alt="" className="w-full h-44 object-cover" />
+          <img src={getShowerImage(event)} alt="" className="w-full h-32 object-cover" />
           {days !== null && days >= 0 && (
             <Badge className="bg-mint text-mint-foreground text-[10px] font-bold absolute top-3 left-3">
               ⏰ {days === 0 ? "TODAY" : `${days} DAYS TO GO`}
             </Badge>
+          )}
+          {isHost && (
+            <Button
+              size="icon"
+              variant="secondary"
+              aria-label="Edit shower details"
+              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-background/85 backdrop-blur hover:bg-background"
+              onClick={() => navigate(`/setup/shower?eventId=${event.id}`)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
           )}
         </div>
         <div className="p-5 pt-3">
@@ -44,14 +55,6 @@ export const ShowerHero = ({ event, isHost: isHostProp }: { event: EventData; is
             <div className="flex items-center gap-1.5 mt-1 text-muted-foreground">
               <MapPin className="h-3.5 w-3.5" />
               <span className="text-sm">{event.city}</span>
-            </div>
-          )}
-          {isHost && (
-            <div className="flex items-center gap-2 mt-4">
-              <Button className="flex-1 rounded-xl h-11 font-semibold" onClick={() => navigate(`/setup/shower?eventId=${event.id}`)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                Edit Details
-              </Button>
             </div>
           )}
         </div>
